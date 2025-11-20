@@ -1,0 +1,9 @@
+## TASK ##
+创建一个名为test1.txt的文件
+文件内容为"Hello World 1"
+要求使用UTF-8编码
+
+## TASK ##
+创建一个名为test2.txt的文件
+内容为"Hello World 2"
+并添加当前时间戳

@@ -1,0 +1,27 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.minimaxi.com/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJMaXR0bGVUcmVlIiwiVXNlck5hbWUiOiJMaXR0bGVUcmVlIiwiQWNjb3VudCI6IiIsIlN1YmplY3RJRCI6IjE5ODQxNzc0NzE4MDg4NzI1OTYiLCJQaG9uZSI6IjE1OTIxMDMzNzA3IiwiR3JvdXBJRCI6IjE5ODQxNzc0NzE4MDA0ODM5ODgiLCJQYWdlTmFtZSI6IiIsIk1haWwiOiIiLCJDcmVhdGVUaW1lIjoiMjAyNS0xMC0zMSAxODoyMDo1MCIsIlRva2VuVHlwZSI6MSwiaXNzIjoibWluaW1heCJ9.j1SaRPttMLrgf28_6fADv8NaSvFxzxLwuq0iWEb6sBUR5heiYS4xM_ykJ1KhWL3ImDzxVUwJYHJ4XRalMDb0HSbt_PF0thiHMRlT-P9uZID3SlYbgQtaKrSjSo1uXQgc9UCaOub_4XInOkOItssVqHDdxwOXQLPyQjz9vR1hhLp9twHYucNyFOPdnZN03poCBda1boqhtUfdGlG4FHxpkC1277_zdH6DNvM3MSmzmz0iZCHv68-ywWsVmMVvMkJ4ocr1PHhabnJ74izo5iNpOx-NQQOVIw5LzTuz9oUVLJ8Ue9NfvbaInIsgRJmYJc8RfRT_I_z3h339Iq8byEiTJA",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_MODEL": "MiniMax-M2",
+    "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "MiniMax-M2",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "MiniMax-M2",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "MiniMax-M2"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/zhanglingxiao/.claude/hooks/pre-tool-call.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "alwaysThinkingEnabled": false
+}

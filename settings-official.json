@@ -1,0 +1,20 @@
+{
+  "env": {
+    "HTTP_PROXY": "http://127.0.0.1:7890",
+    "HTTPS_PROXY": "http://127.0.0.1:7890"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/zhanglingxiao/.claude/hooks/pre-tool-call.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "alwaysThinkingEnabled": false
+}
