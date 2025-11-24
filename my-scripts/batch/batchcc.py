@@ -1,7 +1,39 @@
 #!/usr/bin/env python3
 """
 批量执行 Claude Code 命令的脚本 - 支持 DAG 格式
-从template文件中提取任务并用claude执行
+
+## 用途
+从 template 文件中提取任务并用 Claude 批量执行，支持：
+- 简单格式（## TASK ## 标记）：并行/串行执行
+- DAG 格式（## STAGE ## 标记）：复杂的阶段化任务编排
+- 自动断点续传：中断后可自动从未完成的任务继续
+- 自动 git commit：任务成功后自动提交代码变更
+
+## 基本用法
+```bash
+# 使用默认 template.md 文件
+python batchcc.py
+
+# 指定模板文件
+python batchcc.py task-refactor.md
+
+# 并行执行（默认8个线程）
+python batchcc.py --parallel 4
+
+# 强制串行执行
+python batchcc.py --single
+
+# 查看执行计划（不实际执行）
+python batchcc.py --dry-run
+
+# 重新开始（清空状态文件）
+python batchcc.py --restart
+```
+
+## 文档参考
+- README_DAG.md: DAG 格式详细说明和示例
+- TECHNICAL.md: 技术架构和实现细节
+- CLAUDE.md: Claude Code 维护指南
 """
 
 import sys
@@ -72,16 +104,12 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
             # 构建提交信息
             task_desc = task_description.replace("\n", " ").strip()
-            task_desc = task_desc[:100] + ("..." if len(task_desc) > 100 else "")
+            task_desc = task_desc[:80] + ("..." if len(task_desc) > 80 else "")
 
-            commit_message_parts = [
-                f"🤖 自动任务提交 - 任务 {task_id}" if task_id else "🤖 自动任务提交",
-                f"{task_desc}",
-                "",
-                "🤖 Generated with batchcc.py",
-                "Co-Authored-By: Claude <noreply@anthropic.com>"
-            ]
-            commit_message = "\n".join(commit_message_parts)
+            if task_id:
+                commit_message = f"任务 {task_id}: {task_desc}"
+            else:
+                commit_message = task_desc
 
             # 执行 git commit
             subprocess.run(
