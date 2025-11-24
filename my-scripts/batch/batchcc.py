@@ -19,8 +19,9 @@ from dag_executor import DAGExecutor
 class ClaudeCodeBatchExecutor(BaseBatchExecutor):
     """Claude Code 批量执行器"""
 
-    def __init__(self):
+    def __init__(self, auto_commit: bool = False):
         super().__init__("batchcc.py")
+        self.auto_commit = auto_commit  # 是否自动执行 git commit
         self.state_manager = None  # 状态管理器（由 DAGExecutor 注入）
         self.current_stage_id = None  # 当前执行的阶段ID
 
@@ -34,6 +35,70 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         """
         self.state_manager = state_manager
         self.current_stage_id = stage_id
+
+    def _auto_commit_if_needed(self, task_description: str, task_id: int = None):
+        """
+        如果启用自动提交且任务成功，则执行 git commit
+
+        Args:
+            task_description: 任务描述
+            task_id: 任务ID（可选）
+        """
+        if not self.auto_commit:
+            return
+
+        try:
+            # 检查是否有未提交的更改
+            result = subprocess.run(
+                ["git", "status", "--porcelain"],
+                capture_output=True,
+                text=True
+            )
+
+            if result.returncode != 0:
+                print(f"⚠️ 检查 git status 失败，跳过自动提交")
+                return
+
+            # 如果没有未提交的更改，则跳过
+            if not result.stdout.strip():
+                print(f"📝 无文件变更，跳过自动提交")
+                return
+
+            # 执行 git add
+            subprocess.run(
+                ["git", "add", "."],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            # 构建提交信息
+            task_desc = task_description.replace("\n", " ").strip()
+            task_desc = task_desc[:100] + ("..." if len(task_desc) > 100 else "")
+
+            commit_message_parts = [
+                f"🤖 自动任务提交 - 任务 {task_id}" if task_id else "🤖 自动任务提交",
+                f"{task_desc}",
+                "",
+                "🤖 Generated with batchcc.py",
+                "Co-Authored-By: Claude <noreply@anthropic.com>"
+            ]
+            commit_message = "\n".join(commit_message_parts)
+
+            # 执行 git commit
+            subprocess.run(
+                ["git", "commit", "-m", commit_message],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            print(f"✅ 自动提交成功: {task_desc[:50]}...")
+
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️ 自动提交失败: {e}")
+        except Exception as e:
+            print(f"⚠️ 自动提交异常: {e}")
 
     def _get_automation_prefix(self) -> str:
         """
@@ -219,6 +284,12 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
             if result.returncode == 0:
                 print("✅ 命令执行成功")
+
+                # 自动提交（如果启用）
+                if command.startswith("cc '") and command.endswith("'"):
+                    content = command[4:-1]  # 移除 cc ' 和 '
+                    self._auto_commit_if_needed(content, task_id)
+
                 return True
             else:
                 print(f"❌ 命令执行失败，返回码: {result.returncode}")
@@ -285,12 +356,16 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         working_dir = os.getcwd()
         results = self.execute_parallel(commands, working_dir, max_workers)
 
-        # 3. 自动标记所有任务完成
+        # 3. 自动标记所有任务完成，并对成功的任务执行自动提交
         if self.state_manager and self.current_stage_id is not None:
             for i, result in enumerate(results):
                 task = tasks[i]
                 error_msg = result.error_msg if not result.success else None
                 self.state_manager.complete_task(self.current_stage_id, task.task_id, result.success, error_msg)
+
+                # 对成功的任务执行自动提交
+                if result.success and self.auto_commit:
+                    self._auto_commit_if_needed(task.description, task.task_id)
 
         return results
 
@@ -328,11 +403,13 @@ def main():
                        help='仅显示执行计划，不实际执行')
     parser.add_argument('--restart', action='store_true',
                        help='清空状态文件，从头开始')
+    parser.add_argument('--auto-commit', action='store_true',
+                       help='任务执行成功后自动执行 git commit')
 
     args = parser.parse_args()
 
     # 创建执行器
-    executor = ClaudeCodeBatchExecutor()
+    executor = ClaudeCodeBatchExecutor(auto_commit=args.auto_commit)
 
     # 确定template文件路径
     if args.template:
@@ -421,6 +498,17 @@ def main():
         if is_parallel and len(commands) > 1:
             # 并行执行
             results = executor.execute_parallel(commands, os.getcwd(), max_workers)
+
+            # 对成功的任务执行自动提交
+            if args.auto_commit:
+                for i, result in enumerate(results):
+                    if result.success:
+                        # 提取原始命令内容（去掉 cc ' 前缀）
+                        command = commands[i]
+                        if command.startswith("cc '") and command.endswith("'"):
+                            content = command[4:-1]  # 移除 cc ' 和 '
+                            executor._auto_commit_if_needed(content, result.task_id)
+
             executor.print_parallel_results(results)
             success_count = sum(1 for r in results if r.success)
         else:
