@@ -19,9 +19,9 @@ from dag_executor import DAGExecutor
 class ClaudeCodeBatchExecutor(BaseBatchExecutor):
     """Claude Code 批量执行器"""
 
-    def __init__(self, auto_commit: bool = False):
+    def __init__(self):
         super().__init__("batchcc.py")
-        self.auto_commit = auto_commit  # 是否自动执行 git commit
+        self.auto_commit = True  # 默认启用自动执行 git commit
         self.state_manager = None  # 状态管理器（由 DAGExecutor 注入）
         self.current_stage_id = None  # 当前执行的阶段ID
 
@@ -38,14 +38,12 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
     def _auto_commit_if_needed(self, task_description: str, task_id: int = None):
         """
-        如果启用自动提交且任务成功，则执行 git commit
+        任务执行成功后自动执行 git commit
 
         Args:
             task_description: 任务描述
             task_id: 任务ID（可选）
         """
-        if not self.auto_commit:
-            return
 
         try:
             # 检查是否有未提交的更改
@@ -364,7 +362,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
                 self.state_manager.complete_task(self.current_stage_id, task.task_id, result.success, error_msg)
 
                 # 对成功的任务执行自动提交
-                if result.success and self.auto_commit:
+                if result.success:
                     self._auto_commit_if_needed(task.description, task.task_id)
 
         return results
@@ -403,13 +401,11 @@ def main():
                        help='仅显示执行计划，不实际执行')
     parser.add_argument('--restart', action='store_true',
                        help='清空状态文件，从头开始')
-    parser.add_argument('--auto-commit', action='store_true',
-                       help='任务执行成功后自动执行 git commit')
 
     args = parser.parse_args()
 
     # 创建执行器
-    executor = ClaudeCodeBatchExecutor(auto_commit=args.auto_commit)
+    executor = ClaudeCodeBatchExecutor()
 
     # 确定template文件路径
     if args.template:
@@ -500,14 +496,13 @@ def main():
             results = executor.execute_parallel(commands, os.getcwd(), max_workers)
 
             # 对成功的任务执行自动提交
-            if args.auto_commit:
-                for i, result in enumerate(results):
-                    if result.success:
-                        # 提取原始命令内容（去掉 cc ' 前缀）
-                        command = commands[i]
-                        if command.startswith("cc '") and command.endswith("'"):
-                            content = command[4:-1]  # 移除 cc ' 和 '
-                            executor._auto_commit_if_needed(content, result.task_id)
+            for i, result in enumerate(results):
+                if result.success:
+                    # 提取原始命令内容（去掉 cc ' 前缀）
+                    command = commands[i]
+                    if command.startswith("cc '") and command.endswith("'"):
+                        content = command[4:-1]  # 移除 cc ' 和 '
+                        executor._auto_commit_if_needed(content, result.task_id)
 
             executor.print_parallel_results(results)
             success_count = sum(1 for r in results if r.success)
