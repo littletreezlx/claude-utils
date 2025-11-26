@@ -31,8 +31,6 @@ python batchcc.py task-refactor
 
 ## 🤖 自主执行原则
 
-**⛔ 强制前置阅读**：执行任何操作前，必须先阅读 @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节，否则禁止继续。
-
 **核心**：完全自动化、无人值守执行
 
 ✅ **应该做**：自主诊断 → 自主判断严重性 → 自主决策修复方案 → 直接执行
@@ -55,7 +53,7 @@ python batchcc.py task-refactor
 快速读取关键文档（如存在）：
 - `FEATURE_CODE_MAP.md` - 功能模块位置
 - `PROJECT_STATUS.md` - 已知技术债务
-- `package.json` / `pyproject.toml` - 技术栈
+- `package.json` / `pubspec.yaml` / `pyproject.toml` - 技术栈
 
 ### 第二步：生成任务编排文件
 
@@ -71,9 +69,15 @@ python batchcc.py task-refactor
 └── task-refactor                        # 修复任务（stage-5 自动生成）
 ```
 
-**主任务文件格式**：
+---
+
+## 🎯 格式规范（必须遵守）
+
+### 主任务文件格式（task-health-check）
 
 ```markdown
+# 项目健康检查任务
+
 ## STAGE ## name="test-health" mode="parallel" max_workers="4"
 @.health-check-tasks/stage-1-test-health.md
 
@@ -90,54 +94,56 @@ python batchcc.py task-refactor
 @.health-check-tasks/stage-5-summary.md
 ```
 
-### 第三步：各阶段任务设计
+### ⚠️ 子文件 TASK 格式（关键！）
 
-| 阶段 | 检查内容 | 行数建议 |
-|------|---------|---------|
-| **Stage 1** 测试健康 | 运行测试、分析结果、识别问题 | 60-100 行 |
-| **Stage 2** 代码质量 | 规模、类型注解、架构模式 | 60-100 行 |
-| **Stage 3** 架构一致性 | 分层、循环依赖、错误处理 | 80-120 行 |
-| **Stage 4** 文档准确性 | 文档与代码一致性 | 60-100 行 |
-| **Stage 5** 汇总报告 | 生成 SUMMARY.md + task-refactor | 100-150 行 |
-
-**输出路径**：所有报告统一到 `docs/health-check/YYYY-MM-DD/`
-
----
-
-## 💎 严格禁止
-
-1. **内嵌详细示例** ⛔ - 只说明生成逻辑（<10行）
-2. **硬编码具体命令** ⛔ - 让 AI 根据项目配置查找
-3. **过度详细步骤** ⛔ - 描述目标和维度，而非具体步骤
-
-**示例**：
+被引用的子文件（如 `stage-1-test-health.md`）中，**每个任务必须使用 `## TASK ##` 标记**：
 
 ```markdown
-# ❌ 错误（内嵌完整示例）
-如果有测试失败 → 生成：
-\`\`\`markdown
-# 修复测试失败
-## TASK: 修复 E2E 测试
-...50行详细内容...
-\`\`\`
+# Stage 1: 测试健康检查
 
-# ✅ 正确（只说明逻辑）
-根据问题类型生成修复任务：
-- 测试失败 → fix-tests.md（失败列表、原因、验证命令）
-- 循环依赖 → fix-circular-deps.md（依赖路径、方案、验证）
+## TASK ##
+后端测试执行与分析
+
+进入 server/ 目录，运行测试命令，分析输出结果。
+统计测试通过/失败数量，记录失败详情。
+
+输出到 docs/health-check/YYYY-MM-DD/server-tests.md
+
+文件: server/
+
+## TASK ##
+前端测试执行
+
+进入 app/ 目录，运行单元测试...
+
+文件: app/
 ```
+
+**格式要点**：
+- 使用 `## TASK ##`（注意两边都有 `##`）
+- 任务标题在标记下一行
+- 任务描述简洁明了
+- `文件:` 字段可选，用于标注作用范围
 
 ---
 
 ## 📏 字数约束
 
 - **Stage 1-4 任务文件**：60-120 行
-- **Stage 5 汇总任务**：100-150 行（不超过 180 行）
+- **Stage 5 汇总任务**：100-150 行
 - **单个 TASK 描述**：20-40 行
+
+---
+
+## 💎 严格禁止
+
+1. **错误的 TASK 格式** ⛔ - 必须用 `## TASK ##`，不能用 `## TASK:` 或其他变体
+2. **内嵌详细示例** ⛔ - 只说明生成逻辑（<10行）
+3. **硬编码具体命令** ⛔ - 让 AI 根据项目配置查找
+4. **过度详细步骤** ⛔ - 描述目标和维度，而非具体步骤
 
 ---
 
 ## 相关文档
 - @templates/workflow/DAG_TASK_FORMAT.md - 详细格式规范
-- @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查模板
 - `/health-check` - 快速健康检查（即时执行）

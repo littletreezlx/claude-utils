@@ -2,6 +2,13 @@
 """
 DAG 任务文件解析器 - 简化版
 解析 STAGE 和 TASK 标记，支持文件冲突检测
+
+格式容错说明：
+- STAGE: 仅支持 `## STAGE ##` 格式
+- TASK: 支持多种格式（容错）
+  - `## TASK ##` (标准格式)
+  - `## TASK ##:` (带冒号)
+  - `## TASK:` (简化格式，兼容)
 """
 
 import re
@@ -120,9 +127,19 @@ class DAGParser:
         )
 
     def _parse_tasks(self, stage_section: str) -> List[TaskNode]:
-        """解析 STAGE 中的所有 TASK"""
-        # 按 ## TASK ## 分割
-        task_sections = re.split(r'## TASK ##', stage_section)
+        """解析 STAGE 中的所有 TASK
+
+        支持多种 TASK 标记格式（容错设计）：
+        - `## TASK ##` (标准格式，推荐)
+        - `## TASK ##:` (带冒号)
+        - `## TASK:` (简化格式，兼容旧版)
+
+        注意：只匹配行首的标记，避免误匹配文本中的内容
+        """
+        # 使用正则支持多种 TASK 格式
+        # 匹配行首: ## TASK ## 或 ## TASK ##: 或 ## TASK:
+        # ^表示行首（配合 MULTILINE 标志）
+        task_sections = re.split(r'^## TASK\s*##\s*:?|^## TASK\s*:', stage_section, flags=re.MULTILINE)
 
         tasks = []
         task_id = 1
