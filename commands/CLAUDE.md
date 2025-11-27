@@ -122,6 +122,50 @@ DAG 任务的核心价值是**完全自动化、无人值守**执行。
 
 ---
 
+## 🎯 DAG 命令编写规范
+
+编写生成 DAG 任务的命令时，**必须包含以下要素**：
+
+### 必须包含的章节
+
+| 章节 | 说明 | 示例命令 |
+|------|------|---------|
+| **使用方式** | batchcc 命令示例 | `/comprehensive-health-check` |
+| **生成文件结构** | 主任务 + 子文件目录 | `task-xxx` + `.xxx-tasks/` |
+| **主任务文件格式** | STAGE 语法示例 | `## STAGE ## name="xxx"` |
+| **子文件 TASK 格式** | ⚠️ 关键！必须有示例 | `## TASK ##` |
+| **字数约束** | 防止生成冗长内容 | 单任务 15-30 行 |
+| **严格禁止** | 常见错误清单 | 禁止生成报告 |
+
+### ⚠️ 最常见错误
+
+**生成"报告"而非"任务文件"**：
+
+```markdown
+# ❌ 错误输出（诊断报告）
+## 测试现状分析
+- 后端测试：15个文件，46个失败...
+- 前端测试：33个文件...
+## 优先级总结
+## 执行建议
+
+# ✅ 正确输出（DAG 任务文件）
+## STAGE ## name="infrastructure" mode="serial"
+@.test-tasks/stage-1-infrastructure.md
+
+## STAGE ## name="test-writing" mode="parallel"
+@.test-tasks/stage-2-test-writing.md
+```
+
+### 模板参考
+
+编写 DAG 命令时，参考以下现有命令的结构：
+- `@comprehensive-health-check.md` - 健康检查
+- `@refactor-project.md` - 项目重构
+- `@test-plan.md` - 测试规划
+
+---
+
 ## 📋 质量检查清单
 
 编写或优化命令时检查：
