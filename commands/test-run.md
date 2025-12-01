@@ -17,14 +17,17 @@
 ## 执行流程
 
 ### 1. 识别测试环境
-- 定位测试命令（package.json / pytest.ini / Makefile）
-- 确认测试框架（Jest / Vitest / Pytest / Go test / Playwright）
+- 定位测试命令（package.json / pytest.ini / Makefile / pubspec.yaml）
+- 确认测试框架（Jest / Vitest / Pytest / Go test / Playwright / Flutter Test）
 - 检查测试环境就绪（数据库、服务、依赖）
+- **Flutter 检查**: `flutter pub get`, `flutter packages pub run build_runner build`
 
 ### 2. 运行测试
+- **使用紧凑模式避免日志爆炸**: `--reporter=compact` 或 `--reporter=json`
 - 执行测试命令，收集结果
 - 记录失败用例和错误信息
 - E2E 测试需收集截图/日志
+- **Flutter 特定**: 使用 `flutter test --reporter=compact` 而非 `expanded`
 
 ### 3. 诊断失败原因
 
@@ -44,6 +47,7 @@
 - 数据库连接、API 调用失败
 - 环境变量或配置缺失
 - 测试服务未正确启动
+- **Flutter 特定**: Hive未初始化、Riverpod Provider未配置、SharedPreferences未mock
 
 **稳定性问题**（优化等待策略）：
 - 时序问题（元素未加载完成）
@@ -55,6 +59,7 @@
 - 修复后重新运行测试
 - 确保没有引入新问题
 - 多次运行验证稳定性（E2E）
+- **Token 优化**: 使用紧凑模式，避免完整日志输出，只报告关键失败信息
 
 ---
 
