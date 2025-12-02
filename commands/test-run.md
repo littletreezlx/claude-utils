@@ -29,6 +29,17 @@
 - E2E 测试需收集截图/日志
 - **Flutter 特定**: 使用 `flutter test --reporter=compact` 而非 `expanded`
 
+**⚠️ 大量失败时的处理策略**：
+当测试失败数量超过 10 个时，输出会非常庞大（每个失败都有完整堆栈），导致：
+- Claude Code 处理输出耗时远超测试执行时间
+- Token 消耗激增，可能被截断丢失关键信息
+
+**应对策略**：
+1. **先跑一次快速扫描**：`flutter test --reporter=compact 2>&1 | head -100` 获取失败概览
+2. **聚焦单个失败**：`flutter test path/to/failing_test.dart` 只看一个失败的完整日志
+3. **按目录分批**：`flutter test test/unit/` 而非全量运行
+4. **识别共同原因**：大量失败通常有共同根因，修一个可能修复多个
+
 ### 3. 诊断失败原因
 
 **代码问题**（修复源代码）：
