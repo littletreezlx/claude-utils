@@ -370,3 +370,7 @@ CLAUDE.md            → AI 操作指南（根据项目复杂度，300-500 行�
 
 ### 兼容性处理原则
 优先考虑破坏性解决方案以达到最佳效果；当影响较大时，提供选项让开发者决策
+
+Always use context7 when I need code generation, setup or configuration steps, or
+library/API documentation. This means you should automatically use the Context7 MCP
+tools to resolve library id and get library docs without me having to explicitly ask.
