@@ -34,10 +34,21 @@ python batchcc.py task-add-test
 - 测试框架配置（Jest/Vitest/Pytest/Playwright）
 - 覆盖率工具、测试命令
 
-**运行现有测试** ⚠️ 必须执行：
+**运行现有测试** ⚠️ 必须执行（使用精简输出）：
 ```bash
-npm test / pytest / flutter test
+# Node.js (Jest/Vitest)
+npm test -- --silent 2>&1 | head -50
+
+# Python
+pytest -q --tb=short 2>&1 | tail -30
+
+# Flutter ⭐ AI 友好模式
+flutter test --reporter=silent --file-reporter=failures-only:test_failures.txt
+# 成功: 无输出，退出码 0
+# 失败: 查看 test_failures.txt
 ```
+
+> **Token 效率**：避免输出几万行堆栈，只看关键失败信息
 
 **质量评估**（抽样 5-10 个测试文件）：
 - flaky 测试？超时问题？测试隔离？
@@ -108,7 +119,7 @@ npm test / pytest / flutter test
 - 使用 `## TASK ##`（注意两边都有 `##`）
 - 任务标题在标记下一行
 - `文件:` 字段必填（用于冲突检测）
-- `验证:` 字段必填（任务完成后执行）
+- `验证:` 字段必填（任务完成后执行，使用精简输出命令）
 
 ---
 
