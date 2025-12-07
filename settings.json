@@ -1,5 +1,12 @@
 {
   "env": {
+    "ANTHROPIC_AUTH_TOKEN": "ff082fee44ac4ba1a285571ecbbcf9a6.4PjIPd81aePc1WDS",
+    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.6",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.6",
     "HTTP_PROXY": "http://127.0.0.1:7890",
     "HTTPS_PROXY": "http://127.0.0.1:7890"
   },
