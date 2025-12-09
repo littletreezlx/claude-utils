@@ -131,6 +131,24 @@ AI 开发:  Claude 写测试快 → 测试成本≈0 → 多写测试
 - 测试防止 AI "创造性破坏"（改 A 不破坏 B）
 - 测试通过 = 功能正常
 
+#### 精准测试（成本控制）⭐
+
+**原则**：只运行受影响的测试，不要全量测试
+
+```bash
+# ✅ 修改 sessions.routes.ts 后
+jest test/api/sessions.routes.test.ts
+
+# ❌ 不要这样（浪费时间和 token）
+jest                    # 全量测试
+jest --grep "sessions"  # 模糊匹配可能命中太多
+```
+
+**判断规则**：
+- 单文件修改 → 运行对应测试文件
+- 模块修改 → 运行模块目录测试
+- 跨模块/架构变更 → 全量测试
+
 #### 测试输出精简（Token 效率）⭐
 
 **问题**：测试输出动辄几万行，浪费 token、掩盖关键信息
@@ -142,17 +160,17 @@ AI 开发:  Claude 写测试快 → 测试成本≈0 → 多写测试
 
 **技术栈示例**：
 ```bash
-# Node.js (Vitest/Jest)
-vitest run --reporter=basic 2>&1 | head -50
+# Node.js (Jest) - 指定文件 + 静默模式
+jest path/to/specific.test.ts --silent --no-coverage --forceExit
 
 # Python (Pytest)
-pytest -q --tb=short
+pytest path/to/test_specific.py -q --tb=short
 
 # Flutter
-flutter test --reporter=silent --file-reporter=failures-only:test_failures.txt
+flutter test test/specific_test.dart --reporter=compact
 
 # Go
-go test ./... -v 2>&1 | grep -E "(FAIL|PASS|---)"
+go test ./specific/... -v 2>&1 | grep -E "(FAIL|PASS|---)"
 ```
 
 **关键**：测试失败时，只需要：测试名称 + 期望值 vs 实际值 + 文件位置

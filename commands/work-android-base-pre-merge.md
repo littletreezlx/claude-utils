@@ -192,15 +192,23 @@ git diff <旧版本>..<新版本> -- <核心文件>
 5. ❌ "项目没用高层 API = 该模块无影响" → 要查项目用了什么替代方案
 6. ❌ "可能兼容，需测试验证" → 必须深入分析调用场景，给出明确结论
 
-## 项目路径
+## 项目路径定位
 
-基础路径: `~/AndroidStudioProjects/Work_Projects/`
+从当前工作目录向上查找，定位三个项目：
 
-| 项目 | 实际根目录 |
-|------|-----------|
-| POS | `android-pos/packages/pos/android/` |
-| KDS | `android-kds/` |
-| TV | `smart-screen/` |
+**定位方法**：
+1. 从当前目录向上遍历，找到包含 `android-kds`、`smart-screen`、`android-pos` 中任意一个的父目录（即工作空间根目录）
+2. 基于工作空间根目录定位各项目
+
+| 项目 | 仓库目录名 | Android 代码相对路径 | 特征文件 |
+|------|-----------|-------------------|----------|
+| KDS | `android-kds` | `/` (根目录) | `settings.gradle.kts` |
+| TV | `smart-screen` | `/` (根目录) | `settings.gradle.kts` |
+| POS | `android-pos` | `/packages/pos/android/` | 该子目录下有 `settings.gradle.kts` |
+
+**⚠️ POS 特殊处理**：
+- 仓库根目录是 `android-pos`
+- Android 代码和 android-base 版本信息在 `packages/pos/android/` 子目录下
 
 ## 历史教训
 
