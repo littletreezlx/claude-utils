@@ -2,7 +2,7 @@
 
 > 诊断测试现状，生成可被 batchcc.py 执行的测试任务
 
-## 🚀 使用方式
+## 🚀 使用方式/DAG_TASK_FORMAT.md
 
 ```bash
 # 1. 生成测试任务
