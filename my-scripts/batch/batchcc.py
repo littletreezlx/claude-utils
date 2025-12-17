@@ -424,12 +424,12 @@ def main():
     """主函数"""
     parser = argparse.ArgumentParser(description='批量执行 Claude Code 命令 - 支持 DAG 格式')
     parser.add_argument('template', nargs='?', help='template文件路径')
-    parser.add_argument('-p', '--parallel', type=int, default=8,
-                       help='并行执行的最大工作线程数 (默认: 8)')
+    parser.add_argument('-p', '--parallel', type=int, default=3,
+                       help='并行执行的最大工作线程数 (默认: 3)')
     parser.add_argument('--single', action='store_true',
                        help='强制串行执行 (一次只执行一个任务)')
-    parser.add_argument('--max-parallel', type=int, default=8,
-                       help='允许的最大并行数 (默认: 8)')
+    parser.add_argument('--max-parallel', type=int, default=3,
+                       help='允许的最大并行数 (默认: 3)')
     parser.add_argument('--dry-run', action='store_true',
                        help='仅显示执行计划，不实际执行')
     parser.add_argument('--restart', action='store_true',
