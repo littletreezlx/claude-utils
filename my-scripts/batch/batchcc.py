@@ -205,7 +205,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
                     "/Users/zhanglingxiao/.nvm/versions/node/v22.18.0/bin/claude",
                     "-p", enhanced_content,
                     "--allowedTools", "*",
-                    "--permission-mode", "acceptEdits"
+                    "--permission-mode", "bypassPermissions"
                 ]
 
                 # 执行claude命令
@@ -291,7 +291,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
                     "/Users/zhanglingxiao/.nvm/versions/node/v22.18.0/bin/claude",
                     "-p", enhanced_content,
                     "--allowedTools", "*",
-                    "--permission-mode", "acceptEdits"
+                    "--permission-mode", "bypassPermissions"
                 ]
 
                 print(f"✅ 已注入自动化执行指示")
