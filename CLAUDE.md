@@ -246,6 +246,7 @@ CLAUDE.md            → AI 操作指南
 ```
 
 ### 可选文档（按需维护）
+- ABOUT.md - 项目初衷与愿景（为什么做这个项目）
 - PROJECT_STATUS.md - 项目状态快照
 - docs/decisions/ - ADR（重要架构决策）
 - docs/standards/ - 开发规范
