@@ -8,6 +8,8 @@
 - 📊 状态可视化（进度和耗时）
 - 🛡️ 文件冲突检测（避免并发冲突）
 
+**关键约束**：生成的任务将由**低智能模型**（如 GLM4.7）执行，必须遵循"执行模型友好规范"。
+
 ---
 
 ## 🚀 使用方式
@@ -29,7 +31,9 @@ python batchcc.py task-refactor-project
 
 ## 🤖 自主执行原则
 
-**⛔ 强制前置阅读**：执行任何操作前，必须先阅读 @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节，否则禁止继续。
+**⛔ 强制前置阅读**：
+1. @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节
+2. @templates/workflow/DAG_TASK_FORMAT.md 的"执行模型友好规范"章节 ⭐
 
 **核心**：完全自动化、无人值守执行
 
@@ -87,33 +91,58 @@ python batchcc.py task-refactor-project
 @.refactor-tasks/stage-4-documentation.md
 ```
 
-### ⚠️ 子文件 TASK 格式（关键！）
+### ⚠️ 子文件 TASK 格式（执行模型友好版）
 
-被引用的子文件中，**每个任务必须使用 `## TASK ##` 标记**：
+被引用的子文件中，**每个任务必须使用增强格式**：
 
 ```markdown
 # Stage 2: 模块重构
 
+> **🏠 项目背景**：[项目类型] + [技术栈] + [当前状态]
+> 本阶段重构各独立模块，可并行执行。
+
 ## TASK ##
 重构用户模块
 
-**📖 背景**：用户模块职责混乱，需要拆分...
-**🔨 要做什么**：1. 拆分服务层 2. 优化数据访问...
-**✅ 完成标志**：测试通过，无循环依赖
+**🏠 项目背景**：
+电商后台系统，NestJS + TypeORM + PostgreSQL。
+用户模块当前职责混乱，UserService 有 30+ 方法。
+
+**🎯 任务目标**：
+将 UserService 拆分为职责单一的多个服务，消除循环依赖。
+
+**📁 核心文件**：
+- `src/modules/user/user.service.ts` - [修改] 当前 30+ 方法，需要拆分
+- `src/modules/user/user-auth.service.ts` - [新建] 认证相关方法
+- `src/modules/user/user-profile.service.ts` - [新建] 个人信息相关方法
+- `src/modules/user/user.controller.ts` - [修改] 更新依赖注入
+- `src/modules/product/product.service.ts` - [参考] 查看标准服务结构
+
+**🔨 执行步骤**：
+1. 阅读 `user.service.ts`，按功能分类所有方法
+2. 创建 `user-auth.service.ts`，迁移认证相关方法
+3. 创建 `user-profile.service.ts`，迁移个人信息方法
+4. 更新 `user.controller.ts` 的依赖注入
+5. 运行测试验证
+
+**✅ 完成标志**：
+- [ ] UserService 方法数 ≤ 10
+- [ ] 无循环依赖（可用 `madge` 检查）
+- [ ] `npm test -- user` 全部通过
+
+**⚠️ 注意事项**：
+- 不要修改 `src/common/` 目录
+- 保持 API 接口不变
 
 文件: src/modules/user/**/*.ts
 排除: src/common/
-验证: npm test -- user
-
-## TASK ##
-重构订单模块
-
-...
+验证: npm test -- user --silent
 ```
 
 **格式要点**：
 - 使用 `## TASK ##`（注意两边都有 `##`）
-- 任务标题在标记下一行
+- **必须包含**：🎯 任务目标、📁 核心文件、✅ 完成标志
+- **推荐包含**：🏠 项目背景、🔨 执行步骤、⚠️ 注意事项
 - `文件:` 字段必填（用于冲突检测）
 
 ### 第三步：各阶段任务设计

@@ -2,6 +2,8 @@
 
 > 识别核心功能 → 诊断测试现状 → 生成业务驱动的测试任务
 
+**关键约束**：生成的任务将由**低智能模型**（如 GLM4.7）执行，必须遵循"执行模型友好规范"。
+
 ## 🚀 使用方式
 
 ```bash
@@ -19,7 +21,9 @@ python batchcc.py task-add-test
 
 ## 🤖 自主执行原则
 
-**⛔ 强制前置阅读**：@templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节
+**⛔ 强制前置阅读**：
+1. @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节
+2. @templates/workflow/DAG_TASK_FORMAT.md 的"执行模型友好规范"章节 ⭐
 
 ✅ **应该做**：识别核心功能 → 诊断现状 → 直接生成任务文件
 ❌ **不应该**：询问用户、生成"报告"而非任务文件
@@ -131,45 +135,89 @@ flutter test --reporter=silent --file-reporter=failures-only:test_failures.txt
 @.test-tasks/stage-4-verification.md
 ```
 
-### ⚠️ 子文件 TASK 格式（关键！）
+### ⚠️ 子文件 TASK 格式（执行模型友好版）
 
-被引用的子文件中，**每个任务必须使用 `## TASK ##` 标记**：
+被引用的子文件中，**每个任务必须使用增强格式**：
 
 ```markdown
 # Stage 2: 关键路径测试 🔴
 
+> **🏠 项目背景**：电商后台系统，NestJS + TypeORM + PostgreSQL。
+> 本阶段为核心业务功能补充测试覆盖。
+
 ## TASK ##
 用户认证流程测试
 
-**📖 背景**：认证是系统核心功能，当前无测试覆盖
-**🎯 业务价值**：防止登录/注册流程回归
-**🔨 要做什么**：
-- 登录成功/失败场景
-- Token 刷新逻辑
-- 权限验证
+**🏠 项目背景**：
+电商后台系统，NestJS + TypeORM。
+认证模块使用 JWT，当前无测试覆盖，属于关键路径。
+
+**🎯 任务目标**：
+为认证模块编写单元测试，覆盖登录、注册、Token 刷新等核心场景。
+
+**📁 核心文件**：
+- `src/modules/auth/auth.service.ts` - [测试目标] 认证服务
+- `src/modules/auth/auth.controller.ts` - [测试目标] 认证控制器
+- `src/modules/auth/__tests__/auth.service.spec.ts` - [新建] 服务测试
+- `src/modules/auth/__tests__/auth.controller.spec.ts` - [新建] 控制器测试
+- `src/modules/user/__tests__/user.service.spec.ts` - [参考] 查看测试写法
+
+**🔨 执行步骤**：
+1. 阅读 `auth.service.ts`，了解认证逻辑
+2. 参考 `user.service.spec.ts` 了解项目测试风格
+3. 创建 `auth.service.spec.ts`，编写测试用例：
+   - 登录成功场景
+   - 登录失败（密码错误）
+   - Token 刷新逻辑
+4. 创建 `auth.controller.spec.ts`，编写 E2E 测试
+5. 运行测试验证
+
+**✅ 完成标志**：
+- [ ] `auth.service.spec.ts` 已创建，包含 ≥5 个测试用例
+- [ ] `auth.controller.spec.ts` 已创建
+- [ ] `npm test -- auth` 全部通过
+- [ ] 覆盖率 ≥ 80%
+
+**⚠️ 注意事项**：
+- 使用项目现有的 mock 工具（查看 `jest.config.js`）
+- 不要修改被测试的代码
 
 文件: src/modules/auth/**/*.ts
-验证: npm test -- auth
+验证: npm test -- auth --silent
 
 ## TASK ##
 订单创建流程测试
 
-**📖 背景**：订单是核心业务流程，git log 显示近期频繁修改
-**🎯 业务价值**：保护收入相关功能
-**🔨 要做什么**：
-- 订单创建完整流程
-- 库存扣减逻辑
-- 支付回调处理
+**🏠 项目背景**：
+电商后台系统，订单是核心业务流程。
+git log 显示近期频繁修改，需要测试保护。
+
+**🎯 任务目标**：
+为订单模块编写测试，覆盖订单创建、库存扣减、支付回调。
+
+**📁 核心文件**：
+- `src/modules/order/order.service.ts` - [测试目标]
+- `src/modules/order/__tests__/order.service.spec.ts` - [新建]
+
+**🔨 执行步骤**：
+1. 阅读 `order.service.ts`，了解订单创建流程
+2. 创建测试文件，编写用例
+3. 运行测试验证
+
+**✅ 完成标志**：
+- [ ] 测试文件已创建
+- [ ] `npm test -- order` 全部通过
 
 文件: src/modules/order/**/*.ts
-验证: npm test -- order
+验证: npm test -- order --silent
 ```
 
 **格式要点**：
 - 使用 `## TASK ##`（注意两边都有 `##`）
-- **🎯 业务价值**：说明为什么这个测试重要（关联第一步的分析）
+- **必须包含**：🎯 任务目标、📁 核心文件、✅ 完成标志
+- **推荐包含**：🏠 项目背景、🔨 执行步骤
 - `文件:` 字段必填（用于冲突检测）
-- `验证:` 字段必填（任务完成后执行，使用精简输出命令）
+- `验证:` 字段必填（使用 `--silent` 减少输出）
 
 ---
 

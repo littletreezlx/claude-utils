@@ -4,11 +4,15 @@
 >
 > **特性**：DAG 任务编排 + 断点续传 + 状态管理
 
+**关键约束**：生成的任务将由**低智能模型**（如 GLM4.7）执行，必须遵循"执行模型友好规范"。
+
 ---
 
 ## 🤖 自主执行原则
 
-**⛔ 强制前置阅读**：执行任何操作前，必须先阅读 @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节，否则禁止继续。
+**⛔ 强制前置阅读**：
+1. @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节
+2. @templates/workflow/DAG_TASK_FORMAT.md 的"执行模型友好规范"章节 ⭐
 
 **核心**：完全自动化、无人值守执行
 
@@ -64,6 +68,49 @@ python batchcc.py task-refactor-module-[模块名]
 - 更新 TECHNICAL.md
 - 更新 FEATURE_CODE_MAP.md
 - 创建 ADR（如有重要架构变化）
+
+---
+
+## ⭐ 任务格式（执行模型友好版）
+
+每个 TASK 必须使用增强格式，确保低智能执行模型能正确理解：
+
+```markdown
+## TASK ##
+拆分 UserService 的认证职责
+
+**🏠 项目背景**：
+电商后台系统，NestJS + TypeORM。
+当前重构 user 模块，UserService 职责混乱（30+ 方法）。
+
+**🎯 任务目标**：
+将认证相关方法（login, logout, refreshToken 等）提取到 UserAuthService。
+
+**📁 核心文件**：
+- `src/modules/user/user.service.ts` - [修改] 移除认证方法
+- `src/modules/user/user-auth.service.ts` - [新建] 认证服务
+- `src/modules/user/user.module.ts` - [修改] 注册新服务
+- `src/modules/user/user.controller.ts` - [修改] 更新依赖注入
+
+**🔨 执行步骤**：
+1. 创建 `user-auth.service.ts`，添加 @Injectable() 装饰器
+2. 从 `user.service.ts` 迁移 login, logout, refreshToken, validateToken 方法
+3. 在 `user.module.ts` 的 providers 中注册 UserAuthService
+4. 更新 `user.controller.ts` 中的依赖注入
+5. 运行测试验证
+
+**✅ 完成标志**：
+- [ ] UserAuthService 包含所有认证相关方法
+- [ ] UserService 不再有认证相关方法
+- [ ] `npm test -- user` 全部通过
+
+**⚠️ 注意事项**：
+- 保持方法签名不变
+- 注意依赖注入的顺序
+
+文件: src/modules/user/**/*.ts
+验证: npm test -- user --silent
+```
 
 ---
 
