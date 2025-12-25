@@ -1,15 +1,13 @@
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "ff082fee44ac4ba1a285571ecbbcf9a6.4PjIPd81aePc1WDS",
-    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "07a1fdea55ed458fac3986e7088ab62a.ggB7p37dSDErHD5E",
+    "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
-    "HTTP_PROXY": "http://127.0.0.1:7890",
-    "HTTPS_PROXY": "http://127.0.0.1:7890"
-  },
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air"
+    },
   "hooks": {
     "PreToolUse": [
       {
