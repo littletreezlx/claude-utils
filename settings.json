@@ -7,7 +7,7 @@
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air"
-  },
+    },
   "hooks": {
     "PreToolUse": [
       {
@@ -21,8 +21,5 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": false,
-  "enabledPlugins": {
-    "swift-lsp@claude-plugins-official": true
-  }
+  "alwaysThinkingEnabled": false
 }
