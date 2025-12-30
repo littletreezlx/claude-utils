@@ -62,6 +62,7 @@
 | 命令 | 说明 |
 |------|------|
 | `/feat-discuss` | 功能方案讨论 |
+| `/feat-discuss-gemini` | 生成 Gemini UI 咨询提示词 |
 | `/prd-to-doc` | PRD 转文档 |
 
 ### 🧪 测试
@@ -153,5 +154,5 @@ python batchcc.py todo-task
 
 ---
 
-**命令总数**：28 个
+**命令总数**：29 个
 **设计原则**：目标导向、自主执行、单一真相源
