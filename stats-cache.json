@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastComputedDate": "2025-12-28",
+  "lastComputedDate": "2025-12-29",
   "dailyActivity": [
     {
       "date": "2025-11-18",
@@ -199,6 +199,12 @@
       "messageCount": 7677,
       "sessionCount": 84,
       "toolCallCount": 2948
+    },
+    {
+      "date": "2025-12-29",
+      "messageCount": 5041,
+      "sessionCount": 40,
+      "toolCallCount": 1964
     }
   ],
   "dailyModelTokens": [
@@ -430,22 +436,29 @@
         "glm-4.7": 2430695,
         "claude-sonnet-4-5-20250929": 121600
       }
+    },
+    {
+      "date": "2025-12-29",
+      "tokensByModel": {
+        "claude-opus-4-5-20251101": 532295,
+        "glm-4.7": 2587627
+      }
     }
   ],
   "modelUsage": {
     "claude-opus-4-5-20251101": {
-      "inputTokens": 2437002,
-      "outputTokens": 4721727,
-      "cacheReadInputTokens": 2213188496,
-      "cacheCreationInputTokens": 119200429,
+      "inputTokens": 2566089,
+      "outputTokens": 5124935,
+      "cacheReadInputTokens": 2349725324,
+      "cacheCreationInputTokens": 127254034,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
     },
     "glm-4.7": {
-      "inputTokens": 37469125,
-      "outputTokens": 1278448,
-      "cacheReadInputTokens": 360263160,
+      "inputTokens": 39861829,
+      "outputTokens": 1473371,
+      "cacheReadInputTokens": 442971912,
       "cacheCreationInputTokens": 0,
       "webSearchRequests": 0,
       "costUSD": 0,
@@ -470,8 +483,8 @@
       "contextWindow": 0
     }
   },
-  "totalSessions": 1010,
-  "totalMessages": 110282,
+  "totalSessions": 1050,
+  "totalMessages": 115323,
   "longestSession": {
     "sessionId": "861ace98-c681-4544-8bdb-aa0de1633674",
     "duration": 255742017,
@@ -484,15 +497,15 @@
     "6": 25,
     "7": 36,
     "8": 144,
-    "9": 42,
-    "10": 11,
-    "11": 2,
+    "9": 47,
+    "10": 28,
+    "11": 8,
     "12": 18,
     "13": 55,
-    "14": 18,
+    "14": 20,
     "15": 29,
     "16": 15,
-    "17": 24,
+    "17": 34,
     "18": 21,
     "19": 46,
     "20": 99,
