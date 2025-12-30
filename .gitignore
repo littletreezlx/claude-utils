@@ -7,6 +7,10 @@ debug/
 projects/
 statsig/
 
+# 插件运行时缓存
+plugins/known_marketplaces.json
+plugins/marketplaces/
+
 # 临时锁文件
 .update.lock
 *.lock
