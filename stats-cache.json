@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastComputedDate": "2025-12-29",
+  "lastComputedDate": "2025-12-30",
   "dailyActivity": [
     {
       "date": "2025-11-18",
@@ -205,6 +205,12 @@
       "messageCount": 5041,
       "sessionCount": 40,
       "toolCallCount": 1964
+    },
+    {
+      "date": "2025-12-30",
+      "messageCount": 4957,
+      "sessionCount": 82,
+      "toolCallCount": 2018
     }
   ],
   "dailyModelTokens": [
@@ -443,22 +449,29 @@
         "claude-opus-4-5-20251101": 532295,
         "glm-4.7": 2587627
       }
+    },
+    {
+      "date": "2025-12-30",
+      "tokensByModel": {
+        "claude-opus-4-5-20251101": 1769649,
+        "glm-4.7": 627281
+      }
     }
   ],
   "modelUsage": {
     "claude-opus-4-5-20251101": {
-      "inputTokens": 2566089,
-      "outputTokens": 5124935,
-      "cacheReadInputTokens": 2349725324,
-      "cacheCreationInputTokens": 127254034,
+      "inputTokens": 3606004,
+      "outputTokens": 5854669,
+      "cacheReadInputTokens": 2513538958,
+      "cacheCreationInputTokens": 142304433,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
     },
     "glm-4.7": {
-      "inputTokens": 39861829,
-      "outputTokens": 1473371,
-      "cacheReadInputTokens": 442971912,
+      "inputTokens": 40458277,
+      "outputTokens": 1504204,
+      "cacheReadInputTokens": 452365289,
       "cacheCreationInputTokens": 0,
       "webSearchRequests": 0,
       "costUSD": 0,
@@ -483,8 +496,8 @@
       "contextWindow": 0
     }
   },
-  "totalSessions": 1050,
-  "totalMessages": 115323,
+  "totalSessions": 1132,
+  "totalMessages": 120280,
   "longestSession": {
     "sessionId": "861ace98-c681-4544-8bdb-aa0de1633674",
     "duration": 255742017,
@@ -494,13 +507,13 @@
   "firstSessionDate": "2025-11-18T12:37:07.665Z",
   "hourCounts": {
     "0": 7,
-    "6": 25,
-    "7": 36,
+    "6": 32,
+    "7": 50,
     "8": 144,
     "9": 47,
     "10": 28,
     "11": 8,
-    "12": 18,
+    "12": 19,
     "13": 55,
     "14": 20,
     "15": 29,
@@ -508,9 +521,9 @@
     "17": 34,
     "18": 21,
     "19": 46,
-    "20": 99,
-    "21": 171,
-    "22": 213,
-    "23": 34
+    "20": 100,
+    "21": 172,
+    "22": 243,
+    "23": 62
   }
 }
