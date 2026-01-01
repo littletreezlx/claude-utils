@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastComputedDate": "2025-12-30",
+  "lastComputedDate": "2025-12-31",
   "dailyActivity": [
     {
       "date": "2025-11-18",
@@ -211,6 +211,12 @@
       "messageCount": 4957,
       "sessionCount": 82,
       "toolCallCount": 2018
+    },
+    {
+      "date": "2025-12-31",
+      "messageCount": 3551,
+      "sessionCount": 62,
+      "toolCallCount": 1393
     }
   ],
   "dailyModelTokens": [
@@ -456,14 +462,21 @@
         "claude-opus-4-5-20251101": 1769649,
         "glm-4.7": 627281
       }
+    },
+    {
+      "date": "2025-12-31",
+      "tokensByModel": {
+        "claude-opus-4-5-20251101": 707431,
+        "claude-sonnet-4-5-20250929": 2636
+      }
     }
   ],
   "modelUsage": {
     "claude-opus-4-5-20251101": {
-      "inputTokens": 3606004,
-      "outputTokens": 5854669,
-      "cacheReadInputTokens": 2513538958,
-      "cacheCreationInputTokens": 142304433,
+      "inputTokens": 3894941,
+      "outputTokens": 6273163,
+      "cacheReadInputTokens": 2643725032,
+      "cacheCreationInputTokens": 152464570,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
@@ -478,10 +491,10 @@
       "contextWindow": 0
     },
     "claude-sonnet-4-5-20250929": {
-      "inputTokens": 98936,
-      "outputTokens": 383466,
-      "cacheReadInputTokens": 84637115,
-      "cacheCreationInputTokens": 5925426,
+      "inputTokens": 100711,
+      "outputTokens": 384327,
+      "cacheReadInputTokens": 85131831,
+      "cacheCreationInputTokens": 6076650,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
@@ -496,8 +509,8 @@
       "contextWindow": 0
     }
   },
-  "totalSessions": 1132,
-  "totalMessages": 120280,
+  "totalSessions": 1194,
+  "totalMessages": 123831,
   "longestSession": {
     "sessionId": "861ace98-c681-4544-8bdb-aa0de1633674",
     "duration": 255742017,
@@ -509,12 +522,12 @@
     "0": 7,
     "6": 32,
     "7": 50,
-    "8": 144,
-    "9": 47,
+    "8": 153,
+    "9": 60,
     "10": 28,
     "11": 8,
-    "12": 19,
-    "13": 55,
+    "12": 40,
+    "13": 72,
     "14": 20,
     "15": 29,
     "16": 15,
@@ -523,7 +536,7 @@
     "19": 46,
     "20": 100,
     "21": 172,
-    "22": 243,
+    "22": 245,
     "23": 62
   }
 }
