@@ -214,9 +214,9 @@
     },
     {
       "date": "2025-12-31",
-      "messageCount": 3551,
-      "sessionCount": 62,
-      "toolCallCount": 1393
+      "messageCount": 3675,
+      "sessionCount": 25,
+      "toolCallCount": 1378
     }
   ],
   "dailyModelTokens": [
@@ -466,35 +466,35 @@
     {
       "date": "2025-12-31",
       "tokensByModel": {
-        "claude-opus-4-5-20251101": 707431,
-        "claude-sonnet-4-5-20250929": 2636
+        "claude-opus-4-5-20251101": 784754,
+        "glm-4.7": 2068656
       }
     }
   ],
   "modelUsage": {
     "claude-opus-4-5-20251101": {
-      "inputTokens": 3894941,
-      "outputTokens": 6273163,
-      "cacheReadInputTokens": 2643725032,
-      "cacheCreationInputTokens": 152464570,
+      "inputTokens": 3881424,
+      "outputTokens": 6364003,
+      "cacheReadInputTokens": 2647255421,
+      "cacheCreationInputTokens": 151350006,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
     },
     "glm-4.7": {
-      "inputTokens": 40458277,
-      "outputTokens": 1504204,
-      "cacheReadInputTokens": 452365289,
+      "inputTokens": 42416156,
+      "outputTokens": 1614981,
+      "cacheReadInputTokens": 485142706,
       "cacheCreationInputTokens": 0,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
     },
     "claude-sonnet-4-5-20250929": {
-      "inputTokens": 100711,
-      "outputTokens": 384327,
-      "cacheReadInputTokens": 85131831,
-      "cacheCreationInputTokens": 6076650,
+      "inputTokens": 98936,
+      "outputTokens": 383466,
+      "cacheReadInputTokens": 84637115,
+      "cacheCreationInputTokens": 5925426,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0
@@ -509,8 +509,8 @@
       "contextWindow": 0
     }
   },
-  "totalSessions": 1194,
-  "totalMessages": 123831,
+  "totalSessions": 1157,
+  "totalMessages": 123955,
   "longestSession": {
     "sessionId": "861ace98-c681-4544-8bdb-aa0de1633674",
     "duration": 255742017,
@@ -522,21 +522,21 @@
     "0": 7,
     "6": 32,
     "7": 50,
-    "8": 153,
-    "9": 60,
-    "10": 28,
+    "8": 144,
+    "9": 47,
+    "10": 29,
     "11": 8,
-    "12": 40,
-    "13": 72,
-    "14": 20,
-    "15": 29,
-    "16": 15,
-    "17": 34,
-    "18": 21,
+    "12": 19,
+    "13": 55,
+    "14": 21,
+    "15": 31,
+    "16": 22,
+    "17": 39,
+    "18": 23,
     "19": 46,
     "20": 100,
     "21": 172,
-    "22": 245,
-    "23": 62
+    "22": 246,
+    "23": 66
   }
 }
