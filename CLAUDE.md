@@ -295,3 +295,29 @@ CLAUDE.md            → AI 操作指南
 ## 🔧 MCP 工具
 
 需要代码生成、配置步骤或库文档时，自动使用 Context7 MCP 工具获取最新文档。
+
+
+---
+
+## AI 协作生态 (AI Workflow Ecosystem)
+
+本项目采用了 **"文档驱动开发 (Spec-Driven Development)"** 的 AI 协作模式。
+
+## 角色指引
+
+| Workflow/Command | 角色 | 职责 | 输入 | 输出 |
+|----------|-----|------|------|------|
+| **`/ui-spec`** | **Technical PM** | 逆向分析代码，提取逻辑 | 代码文件 / 截图 | `docs/ui/specs/xxx_spec.md` |
+| **`/feat-discuss`** | **Tech Lead** | 澄清需求，同步文档 | 用户讨论 | 更新 `xxx_spec.md` |
+| **`/ui-redesign`** | **Lead Designer** | 基于逻辑文档进行视觉重塑 | Spec 文档 + 截图 | 设计图 + `implementation_plan.md` |
+
+### 最佳实践循环
+1.  **理解现状**: 使用 `/ui-spec` 扫描现有代码，生成基础 Spec。
+2.  **讨论需求**: 使用 `/feat-discuss` 讨论新想法，AI 会自动更新 Spec。
+3.  **视觉落地**: 使用 `/ui-redesign` 读取最新的 Spec，生成既美观又符合逻辑的设计。
+
+### 命名规范 (Naming Convention)
+为了支持自动化分析，Spec 文档应与截图文件保持名称一致：
+- 截图: `{base_name}.png` (例如: `ios_main_page.png`)
+- Spec: `{base_name}_spec.md` (例如: `main_page_spec.md`)
+- 映射关系维护在 `docs/ui/UI_SHOWCASE.md`。
