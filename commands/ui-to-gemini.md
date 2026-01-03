@@ -1,3 +1,8 @@
+---
+description: UI 截图转 Gemini 素材
+
+---
+
 # UI 截图转 Gemini 素材
 
 ## 目标

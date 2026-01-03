@@ -1,3 +1,8 @@
+---
+description: CLAUDE.md生成
+
+---
+
 # CLAUDE.md生成
 
 ## 核心目标

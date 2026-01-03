@@ -1,3 +1,8 @@
+---
+description: screen - 截屏辅助命令
+
+---
+
 # screen - 截屏辅助命令
 
 ## 目标
