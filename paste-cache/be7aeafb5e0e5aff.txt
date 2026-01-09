@@ -1,0 +1,53 @@
+
+Got dependencies!
+16 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib/main.dart on macOS in debug mode...
+Running pod install...
+Building macOS application...
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:260367:38: warning: implicit conversion loses integer precision: 'i64' (aka 'long long') to 'int' [-Wshorten-64-to-32]
+ 260367 |     sqlite3_result_blob(pCtx, pBlob, nBlob, sqlite3_free);
+        |     ~~~~~~~~~~~~~~~~~~~              ^~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:262589:19: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 262589 |         is = zCsr - (unsigned char*)pText;
+        |            ~ ~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:262596:21: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 262596 |           is = zCsr - (unsigned char*)pText;
+        |              ~ ~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:262646:17: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 262646 |       ie = zCsr - (unsigned char*)pText;
+        |          ~ ~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:262650:37: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 262650 |     rc = xToken(pCtx, 0, aFold, zOut-aFold, is, ie);
+        |          ~~~~~~                 ~~~~^~~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:263477:24: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 263477 |       aStart[ii] = zIn - (const unsigned char*)pText;
+        |                  ~ ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:263499:19: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 263499 |       iNext = zIn - (const unsigned char*)pText;
+        |             ~ ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:263509:36: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+ 263509 |     rc = xToken(pCtx, 0, aBuf, zOut-aBuf, aStart[0], iNext);
+        |          ~~~~~~                ~~~~^~~~~
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:265174:18: warning: ambiguous expansion of macro 'MIN' [-Wambiguous-macro]
+ 265174 |       int nCmp = MIN(nTerm, pCsr->nLeTerm);
+        |                  ^
+In module 'Darwin' imported from /Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:27488:
+  215 | #define MIN(a, b) (((a)<(b))?(a):(b))
+      |         ^
+ 15393 | # define MIN(A,B) ((A)<(B)?(A):(B))
+       |          ^
+/Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:265248:20: warning: ambiguous expansion of macro 'MIN' [-Wambiguous-macro]
+ 265248 |         int nCmp = MIN(nTerm, pCsr->nLeTerm);
+        |                    ^
+In module 'Darwin' imported from /Users/zhanglingxiao/LittleTree_Projects/flutter/flametree_rss_reader/macos/Pods/sqlite3/sqlite-src-3510100/sqlite3.c:27488:
+  215 | #define MIN(a, b) (((a)<(b))?(a):(b))
+      |         ^
+ 15393 | # define MIN(A,B) ((A)<(B)?(A):(B))
+       |          ^
+182 warnings generated.
+✓ Built build/macos/Build/Products/Debug/flametree_rss_reader.app
+2026-01-09 11:32:38.788 flametree_rss_reader[31936:21015932] Running with merged UI and platform thread. Experimental.
+Failed to foreground app; open returned 1
+Debug service listening on ws://127.0.0.1:65168/DXW1obBuY5c=/ws
+Syncing files to device macOS...

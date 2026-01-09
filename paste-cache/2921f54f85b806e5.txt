@@ -1,0 +1,85 @@
+======== Exception caught by animation library =====================================================
+The following assertion was thrown while notifying status listeners for AnimationController:
+The Scrollbar's ScrollController has no ScrollPosition attached.
+
+A Scrollbar cannot be painted without a ScrollPosition. 
+
+The Scrollbar attempted to use the PrimaryScrollController. This ScrollController should be associated with the ScrollView that the Scrollbar is being applied to.
+If a ScrollController has not been provided, the PrimaryScrollController is used by default on mobile platforms for ScrollViews with an Axis.vertical scroll direction.
+To use the PrimaryScrollController explicitly, set ScrollView.primary to true on the Scrollable widget.
+
+When the exception was thrown, this was the stack: 
+#0      RawScrollbarState._debugCheckHasValidScrollPosition.<anonymous closure> (package:flutter/src/widgets/scrollbar.dart:1498:9)
+#1      RawScrollbarState._debugCheckHasValidScrollPosition (package:flutter/src/widgets/scrollbar.dart:1524:6)
+#2      RawScrollbarState._validateInteractions (package:flutter/src/widgets/scrollbar.dart:1467:14)
+#3      AnimationLocalStatusListenersMixin.notifyStatusListeners (package:flutter/src/animation/listener_helpers.dart:242:19)
+#4      AnimationController._checkStatusChanged (package:flutter/src/animation/animation_controller.dart:941:7)
+#5      AnimationController._startSimulation (package:flutter/src/animation/animation_controller.dart:874:5)
+#6      AnimationController._animateToInternal (package:flutter/src/animation/animation_controller.dart:687:12)
+#7      AnimationController.forward (package:flutter/src/animation/animation_controller.dart:484:12)
+#8      RawScrollbarState._handleScrollNotification (package:flutter/src/widgets/scrollbar.dart:1965:37)
+#9      _NotificationElement.onNotification (package:flutter/src/widgets/notification_listener.dart:135:38)
+#10     _NotificationNode.dispatchNotification (package:flutter/src/widgets/framework.dart:3495:18)
+#11     _NotificationNode.dispatchNotification (package:flutter/src/widgets/framework.dart:3498:13)
+#12     _NotificationNode.dispatchNotification (package:flutter/src/widgets/framework.dart:3498:13)
+#13     _NotificationNode.dispatchNotification (package:flutter/src/widgets/framework.dart:3498:13)
+#14     Element.dispatchNotification (package:flutter/src/widgets/framework.dart:5255:24)
+#15     Notification.dispatch (package:flutter/src/widgets/notification_listener.dart:68:13)
+#16     DragScrollActivity.dispatchScrollUpdateNotification (package:flutter/src/widgets/scroll_activity.dart:507:7)
+#17     ScrollPosition.didUpdateScrollPositionBy (package:flutter/src/widgets/scroll_position.dart:1047:15)
+#18     ScrollPosition.setPixels (package:flutter/src/widgets/scroll_position.dart:393:9)
+#19     ScrollPositionWithSingleContext.setPixels (package:flutter/src/widgets/scroll_position_with_single_context.dart:87:18)
+#20     ScrollPositionWithSingleContext.applyUserOffset (package:flutter/src/widgets/scroll_position_with_single_context.dart:131:5)
+#21     ScrollDragController.update (package:flutter/src/widgets/scroll_activity.dart:415:14)
+#22     ScrollableState._handleDragUpdate (package:flutter/src/widgets/scrollable.dart:884:12)
+#23     DragGestureRecognizer._checkUpdate.<anonymous closure> (package:flutter/src/gestures/monodrag.dart:871:55)
+#24     GestureRecognizer.invokeCallback (package:flutter/src/gestures/recognizer.dart:345:24)
+#25     DragGestureRecognizer._checkUpdate (package:flutter/src/gestures/monodrag.dart:871:7)
+#26     DragGestureRecognizer.handleEvent (package:flutter/src/gestures/monodrag.dart:713:11)
+#27     PointerRouter._dispatch (package:flutter/src/gestures/pointer_router.dart:97:12)
+#28     PointerRouter._dispatchEventToRoutes.<anonymous closure> (package:flutter/src/gestures/pointer_router.dart:142:9)
+#29     _LinkedHashMapMixin.forEach (dart:_compact_hash:765:13)
+#30     PointerRouter._dispatchEventToRoutes (package:flutter/src/gestures/pointer_router.dart:140:18)
+#31     PointerRouter.route (package:flutter/src/gestures/pointer_router.dart:130:7)
+#32     GestureBinding.handleEvent (package:flutter/src/gestures/binding.dart:528:19)
+#33     GestureBinding.dispatchEvent (package:flutter/src/gestures/binding.dart:498:22)
+#34     RendererBinding.dispatchEvent (package:flutter/src/rendering/binding.dart:473:11)
+#35     GestureBinding._handlePointerEventImmediately (package:flutter/src/gestures/binding.dart:437:7)
+#36     GestureBinding.handlePointerEvent (package:flutter/src/gestures/binding.dart:394:5)
+#37     GestureBinding._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:341:7)
+#38     GestureBinding._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:308:9)
+#39     _invoke1 (dart:ui/hooks.dart:372:13)
+#40     PlatformDispatcher._dispatchPointerDataPacket (dart:ui/platform_dispatcher.dart:467:7)
+#41     _dispatchPointerDataPacket (dart:ui/hooks.dart:307:31)
+The AnimationController notifying status listeners was: AnimationController#1b41c(▶ 0.389)
+====================================================================================================
+
+======== Exception caught by animation library =====================================================
+The following assertion was thrown while notifying status listeners for AnimationController:
+The Scrollbar's ScrollController has no ScrollPosition attached.
+
+A Scrollbar cannot be painted without a ScrollPosition. 
+
+The Scrollbar attempted to use the PrimaryScrollController. This ScrollController should be associated with the ScrollView that the Scrollbar is being applied to.
+If a ScrollController has not been provided, the PrimaryScrollController is used by default on mobile platforms for ScrollViews with an Axis.vertical scroll direction.
+To use the PrimaryScrollController explicitly, set ScrollView.primary to true on the Scrollable widget.
+
+When the exception was thrown, this was the stack: 
+#0      RawScrollbarState._debugCheckHasValidScrollPosition.<anonymous closure> (package:flutter/src/widgets/scrollbar.dart:1498:9)
+#1      RawScrollbarState._debugCheckHasValidScrollPosition (package:flutter/src/widgets/scrollbar.dart:1524:6)
+#2      RawScrollbarState._validateInteractions (package:flutter/src/widgets/scrollbar.dart:1467:14)
+#3      AnimationLocalStatusListenersMixin.notifyStatusListeners (package:flutter/src/animation/listener_helpers.dart:242:19)
+#4      AnimationController._checkStatusChanged (package:flutter/src/animation/animation_controller.dart:941:7)
+#5      AnimationController._tick (package:flutter/src/animation/animation_controller.dart:958:5)
+#6      Ticker._tick (package:flutter/src/scheduler/ticker.dart:269:12)
+#7      SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#8      SchedulerBinding.handleBeginFrame.<anonymous closure> (package:flutter/src/scheduler/binding.dart:1265:11)
+#9      _LinkedHashMapMixin.forEach (dart:_compact_hash:765:13)
+#10     SchedulerBinding.handleBeginFrame (package:flutter/src/scheduler/binding.dart:1263:17)
+#11     SchedulerBinding._handleBeginFrame (package:flutter/src/scheduler/binding.dart:1179:5)
+#12     _invoke1 (dart:ui/hooks.dart:372:13)
+#13     PlatformDispatcher._beginFrame (dart:ui/platform_dispatcher.dart:426:5)
+#14     _beginFrame (dart:ui/hooks.dart:317:31)
+The AnimationController notifying status listeners was: AnimationController#1b41c(⏭ 1.000; paused)
+====================================================================================================
+[DEBUG] D 11:38:49 [ArticlesVie
