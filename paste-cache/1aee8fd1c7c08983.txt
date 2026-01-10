@@ -1,0 +1,17 @@
+.top:60443/rest/getStarred2?u=littletree&t=99e49e0c4049dbe6f1797d8f3e3f48fd&s=1768031348043&v=1.16.1&c=lt_music&f=json
+[HomeViewModel] I 15:49:09 HomeViewModel 主页数据加载完成
+[GoRouter] going to /downloads
+[ErrorHandler] E 15:49:09 ErrorHandler 全局错误: A RenderFlex overflowed by 132 pixels on the bottom. | {traceId: null, category: unknown, severity: medium, context: Flutter渲染错误, metadata: {library: rendering library, context: during layout, informationCollector: Closure: () => List<DiagnosticsNode>}, timestamp: 2026-01-10T15:49:09.806093}
+               A RenderFlex overflowed by 132 pixels on the bottom.
+[ErrorHandler] E 15:49:09 ErrorHandler 全局错误: Build scheduled during frame.
+While the widget tree was being built, laid out, and painted, a new frame was scheduled to rebuild the widget tree.
+This might be because setState() was called from a layout or paint callback. If a change is needed to the widget tree, it should be applied as the tree is being built. Scheduling a change for the subsequent frame instead results in an interface that lags behind by one frame. If this was done to make your build dependent on a size measured at layout time, consider using a LayoutBuilder, CustomSingleChildLayout, or CustomMultiChildLayout. If, on the other hand, the one frame delay is the desired effect, for example because this is an animation, consider scheduling the frame in a post-frame callback using SchedulerBinding.addPostFrameCallback or using an AnimationController to trigger the animation. | {traceId: null, category: unknown, severity: medium, context: 平台错误, metadata: null, timestamp: 2026-01-10T15:49:09.812345}
+               Build scheduled during frame.
+While the widget tree was being built, laid out, and painted, a new frame was scheduled to rebuild...
+               #0      WidgetsBinding._handleBuildScheduled.<anonymous closure> (package:flutter/src/widgets/binding.dart:1126:9)
+               #1      WidgetsBinding._handleBuildScheduled (package:flutter/src/widgets/binding.dart:1149:6)
+               #2      BuildOwner.scheduleBuildFor (package:flutter/src/widgets/framework.dart:2987:24)
+               #3      Element.markNeedsBuild (package:flutter/src/widgets/framework.dart:5393:12)
+               #4      State.setState (package:flutter/src/widgets/framework.dart:1219:15)
+               #5      _ErrorBoundaryState._handleError (package:lt_music/core/widgets/error_boundary.dart:52:5)
+               #6      _ErrorCatcherState._setupErrorListener.<anonymous closure> (package:lt_music/core/widgets/error_boundary.dart:217:23)

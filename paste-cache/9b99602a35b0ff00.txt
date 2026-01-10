@@ -1,0 +1,38 @@
+[HomeViewModel] E 14:47:57 HomeViewModel 主页数据加载失败: type 'Track' is not a subtype of type 'Map<String, dynamic>' in type cast
+[HomeViewModel] I 14:47:57 HomeViewModel 初始化主页数据
+[MusicLibraryDataSource] D 14:47:57 MusicLibraryDataSource 获取随机歌曲: size=50, genre=null
+[MusicLibraryDataSource] D 14:47:57 MusicLibraryDataSource 获取收藏内容
+[MusicLibraryDataSource] D 14:47:57 MusicLibraryDataSource 获取专辑列表: type=newest, size=20, offset=0
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getRandomSongs?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&size=50
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getPlaylists?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getStarred2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getAlbumList2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&type=newest&size=20&offset=0
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getPlaylists?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getRandomSongs?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&size=50
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getStarred2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[HomeViewModel] E 14:47:57 HomeViewModel 主页数据加载失败: type 'Track' is not a subtype of type 'Map<String, dynamic>' in type cast
+[HomeViewModel] I 14:47:57 HomeViewModel 初始化主页数据
+[MusicLibraryDataSource] D 14:47:57 MusicLibraryDataSource 获取随机歌曲: size=50, genre=null
+[MusicLibraryDataSource] D 14:47:57 MusicLibraryDataSource 获取收藏内容
+[MusicLibraryDataSource] D 14:47:57 MusicLibraryDataSource 获取专辑列表: type=newest, size=20, offset=0
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getRandomSongs?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&size=50
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getPlaylists?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getStarred2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:47:57 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getAlbumList2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&type=newest&size=20&offset=0
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getPlaylists?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getRandomSongs?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&size=50
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getAlbumList2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&type=newest&size=20&offset=0
+[ApiClientCore] D 14:47:57 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getAlbumList2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json&type=newest&size=20&offset=0
+Application finished.
+[ApiClientCore] D 14:47:58 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getStarred2?u=littletree&t=e6a9a7674c4d4437531ed82c2b70c731&s=1768027666808&v=1.16.1&c=lt_music&f=json
+[HomeViewModel] E 14:47:58 HomeViewModel 主页数据加载失败: type 'Track' is not a subtype of type 'Map<String, dynamic>' in type cast
+[HomeViewModel] I 14:47:58 HomeViewModel 初始化主页数据
+[MusicLibraryDataSource] D 14:47:58 MusicLibraryDataSource 获取随机歌曲: size=50, genre=null
+[MusicLibraryDataSource] D 14:47:58 MusicLibraryDataSource 获取收藏内容
+[MusicLibraryDataSource] D 14:47:58 MusicLibraryDataSource 获取专辑列表: type=newest, size=20, offset=0
+[ApiClientCore] null
+[ApiClientCore] null
+[ApiClientCore] null
+[ApiClientCore] null
+[ApiClientCore] null
+[ApiClientCore] null
