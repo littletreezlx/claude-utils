@@ -1,0 +1,18 @@
+ D 14:26:12 Repository 开始执行仓库操作
+[MusicLibraryDataSource] D 14:26:12 MusicLibraryDataSource 获取专辑列表: type=newest, size=20, offset=0
+[ApiClientCore] D 14:26:12 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getRandomSongs?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json&size=50
+[ApiClientCore] D 14:26:12 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getPlaylists?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:26:12 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getStarred2?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:26:12 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/getAlbumList2?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json&type=newest&size=20&offset=0
+[ApiClientCore] D 14:26:12 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getPlaylists?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] D 14:26:12 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getAlbumList2?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json&type=newest&size=20&offset=0
+[ApiErrorHandler] W 14:26:12 ApiErrorHandler 不再重试 | {operation: getAlbumList, attempts: 1, error: type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>?' in type cast}
+[ApiErrorHandler] E 14:26:12 ApiErrorHandler 处理未知错误: Exception: type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>?' in type cast
+[Repository] E 14:26:12 Repository 仓库操作失败
+             Exception: 操作失败: Exception: type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>?' in type cast
+[HomeViewModel] W 14:26:12 HomeViewModel 加载最新专辑失败: 获取专辑列表失败
+[ApiClientCore] D 14:26:12 ApiClientCore 响应: 200 https://navidrome.flametreehome.top:60443/rest/getRandomSongs?u=littletree&t=a574fd2ca0f864bfb3a3b188728fa1c6&s=1768026362429&v=1.16.1&c=lt_music&f=json&size=50
+[ApiErrorHandler] W 14:26:12 ApiErrorHandler 不再重试 | {operation: getRandomSongs, attempts: 1, error: type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>?' in type cast}
+[ApiErrorHandler] E 14:26:12 ApiErrorHandler 处理未知错误: Exception: type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>?' in type cast
+[HomeViewModel] W 14:26:12 HomeViewModel 加载随机歌曲失败: 操作失败: Exception: type '_Map<String, dynamic>' is not a subtype of type 'List<dynamic>?' in type cast
+Application finished.

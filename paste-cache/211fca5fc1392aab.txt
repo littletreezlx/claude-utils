@@ -1,0 +1,34 @@
+# Role: UI Polisher
+# Task: Remove "Checkmark" & Enhance "Glow Effect"
+# Context: The user feels the checkmark icon is visual noise. We want to rely purely on Border and Background Color to indicate the active/selected state.
+
+## 1. REMOVE the Selection Icon
+- **Action**: Delete the `Positioned` widget containing the `Icon(Icons.check_circle)` from the Card stack.
+- **Result**: The Card should now only contain the centered text (and optional background decoration if any). No badges.
+
+## 2. Enhance the "Active State" Visuals (The Spotlight)
+Since we removed the icon, the Background and Border must do all the heavy lifting to show "I am selected".
+
+**Update the `AnimatedContainer` decoration logic:**
+
+- **When `isActive` (Selected/Shuffling current target):**
+  - **Background**: `AppColors.primary.withOpacity(0.15)` (A distinct warm tint, visible but readable).
+  - **Border**: `Border.all(color: AppColors.primary, width: 3.0)` (Thicker, solid border to act as the "cursor").
+  - **Shadow**: Add a "Glow" effect:
+    `BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 16, spreadRadius: 2, offset: Offset(0, 4))`
+  - **Scale**: Optional - Scale up slightly to `1.02` to pop out.
+
+- **When `!isActive` (Normal):**
+  - **Background**: `Colors.white`.
+  - **Border**: `Border.all(color: Colors.transparent, width: 0)` (Or preserve width:3 but make it transparent to prevent layout jitter).
+  - **Shadow**: `AppShadows.cardDefault` (The subtle resting shadow).
+  - **Scale**: `1.0`.
+
+## 3. Typography Update
+- **Active Text**: `color: AppColors.primary`, `fontWeight: FontWeight.w700`.
+- **Inactive Text**: `color: AppColors.textPrimary`, `fontWeight: FontWeight.w600`.
+
+## Summary
+- No checkmarks.
+- The "Winner" is indicated by a **Thick Orange Border** + **Orange Tint Background** + **Outer Glow**.
+- This applies to both the shuffling animation state and the final result state.

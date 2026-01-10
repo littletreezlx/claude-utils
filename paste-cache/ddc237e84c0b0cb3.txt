@@ -1,0 +1,213 @@
+Launching lib/main.dart on macOS in debug mode...
+Building macOS application...
+✓ Built build/macos/Build/Products/Debug/lt_music.app
+2026-01-10 13:47:25.232 lt_music[21645:2259707] Running with merged UI and platform thread. Experimental.
+Failed to foreground app; open returned 1
+Debug service listening on ws://127.0.0.1:60343/B8PrzouKX0o=/ws
+Syncing files to device macOS...
+[Trace] D 13:47:26 Trace 开始追踪: 应用启动 | {traceId: 19ba671fc80-a671fe1b}
+[ErrorHandler] I 13:47:26 ErrorHandler 全局错误处理器已初始化 | {traceId: 19ba671fc80-a671fe1b, enableGlobalHandling: true, enableCrashReporting: false}
+[Main] I 13:47:26 Main LT Music App启动 | {traceId: 19ba671fc80-a671fe1b, version: 1.0.0, platform: Flutter}
+[UserAction] I 13:47:26 UserAction 用户操作: 应用启动 | {action: 应用启动, traceId: 19ba671fc80-a671fe1b}
+[Main] D 13:47:26 Main 开始执行: 依赖注入初始化 | {traceId: 19ba671fc80-a671fe1b}
+[DI] I 13:47:26 DI 开始初始化依赖注入
+[DI] D 13:47:26 DI DI模块注册完成: AppConfig
+[DI] D 13:47:26 DI DI模块注册完成: GlobalInfrastructure
+[DI] D 13:47:26 DI DI模块注册完成: SettingsService
+[DI] D 13:47:26 DI DI模块注册完成: ThemeService
+[DI] D 13:47:26 DI DI模块注册完成: AuthService
+[DI] D 13:47:26 DI DI模块注册完成: AudioService
+[DI] D 13:47:26 DI DI模块注册完成: CacheService
+[DI] D 13:47:26 DI DI模块注册完成: SearchHistoryService
+[DI] D 13:47:26 DI DI模块注册完成: DownloadService
+[DI] D 13:47:26 DI DI模块注册完成: OfflineService
+[DI] D 13:47:26 DI DI模块注册完成: FavoritesService
+[DI] D 13:47:26 DI DI模块注册完成: LyricsService
+[ApiClientCore] D 13:47:26 ApiClientCore API客户端核心初始化完成
+[ApiClient] I 13:47:26 ApiClient API客户端初始化完成（使用模块化架构）
+[DI] D 13:47:26 DI DI模块注册完成: ApiClient
+[DI] D 13:47:26 DI DI模块注册完成: DatabaseManager
+[DI] D 13:47:26 DI DI模块注册完成: CacheDataSource
+[DI] D 13:47:26 DI DI模块注册完成: LocalMusicDataSource
+[DI] D 13:47:26 DI DI模块注册完成: RemoteDataSources
+[DI] D 13:47:26 DI DI模块注册完成: Repositories
+[DI] D 13:47:26 DI DI模块注册完成: PresentationLayer
+[DI] D 13:47:26 DI DI模块注册完成: AudioServiceInit
+[DI] D 13:47:26 DI DI模块注册完成: DownloadServiceInit
+[DI] D 13:47:26 DI DI模块注册完成: OfflineServiceInit
+[DI] D 13:47:26 DI DI模块注册完成: FavoritesServiceInit
+[DI] D 13:47:26 DI DI模块注册完成: LyricsServiceInit
+[DI] D 13:47:26 DI DI模块注册完成: GlobalHandlersInit
+[AppConfig] I 13:47:26 AppConfig 应用配置初始化完成
+[DI] D 13:47:26 DI DI模块初始化完成: AppConfig
+[INFO] I 13:47:26 No saved settings found, using defaults
+[DI] D 13:47:26 DI DI模块初始化完成: SettingsService
+[ThemeService] I 13:47:26 ThemeService 主题服务初始化成功
+[DI] D 13:47:26 DI DI模块初始化完成: ThemeService
+[CacheService] I 13:47:26 CacheService 初始化缓存服务
+[CacheStorageHandler] I 13:47:26 CacheStorageHandler 初始化缓存存储处理器
+[CacheStorageHandler] D 13:47:26 CacheStorageHandler 主要目录初始化完成 | {cache: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic, music: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/music, image: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/images, temp: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/temp}
+[CacheStorageHandler] W 13:47:26 CacheStorageHandler 备用目录初始化失败: Unsupported operation: getExternalStoragePath is not supported on this platform
+[CacheStorageHandler] I 13:47:26 CacheStorageHandler 缓存存储处理器初始化完成
+[CoreCacheManager] I 13:47:26 CoreCacheManager 初始化核心缓存管理器 | {type: music, directory: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/music}
+[CoreCacheManager] D 13:47:26 CoreCacheManager 扫描现有缓存完成 | {itemCount: 0, totalSize: 0B}
+[CoreCacheManager] I 13:47:26 CoreCacheManager 核心缓存管理器初始化完成
+[CoreCacheManager] I 13:47:26 CoreCacheManager 初始化核心缓存管理器 | {type: image, directory: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/images}
+[CoreCacheManager] D 13:47:26 CoreCacheManager 扫描现有缓存完成 | {itemCount: 0, totalSize: 0B}
+[CoreCacheManager] I 13:47:26 CoreCacheManager 核心缓存管理器初始化完成
+[CoreCacheManager] I 13:47:26 CoreCacheManager 初始化核心缓存管理器 | {type: temp, directory: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/temp}
+[CoreCacheManager] D 13:47:26 CoreCacheManager 扫描现有缓存完成 | {itemCount: 0, totalSize: 0B}
+[CoreCacheManager] I 13:47:26 CoreCacheManager 核心缓存管理器初始化完成
+[CacheHealthMonitor] I 13:47:26 CacheHealthMonitor 初始化缓存健康监控器
+[CacheHealthMonitor] I 13:47:26 CacheHealthMonitor 缓存健康监控器初始化完成
+[CacheService] I 13:47:26 CacheService 缓存服务初始化完成
+[DI] D 13:47:26 DI DI模块初始化完成: CacheService
+[SearchHistoryService] D 13:47:26 SearchHistoryService 加载搜索历史: 0条
+[SearchHistoryService] I 13:47:26 SearchHistoryService 搜索历史服务初始化完成
+[DI] D 13:47:26 DI DI模块初始化完成: SearchHistoryService
+[DI] D 13:47:26 DI DI模块初始化完成: ApiClient
+[DatabaseManager] I 13:47:26 DatabaseManager 开始初始化数据库
+[DatabaseManager] I 13:47:26 DatabaseManager 数据库初始化完成: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Documents/lt_music.db
+[DI] D 13:47:26 DI DI模块初始化完成: DatabaseManager
+[DI] D 13:47:26 DI DI模块初始化完成: CacheDataSource
+[DI] I 13:47:26 DI 依赖注入初始化完成
+[Main] D 13:47:26 Main 执行完成: 依赖注入初始化 (78ms) | {traceId: 19ba671fc80-a671fe1b, duration: 78}
+[Main] D 13:47:26 Main 开始执行: 后期服务初始化 | {traceId: 19ba671fc80-a671fe1b}
+[DI] I 13:47:26 DI 初始化后期服务
+[LTAudioService] I 13:47:26 LTAudioService 初始化音频服务协调器
+[AudioPlaybackController] I 13:47:26 AudioPlaybackController 初始化音频播放控制器
+[AudioPlaybackController] I 13:47:26 AudioPlaybackController 音频播放控制器初始化完成
+[AudioStateManager] I 13:47:26 AudioStateManager 初始化音频状态管理器
+[AudioStateManager] I 13:47:26 AudioStateManager 音频状态管理器初始化完成
+[AudioQualityManager] I 13:47:26 AudioQualityManager 初始化音频质量管理器
+[AudioQualityManager] I 13:47:26 AudioQualityManager 音频质量管理器初始化完成
+[AudioErrorRecovery] I 13:47:26 AudioErrorRecovery 初始化音频错误恢复器
+[AudioErrorRecovery] I 13:47:26 AudioErrorRecovery 音频错误恢复器初始化完成
+[AudioPlaybackController] D 13:47:26 AudioPlaybackController 播放器监听器已设置
+[LTAudioService] D 13:47:26 LTAudioService 组件协作关系已建立
+[AudioStateManager] D 13:47:26 AudioStateManager 播放器状态已更新 | {playbackState: stopped, position: 0, duration: 0, isPlaying: null}
+[AudioStateManager] D 13:47:26 AudioStateManager 播放器状态已更新 | {playbackState: stopped, position: 0, duration: 0, isPlaying: null}
+[AudioStateManager] D 13:47:26 AudioStateManager 播放器状态已更新 | {playbackState: stopped, position: 0, duration: 0, isPlaying: null}
+[AudioPlaybackController] D 13:47:26 AudioPlaybackController 音量设置为: 100%
+[AudioStateManager] D 13:47:26 AudioStateManager 播放器状态已更新 | {playbackState: null, position: null, duration: null, isPlaying: null}
+[AudioStateManager] D 13:47:26 AudioStateManager 音量状态更新: 100%
+[AudioQualityManager] I 13:47:26 AudioQualityManager 应用音频质量设置 | {quality: high, bitRate: 320}
+[LTAudioService] D 13:47:26 LTAudioService 音频设置已应用: 音量=1.0
+[LTAudioService] I 13:47:26 LTAudioService 音频服务协调器初始化完成
+[DI] D 13:47:26 DI DI模块初始化完成: AudioServiceInit
+[DownloadService] D 13:47:26 DownloadService 从存储加载0个下载任务，0个已完成任务
+[DownloadService] I 13:47:26 DownloadService 历史下载任务加载完成
+[DownloadService] I 13:47:26 DownloadService 下载服务初始化完成，下载目录: /Users/zhanglingxiao/Library/Containers/com.example.ltMusic/Data/Library/Caches/com.example.ltMusic/downloads
+[DI] D 13:47:26 DI DI模块初始化完成: DownloadServiceInit
+[OfflineService] D 13:47:26 OfflineService 从存储中加载了 0 首离线音乐
+[OfflineService] I 13:47:26 OfflineService 离线音乐服务初始化完成，共加载 0 首离线音乐
+[DI] D 13:47:26 DI DI模块初始化完成: OfflineServiceInit
+[FavoritesService] I 13:47:26 FavoritesService 初始化收藏服务
+[FavoritesService] D 13:47:26 FavoritesService 加载本地收藏曲目: 0个
+[FavoritesService] D 13:47:26 FavoritesService 加载本地收藏专辑: 0个
+[FavoritesService] D 13:47:26 FavoritesService 开始同步服务器收藏数据
+[ApiErrorHandler] W 13:47:26 ApiErrorHandler 不再重试 | {operation: genericGet, attempts: 1, error: Exception: API请求构建器未配置}
+[ApiErrorHandler] E 13:47:26 ApiErrorHandler 处理未知错误: Exception: API请求构建器未配置
+[FavoritesService] I 13:47:26 FavoritesService 收藏服务初始化完成
+[DI] D 13:47:26 DI DI模块初始化完成: FavoritesServiceInit
+[LyricsService] I 13:47:26 LyricsService 初始化歌词服务
+[LyricsService] D 13:47:26 LyricsService 加载缓存歌词: 0个
+[LyricsService] I 13:47:26 LyricsService 歌词服务初始化完成，缓存歌词: 0个
+[DI] D 13:47:26 DI DI模块初始化完成: LyricsServiceInit
+[ErrorHandler] I 13:47:26 ErrorHandler 全局错误处理器已初始化 | {traceId: 19ba671fc80-a671fe1b, enableGlobalHandling: true, enableCrashReporting: true}
+[PerformanceMonitor] I 13:47:26 PerformanceMonitor 性能监控器已启动 | {traceId: 19ba671fc80-a671fe1b, memoryMonitoring: true, renderMonitoring: true}
+[MemoryManager] I 13:47:26 MemoryManager 内存管理器已初始化 | {traceId: 19ba671fc80-a671fe1b, imageCacheSize: 100, imageCacheMemory: 50.0MB, audioCacheSize: 20, audioCacheMemory: 100.0MB}
+[ConnectionManager] I 13:47:26 ConnectionManager 网络状态监听已启动
+[ConnectionManager] I 13:47:26 ConnectionManager 网络连接管理器初始化完成
+[PreloadManager] I 13:47:26 PreloadManager 预加载管理器已启动 | {traceId: 19ba671fc80-a671fe1b, maxConcurrent: 3, processInterval: 200ms, strategy: BehaviorBased}
+[NetworkOptimizer] I 13:47:26 NetworkOptimizer 网络优化器已初始化 | {traceId: 19ba671fc80-a671fe1b, cacheItems: 200, cacheMemory: 20.0MB, maxConcurrentPerHost: 5, globalMaxConcurrent: 10, retryStrategy: ExponentialBackoff, preloadEnabled: true}
+[UIOptimizer] I 13:47:26 UIOptimizer UI优化器已启动 | {traceId: 19ba671fc80-a671fe1b}
+[DI] D 13:47:26 DI DI模块初始化完成: GlobalHandlersInit
+[Main] D 13:47:26 Main 执行完成: 后期服务初始化 (68ms) | {traceId: 19ba671fc80-a671fe1b, duration: 68}
+[Main] I 13:47:26 Main 应用初始化完成，启动UI | {traceId: 19ba671fc80-a671fe1b}
+[ConnectionManager] D 13:47:26 ConnectionManager 网络连接检查完成 | {isConnected: true}
+[ErrorOverlay] I 13:47:26 ErrorOverlay 全局错误提示覆盖层已初始化 | {traceId: null}
+[GoRouter] Full paths for routes:
+├─/player (PlayerPage)
+├─ (ShellRoute)
+│ ├─/ (HomePage)
+│ ├─/search (SearchPage)
+│ ├─/library (SongListPage)
+│ ├─/downloads (DownloadsPage)
+│ ├─/offline (OfflineMusicPage)
+│ └─/settings (SettingsPage)
+├─/artist/:id (Scaffold)
+├─/album/:id (Scaffold)
+└─/playlist/:id (Scaffold)
+known full paths for route names:
+  player => /player
+  home => /
+  search => /search
+  library => /library
+  downloads => /downloads
+  offline => /offline
+  settings => /settings
+  artistDetail => /artist/:id
+  albumDetail => /album/:id
+  playlistDetail => /playlist/:id
+
+[GoRouter] setting initial location /
+[GoRouter] Using MaterialApp configuration
+[PlayerViewModel] D 13:47:27 PlayerViewModel 初始化播放器状态
+[GoRouter] Using MaterialApp configuration
+[HomeViewModel] I 13:47:27 HomeViewModel 初始化主页数据
+[MusicLibraryDataSource] D 13:47:27 MusicLibraryDataSource 获取随机歌曲: size=50, genre=null
+[MusicLibraryDataSource] D 13:47:27 MusicLibraryDataSource 获取收藏内容
+[Repository] D 13:47:27 Repository 开始执行仓库操作
+[MusicLibraryDataSource] D 13:47:27 MusicLibraryDataSource 获取专辑列表: type=newest, size=20, offset=0
+[ApiErrorHandler] W 13:47:27 ApiErrorHandler 不再重试 | {operation: getRandomSongs, attempts: 1, error: Exception: API请求构建器未配置}
+[ApiErrorHandler] E 13:47:27 ApiErrorHandler 处理未知错误: Exception: API请求构建器未配置
+[HomeViewModel] W 13:47:27 HomeViewModel 加载随机歌曲失败: 操作失败: Exception: API请求构建器未配置
+[ApiErrorHandler] W 13:47:27 ApiErrorHandler 不再重试 | {operation: genericGet, attempts: 1, error: Exception: API请求构建器未配置}
+[ApiErrorHandler] E 13:47:27 ApiErrorHandler 处理未知错误: Exception: API请求构建器未配置
+[HomeViewModel] W 13:47:27 HomeViewModel 加载播放列表失败: 操作失败: Exception: API请求构建器未配置
+[ApiErrorHandler] W 13:47:27 ApiErrorHandler 不再重试 | {operation: getStarred, attempts: 1, error: Exception: API请求构建器未配置}
+[ApiErrorHandler] E 13:47:27 ApiErrorHandler 处理未知错误: Exception: API请求构建器未配置
+[HomeViewModel] W 13:47:27 HomeViewModel 加载收藏内容失败: 操作失败: Exception: API请求构建器未配置
+[ApiErrorHandler] W 13:47:27 ApiErrorHandler 不再重试 | {operation: getAlbumList, attempts: 1, error: Exception: API请求构建器未配置}
+[ApiErrorHandler] E 13:47:27 ApiErrorHandler 处理未知错误: Exception: API请求构建器未配置
+[Repository] E 13:47:27 Repository 仓库操作失败
+             Exception: 操作失败: Exception: API请求构建器未配置
+[HomeViewModel] W 13:47:27 HomeViewModel 加载最新专辑失败: 获取专辑列表失败
+[HomeViewModel] I 13:47:27 HomeViewModel 主页数据加载完成
+[ErrorHandler] E 13:47:27 ErrorHandler 全局错误: A RenderFlex overflowed by 3.0 pixels on the bottom. | {traceId: null, category: unknown, severity: medium, context: Flutter渲染错误, metadata: {library: rendering library, context: during layout, informationCollector: Closure: () => List<DiagnosticsNode>}, timestamp: 2026-01-10T13:47:27.612598}
+               A RenderFlex overflowed by 3.0 pixels on the bottom.
+[App] I 13:47:27 App 使用硬编码信息自动登录
+[AuthViewModel] D 13:47:27 AuthViewModel 初始化认证状态
+[AuthViewModel] I 13:47:27 AuthViewModel 尝试自动登录
+[Repository] D 13:47:27 Repository 开始执行仓库操作
+[AuthRepository] I 13:47:27 AuthRepository 开始自动登录
+[Repository] D 13:47:27 Repository 开始执行仓库操作
+[AuthRepository] I 13:47:27 AuthRepository 使用硬编码配置登录: littletree@https://navidrome.flametreehome.top:60443
+[ApiRequestBuilder] D 13:47:27 ApiRequestBuilder 认证token生成完成
+[ApiRequestBuilder] I 13:47:27 ApiRequestBuilder API请求构建器配置完成: https://navidrome.flametreehome.top:60443
+[NavidromeApiHandler] I 13:47:27 NavidromeApiHandler Navidrome API处理器配置完成
+[ApiClient] I 13:47:27 ApiClient API客户端配置完成: https://navidrome.flametreehome.top:60443
+[ErrorOverlay] D 13:47:27 ErrorOverlay 显示错误提示 | {traceId: null, message: 发生未知错误，请稍后重试, type: snackBar, severity: medium}
+[ErrorHandler] I 13:47:27 ErrorHandler 错误已显示给用户 | {traceId: null, message: 发生未知错误，请稍后重试, severity: medium, category: unknown}
+[ErrorHandler] D 13:47:27 ErrorHandler 上报错误到远程服务 | {traceId: null, category: unknown, severity: medium, error: A RenderFlex overflowed by 3.0 pixels on the bottom.}
+[ApiClientCore] D 13:47:27 ApiClientCore 请求: GET https://navidrome.flametreehome.top:60443/rest/ping?u=littletree&t=ae9342045f1e59096de91656c2779251&s=1768024047639&v=1.16.1&c=lt_music&f=json
+[ApiClientCore] E 13:47:27 ApiClientCore 请求错误: The connection errored: Connection failed This indicates an error which most likely cannot be solved by the library. | {type: connectionError, statusCode: null, uri: https://navidrome.flametreehome.top:60443/rest/ping?u=littletree&t=ae9342045f1e59096de91656c2779251&s=1768024047639&v=1.16.1&c=lt_music&f=json}
+[AuthRepository] E 13:47:27 AuthRepository 服务器连接失败
+[Repository] E 13:47:27 Repository 仓库操作失败
+             Exception: 服务器连接失败: 网络连接失败，请检查网络设置
+[Repository] E 13:47:27 Repository 仓库操作失败
+             Exception: 登录失败
+[AuthViewModel] E 13:47:27 AuthViewModel 认证错误: 自动登录失败
+                AppError(code: UNKNOWN_ERROR, message: 自动登录失败, details: null)
+[PerformanceMonitor] W 13:47:27 PerformanceMonitor 帧渲染耗时严重超标 | {traceId: null, frameInterval: 112.87, threshold: 33.33}
+[ConnectionManager] D 13:47:27 ConnectionManager 系统网络状态变化 | {hasConnection: true, results: wifi}
+[PerformanceMonitor] W 13:47:28 PerformanceMonitor 帧渲染耗时严重超标 | {traceId: null, frameInterval: 585.63, threshold: 33.33}
+[PerformanceMonitor] W 13:47:28 PerformanceMonitor 帧渲染耗时严重超标 | {traceId: null, frameInterval: 66.63, threshold: 33.33}
+[PerformanceMonitor] D 13:47:28 PerformanceMonitor 帧渲染耗时偏高 | {traceId: null, frameInterval: 21.50, threshold: 16.67}
+[PerformanceMonitor] D 13:47:28 PerformanceMonitor 帧渲染耗时偏高 | {traceId: null, frameInterval: 16.78, threshold: 16.67}
+[PerformanceMonitor] D 13:47:28 PerformanceMonitor 帧渲染耗时偏高 | {traceId: null, frameInterval: 16.77, threshold: 16.67}
+[PerformanceMonitor] D 13:47:28 PerformanceMonitor 帧渲染耗时偏高 | {traceId: null, frameInterval: 16.86, threshold: 16.67}
+[PerformanceMonitor] D 13:47:28 PerformanceMonitor 帧渲染耗时偏高 | {traceId: null, frameInterval: 17.18, threshold: 16.67}
+[PerformanceMonitor] D 13:47:28 PerformanceMonitor 帧渲染耗时偏高 | {traceId: null, frameInterval: 21.11, threshold: 16.67}
+[PerformanceMonitor] W 13:47:29 PerformanceMonitor 帧渲染耗时严重超标 | {traceId: null, frameInterval: 916.36, threshold: 33.33}

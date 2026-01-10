@@ -1,0 +1,30 @@
+# Role: UI/UX Perfectionist
+# Context: Polishing the new macOS layout (Split View & Floating Dock).
+# Objective: Refine visual states to look "softer" and "premium".
+
+## 1. Management Page - Sidebar Refinement (Left Column)
+Refactor the `CategoryItem` widget's selected state.
+- **Current**: Border.all(color: primary, width: 2) -> **Too harsh.**
+- **New Design**:
+  - **Background**: `isActive ? AppColors.primary.withOpacity(0.12) : Colors.transparent`
+  - **Border**: None (Remove the border).
+  - **Text Style**: `isActive ? TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600) : TextStyle(color: AppColors.textSecondary)`
+  - **Shape**: Keep `RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r))`.
+  - **Animation**: Add a subtle `AnimatedContainer` (duration: 200ms) for the color change.
+
+## 2. Main Page - Card Typography & Spacing
+The text inside the option cards looks lost in the white space.
+- **Typography**: Increase option text font size to **24.sp** (was ~16.sp). Weight: `w600`.
+- **Layout**: 
+  - Ensure the text is visually centered.
+  - If possible, add a subtle `Icon(Icons.restaurant, size: 48.sp, color: Colors.orange.withOpacity(0.2))` above the text as a placeholder if no specific icon is provided, to fill the void.
+
+## 3. Navigation Dock (Bottom Bar)
+- **Active State**: Keep the white pill background.
+- **Inactive State**: Change icon color to `Color(0xFF8D6E63)` (Warm Grey) instead of standard grey, to match the warm theme better.
+- **Shadow**: Ensure the dock has a slightly stronger shadow to separate it from the content behind it:
+  - `BoxShadow(color: Color(0xFF8A6C4B).withOpacity(0.15), blurRadius: 30, offset: Offset(0, 10))`
+
+## 4. "Add" Button (Dashed Border)
+- Make the dashed border color slightly warmer: `Color(0xFFFFCCAA)` instead of plain grey.
+- Background: `Color(0xFFFFFBF0)` (Very light warm tint) to differentiate from the white active cards.

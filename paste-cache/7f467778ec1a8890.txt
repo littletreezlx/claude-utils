@@ -1,0 +1,12 @@
+GroupOperations] D 14:10:17 GroupOperations 开始幽灵行编辑模式
+2026-01-10 14:10:18.700 flame_tree[56670:2385643] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+[GroupOperations] D 14:10:19 GroupOperations 幽灵行编辑：创建分组 "sadas"
+[UseCase] D 14:10:19 UseCase [UseCase] 开始执行 | {executionId: CreateGroup_1768025419292, useCase: CreateGroup, input: Instance of 'CreateGroupParams'}
+[GroupOperations] D 14:10:19 GroupOperations 幽灵行编辑：创建分组 "sadas"
+[UseCase] D 14:10:19 UseCase [UseCase] 开始执行 | {executionId: CreateGroup_1768025419294, useCase: CreateGroup, input: Instance of 'CreateGroupParams'}
+[UseCase] W 14:10:19 UseCase [UseCase] 执行失败 | {executionId: CreateGroup_1768025419292, useCase: CreateGroup, success: false, duration: 16ms, error: 分组名称已存在}
+[GroupOperations] E 14:10:19 GroupOperations 创建分组失败
+                  AppError(code: BUSINESS_ERROR, message: 分组名称已存在, details: null)
+[UseCase] W 14:10:19 UseCase [UseCase] 执行失败 | {executionId: CreateGroup_1768025419294, useCase: CreateGroup, success: false, duration: 15ms, error: 分组名称已存在}
+[GroupOperations] E 14:10:19 GroupOperations 创建分组失败
+                  AppError(code: BUSINESS_ERROR, message: 分组名称已存在, details: null)
