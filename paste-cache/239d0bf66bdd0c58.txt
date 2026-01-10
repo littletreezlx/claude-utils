@@ -1,0 +1,105 @@
+**Phase 0: 设计验收评审 (Design Audit - Iteration 1)**
+
+你好，我是你的设计总监。
+
+看到这张新图，我必须要说：**这就对了！** 👏
+但这还不是满分。现在的感觉是从 "简陋的 MVP" 进化到了 "合格的 1.0 版本"。
+但我想要的是 **"精致的 2.0 艺术品"**。
+
+以下是我的毒辣点评和最后 5% 的打磨建议：
+
+### ✅ 做的很棒的地方 (The Wins)
+
+1. **虚线加号卡片 (`DashedAddCard`)**: 满分落地！虚线边框配合淡橙色背景，既保留了位置，又没有抢夺视觉重心。这就是我说的“呼吸感”。
+2. **色调统一**: 现在的背景色 (`#FFFBF9`) 和卡片色融合得很舒服，不再有生硬的切割感。
+3. **Chip 栏**: “今日抽签”的高亮状态比之前的实心色块舒服多了，描边风格更轻量。
+
+---
+
+### ⚠️ 仍需打磨的细节 (The "Ceramic" Polish)
+
+现在最大的问题是：**卡片看起来像“纸片”，而不是“陶瓷”。**
+它们太薄了，缺乏物理世界的重量感和光泽感。
+
+#### 1. 赋予卡片“陶瓷质感” (The Ceramic Shader)
+
+现在的卡片是纯白背景 (`#FFFFFF`)。在物理世界中，受光的陶瓷表面会有微弱的渐变。
+
+* **Fix**: 给卡片背景加一个极其微弱的线性渐变，模拟顶光。
+* **Shadow**: 现在的阴影太生硬。我们需要**“彩色弥散阴影”**。
+
+#### 2. Emoji 与文字的间距 (Typography Spacing)
+
+* **Issue**: 披萨 🍕 和 "吃披萨" 之间的距离稍微有点远，导致视觉上它们有点分离。
+* **Fix**: 将间距减少 `4.h`，让它们看起来是一个整体的 Icon。
+
+#### 3. 选中 Chip 的质感
+
+* **Issue**: “今日抽签”现在的背景是透明的？还是纯白的？看起来有点单薄。
+* **Fix**: 给选中的 Chip 一个极淡的**品牌色填充** (e.g., Orange 5% opacity)，让它看起来是被“按下去”或者是“充能”的状态。
+
+---
+
+### Phase 3: 注入灵魂的代码 (The Polish Code)
+
+请直接用这段代码替换你现有的 `GlassOptionCard` 装饰部分，实现**真正的陶瓷质感**。
+
+```dart
+// 修改 GlassOptionCard 的 Container Decoration
+Container(
+  decoration: BoxDecoration(
+    // 1. 基础白底
+    color: Colors.white,
+    // 2. 模拟微弱光照的渐变 (关键！)
+    gradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        Colors.white,              // 左上角高光
+        Color(0xFFFFF8F4),         // 右下角微暖阴影
+      ],
+    ),
+    borderRadius: BorderRadius.circular(20.r), // 保持大圆角
+    // 3. 双层阴影系统 (关键！)
+    boxShadow: [
+      // 层级 1: 暖色环境光 (扩散大，颜色浅)
+      BoxShadow(
+        color: Color(0xFFFF5500).withOpacity(0.08), // 品牌色阴影
+        blurRadius: 16,
+        offset: Offset(0, 8),
+        spreadRadius: -4,
+      ),
+      // 层级 2: 底部物理接触阴影 (深色，锐利)
+      BoxShadow(
+        color: Colors.black.withOpacity(0.03),
+        blurRadius: 2,
+        offset: Offset(0, 2),
+      ),
+    ],
+    // 4. 极细的高光内描边 (提升精致度)
+    border: Border.all(
+      color: Colors.white.withOpacity(0.6),
+      width: 1.5,
+    ),
+  ),
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text(
+        icon, 
+        style: TextStyle(fontSize: 32.sp) // Emoji
+      ),
+      SizedBox(height: 6.h), // 收紧间距，之前可能是 10.h+
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 14.sp,
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w500, // 稍微加粗一点
+        ),
+      ),
+    ],
+  ),
+)
+
+```
