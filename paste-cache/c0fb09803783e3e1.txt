@@ -1,0 +1,125 @@
+/volume1/video/Media_Library/电影 ⌚ 14:56:31
+$ autosub .
+2026-01-11 14:56:48,731 - auto_sub.LoggingManager - INFO - 日志系统初始化完成 - 级别: INFO, 控制台: True, 文件: True
+2026-01-11 14:56:48,738 - auto_sub.AutoSubCLI - INFO - 日志系统初始化完成 - 级别: INFO
+2026-01-11 14:56:48,739 - auto_sub.AutoSubCLI - INFO - auto_sub 启动 - 版本: 0.2.0
+2026-01-11 14:56:48,739 - auto_sub.AutoSubCLI - INFO - 参数 - 输入: /volume1/video/Media_Library/电影
+2026-01-11 14:56:48,739 - auto_sub.AutoSubCLI - INFO - 选项 - 嵌入: False, 重命名: False, 强制: False
+2026-01-11 14:56:48,739 - auto_sub.AutoSubCLI - INFO - 验证 FFmpeg 环境...
+2026-01-11 14:56:50,343 - auto_sub.AutoSubCLI - INFO - FFmpeg 环境验证通过
+2026-01-11 14:56:50,343 - auto_sub.AutoSubCLI - INFO - 处理目录: /volume1/video/Media_Library/电影
+2026-01-11 14:56:50,410 - MediaFileManager - INFO - 在目录 '/volume1/video/Media_Library/电影' 中找到 13 个视频文件
+2026-01-11 14:56:50,410 - auto_sub.AutoSubCLI - INFO - 找到 13 个视频文件
+2026-01-11 14:56:50,743 - SubtitleExtractor - INFO - 运行平台: Synology NAS | MKVToolNix 可用: 否 | 优先使用: FFmpeg
+2026-01-11 14:56:51,858 - auto_sub.DeepSeekTranslator - INFO - DeepSeek 翻译器初始化 | 模型=deepseek-chat, 批大小=20, 上下文窗口=5, 并行=启用
+2026-01-11 14:56:51,858 - auto_sub.SubtitleTranslator - INFO - 字幕翻译器初始化完成 - 模型: deepseek-chat, 批大小: 20, 并行: 启用
+2026-01-11 14:56:51,882 - SubtitleEmbedder - INFO - 字幕嵌入器初始化成功
+处理: 01.mkv:   0%|                                                                    | 0/13 [00:00<?, ?视频/s]2026-01-11 14:56:51,906 - auto_sub.VideoProcessor - INFO - 开始处理视频: 01.mkv
+2026-01-11 14:56:51,914 - auto_sub.SubtitleExtractionStep - INFO - 开始字幕提取流程
+2026-01-11 14:56:51,914 - auto_sub.SubtitleExtractionStep - INFO - 从视频中提取字幕...
+2026-01-11 14:56:51,915 - SubtitleExtractor - INFO - 开始提取字幕: 01.mkv
+2026-01-11 14:56:52,101 - SubtitleExtractor - INFO - 本地提取失败，尝试从 OpenSubtitles 下载...
+2026-01-11 14:56:52,101 - src.subtitles.opensubtitles - INFO - Trying OpenSubtitles fallback for: 01.mkv
+2026-01-11 14:57:07,326 - src.subtitles.opensubtitles - INFO - Found 50 subtitle(s) by query 'The Big Bad Fox And Other Tales [2017] COMPLETE'
+2026-01-11 14:57:07,326 - src.subtitles.opensubtitles - INFO - Best match: Pirates.of.the.Caribbean.2017.PROPER.HD-TS-ENG (526220 downloads)
+2026-01-11 14:57:39,650 - src.subtitles.opensubtitles - ERROR - Download failed: HTTPSConnectionPool(host='www.opensubtitles.com', port=443): Read timed out. (read timeout=30)
+2026-01-11 14:57:39,651 - SubtitleExtractor - WARNING - 所有提取器均无法提取字幕: 01.mkv
+2026-01-11 14:57:39,651 - auto_sub.SubtitleExtractionStep - WARNING - 标准提取失败，尝试提取所有字幕流
+2026-01-11 14:57:39,651 - SubtitleExtractor - INFO - 开始提取所有字幕: 01.mkv
+2026-01-11 14:57:39,651 - FFmpegExtractor - INFO - FFmpegExtractor: 开始从 '01.mkv' 提取所有可用文本字幕至目录 '/volume1/video/Media_Library/电影/The Big Bad Fox And Other Tales/The Big Bad Fox And Other Tales... [2017] COMPLETE 1080p BDRip x265 DTS-HD MA 5.1 Kira [SEV]'
+2026-01-11 14:57:39,686 - FFmpegExtractor - INFO - 跳过提取图像字幕流 #3 (格式: hdmv_pgs_subtitle)，FFmpeg无法直接转为SRT。
+2026-01-11 14:57:39,686 - FFmpegExtractor - INFO - 跳过提取图像字幕流 #4 (格式: hdmv_pgs_subtitle)，FFmpeg无法直接转为SRT。
+2026-01-11 14:57:39,687 - FFmpegExtractor - INFO - 跳过提取图像字幕流 #5 (格式: hdmv_pgs_subtitle)，FFmpeg无法直接转为SRT。
+2026-01-11 14:57:39,687 - FFmpegExtractor - INFO - 跳过提取图像字幕流 #6 (格式: hdmv_pgs_subtitle)，FFmpeg无法直接转为SRT。
+2026-01-11 14:57:39,687 - FFmpegExtractor - INFO - FFmpegExtractor: 未能从 '01.mkv' 提取任何可用文本字幕。
+2026-01-11 14:57:39,688 - SubtitleExtractor - WARNING - 未能提取任何字幕: 01.mkv
+2026-01-11 14:57:39,689 - auto_sub.VideoProcessor - ERROR - 无法提取字幕: 01.mkv
+处理: 01.mkv:   8%|████▌                                                       | 1/13 [00:47<09:33, 47.78s/视频]2026-01-11 14:57:39,689 - auto_sub.VideoProcessor - INFO - 开始处理视频: 01.mkv
+2026-01-11 14:57:39,690 - auto_sub.SubtitleExtractionStep - INFO - 开始字幕提取流程
+2026-01-11 14:57:39,690 - auto_sub.SubtitleExtractionStep - INFO - 从视频中提取字幕...
+2026-01-11 14:57:39,690 - SubtitleExtractor - INFO - 开始提取字幕: 01.mkv
+2026-01-11 14:57:39,791 - SubtitleExtractor - INFO - 本地提取失败，尝试从 OpenSubtitles 下载...
+2026-01-11 14:57:39,791 - src.subtitles.opensubtitles - INFO - Trying OpenSubtitles fallback for: 01.mkv
+2026-01-11 14:58:20,167 - src.subtitles.opensubtitles - INFO - Found 50 subtitle(s) by query 'Extras'
+2026-01-11 14:58:20,168 - src.subtitles.opensubtitles - INFO - Best match: E.T.The.Extra-Terrestrial.1982.720p.BluRay.X264-AMIABLE (54768 downloads)
+2026-01-11 14:58:26,911 - src.subtitles.opensubtitles - INFO - Downloaded subtitle: 01_origin.srt
+2026-01-11 14:58:26,914 - SubtitleExtractor - INFO - OpenSubtitles 下载成功: 01_origin.srt
+2026-01-11 14:58:29,930 - auto_sub.SubtitleExtractionStep - INFO - 检测到字幕语言: en
+2026-01-11 14:58:29,930 - auto_sub.TranslationStep - INFO - 字幕源语言: en, 目标语言: zh
+2026-01-11 14:58:29,931 - auto_sub.TranslationStep - INFO - 翻译字幕: 01_origin.srt -> zh
+2026-01-11 14:58:29,931 - auto_sub.SubtitleTranslator - INFO - 开始翻译字幕: 01_origin.srt
+2026-01-11 14:58:29,995 - auto_sub.SubtitleTranslator - INFO - 加载了 891 条字幕
+2026-01-11 14:58:30,000 - auto_sub.SubtitleTranslator - INFO - 准备翻译 891 条字幕 (en -> zh)
+2026-01-11 14:58:30,001 - auto_sub.DeepSeekTranslator - INFO - 翻译任务 | 文本数=891/891, 目标语言=zh, 批次数=45
+2026-01-11 14:58:30,001 - auto_sub.DeepSeekTranslator - INFO - 并行处理 | 批次=45, 并发=3
+2026-01-11 14:58:30,002 - auto_sub.ParallelBatchCoordinator - INFO - ➤ 并行协调器启动 | 批次=45, 文本数=891, 并发=3, 超时=180.0s
+                                                                                                               2026-01-11 14:58:43,801 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条                       ]
+                                                                                                               2026-01-11 14:58:43,803 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[2] 执行成功 | 文本数=20, 耗时=13.80ss
+2026-01-11 14:58:44,525 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:58:44,526 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[1] 执行成功 | 文本数=20, 耗时=14.52ss
+2026-01-11 14:58:45,689 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:58:45,711 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[0] 执行成功 | 文本数=20, 耗时=15.69ss
+2026-01-11 14:58:56,925 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:58:56,926 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[3] 执行成功 | 文本数=20, 耗时=26.92ss
+2026-01-11 14:58:57,292 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:58:57,293 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[4] 执行成功 | 文本数=20, 耗时=27.29ss
+2026-01-11 14:58:58,056 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:58:58,058 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[5] 执行成功 | 文本数=20, 耗时=28.06ss
+2026-01-11 14:59:08,584 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:08,585 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[6] 执行成功 | 文本数=20, 耗时=38.58ss
+2026-01-11 14:59:09,693 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:09,694 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[7] 执行成功 | 文本数=20, 耗时=39.69ss
+2026-01-11 14:59:10,525 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:10,527 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[8] 执行成功 | 文本数=20, 耗时=40.52ss
+2026-01-11 14:59:21,745 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:21,746 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[10] 执行成功 | 文本数=20, 耗时=51.74s
+2026-01-11 14:59:21,784 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:21,785 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[9] 执行成功 | 文本数=20, 耗时=51.78ss
+2026-01-11 14:59:22,552 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:22,553 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[11] 执行成功 | 文本数=20, 耗时=52.55s
+2026-01-11 14:59:34,458 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:34,459 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[12] 执行成功 | 文本数=20, 耗时=64.46s
+2026-01-11 14:59:34,653 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:34,654 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[13] 执行成功 | 文本数=20, 耗时=64.65s
+2026-01-11 14:59:35,458 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:35,459 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[14] 执行成功 | 文本数=20, 耗时=65.46s
+2026-01-11 14:59:47,739 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:47,740 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[15] 执行成功 | 文本数=20, 耗时=77.74s
+2026-01-11 14:59:51,502 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:51,503 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[17] 执行成功 | 文本数=20, 耗时=81.50s
+2026-01-11 14:59:51,917 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 14:59:51,918 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[16] 执行成功 | 文本数=20, 耗时=81.92s
+2026-01-11 15:00:01,050 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:01,051 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[18] 执行成功 | 文本数=20, 耗时=91.05s
+2026-01-11 15:00:03,686 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:03,687 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[19] 执行成功 | 文本数=20, 耗时=93.68s
+2026-01-11 15:00:06,605 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:06,607 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[20] 执行成功 | 文本数=20, 耗时=96.60s
+2026-01-11 15:00:13,541 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:13,542 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[21] 执行成功 | 文本数=20, 耗时=103.54s
+2026-01-11 15:00:16,940 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:16,941 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[22] 执行成功 | 文本数=20, 耗时=106.94s
+2026-01-11 15:00:20,042 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:20,043 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[23] 执行成功 | 文本数=20, 耗时=110.04s
+2026-01-11 15:00:30,442 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:30,444 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[24] 执行成功 | 文本数=20, 耗时=120.44s
+2026-01-11 15:00:33,058 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:33,060 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[25] 执行成功 | 文本数=20, 耗时=123.06s
+2026-01-11 15:00:33,133 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:33,134 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[26] 执行成功 | 文本数=20, 耗时=123.13s
+2026-01-11 15:00:43,386 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:43,387 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[27] 执行成功 | 文本数=20, 耗时=133.38s
+2026-01-11 15:00:44,249 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:44,250 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[28] 执行成功 | 文本数=20, 耗时=134.25s
+2026-01-11 15:00:46,123 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:46,125 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[29] 执行成功 | 文本数=20, 耗时=136.12s
+2026-01-11 15:00:55,007 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:55,008 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[30] 执行成功 | 文本数=20, 耗时=145.01s
+2026-01-11 15:00:57,428 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:00:57,429 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[31] 执行成功 | 文本数=20, 耗时=147.43s
+2026-01-11 15:01:00,685 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:01:00,686 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[32] 执行成功 | 文本数=20, 耗时=150.68s
+2026-01-11 15:01:08,492 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:01:08,494 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[33] 执行成功 | 文本数=20, 耗时=158.49s
+2026-01-11 15:01:09,454 - auto_sub.DeepSeekTranslator - INFO - 批次[0] 完成 | 翻译 20 条
+                                                                                                               2026-01-11 15:01:09,456 - auto_sub.ParallelBatchCoordinator - INFO - ✓ 批次[34] 执行成功 | 文本数=20, 耗时=159.45s

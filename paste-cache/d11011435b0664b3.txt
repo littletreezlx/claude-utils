@@ -1,0 +1,42 @@
+[07:16:17] INFO: [nodejs] 开始生成作者侧写
+    author_name: "caoz的梦呓"
+    articleCount: 10
+    hasExistingProfile: false
+    period: "2025-11-05 to 2025-12-31"
+nextjs  POST /api/follow/wechat/sources/5/profile/trigger?force=false 500 in 31520ms
+nextjs [Browser ERROR] /wechat [api-client-instance] API Error
+nextjs {
+nextjs   "message": "Request timeout after 30000ms",
+nextjs   "code": "TIMEOUT_ERROR",
+nextjs   "category": "system",
+nextjs   "requestId": "req-1768115777600-auuf5fz4p",
+nextjs   "statusCode": 500
+nextjs }
+nextjs [Browser ERROR] /wechat [useBaseAPI] POST请求失败 (异常捕获) {"url":"/api/follow/wechat/sources/5/profile/trigger?force=false","error":"Request timeout after 30000ms","errorType":"APIClientError"}
+nextjs [Browser DEBUG] /wechat [hooks-utils] [Hooks Debug] POST请求失败 {"url":"/api/follow/wechat/sources/5/profile/trigger?force=false","error":"Request timeout after 30000ms"}
+nextjs  POST /api/dev/browser-logs 200 in 78ms
+AI SDK Warning System: To turn off warning logging, set the AI_SDK_LOG_WARNINGS global to false.
+AI SDK Warning (deepseek.chat / deepseek-reasoner): The feature "responseFormat JSON schema" is used in a compatibility mode. JSON response schema is injected into the system message.
+python 07:17:20 [INFO] [FollowProfilingService] 作者画像生成成功: caoz的梦呓
+python 07:17:20 [INFO] [FollowProfilingService] 作者画像已创建: source_id=5
+python 07:17:20 [INFO] [FollowContentRepository] Entity updated successfully: 25, fields: ['is_profiled']
+python 07:17:20 [INFO] [FollowContentRepository] Entity updated successfully: 26, fields: ['is_profiled']
+python 07:17:20 [INFO] [FollowContentRepository] Entity updated successfully: 27, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 28, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 29, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 30, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 31, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 32, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 33, fields: ['is_profiled']
+python 07:17:21 [INFO] [FollowContentRepository] Entity updated successfully: 34, fields: ['is_profiled']
+python 07:17:21 [INFO] [request-middleware] ✅ POST /api/follow/wechat/sources/5/profile/trigger 200 (63416ms)
+[07:17:20] INFO: [nodejs] 作者侧写生成完成
+    author_name: "caoz的梦呓"
+    consistencyScore: 8
+    beliefsCount: 5
+[07:17:20] INFO: [nodejs] request completed
+    reqId: "req-2"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 63180.06933298707
