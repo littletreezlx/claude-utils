@@ -1,0 +1,123 @@
+作为你的设计总监，我必须非常诚实：**验收不通过。**
+
+虽然你可能调整了一些细节，但在**工程实现**和**响应式布局**这两个核心问题上，目前的版本仍然存在“致命伤”。我们不能把带着“黄黑斑马线”报错的界面交付给用户。
+
+请看我的**Phase 0 验收报告**，随后我会给出具体的**代码修复方案**。
+
+---
+
+### Phase 0: 辛辣验收 (The Reality Check)
+
+#### 1. 🚨 致命工程事故：溢出报错 (The Overflow)
+
+**证据**: 查看你上传的 `macos_offline_page.png`。
+**诊断**: 屏幕底部赫然出现了一条黄黑相间的警告条：**"BOTTOM OVERFLOWED BY 61 PIXELS"**。
+**原因**: 你在垂直布局 (`Column`) 中放置了一个固定高度或无限高度的内容，但没有告诉 Flutter 剩余空间该如何分配。当窗口变小或内容增多时，内容“顶”破了屏幕底部。
+**严重性**: **P0 (Blocker)**。这是开发调试模式下的报错，如果发布到 Release 模式，这部分内容将直接被截断无法显示。
+
+#### 2. ⚠️ 视觉离散：为了宽而宽 (The "Lonely" Layout)
+
+**证据**: 查看 `macos_downloads_page.png` 和 `macos_offline_page.png` 的顶部数据栏（总任务、下载中...）。
+**诊断**: 在大屏幕上，这四个图标被强行拉伸到了页面两端。
+
+* **问题**: 图标与图标之间的距离超过了 200px。根据**格式塔原理 (Gestalt Principles)** 的“邻近性”，用户无法在潜意识里把它们看作一组相关的数据。它们看起来像散落在桌面上的四个无关物体。
+* **修正**: 这一行数据应当在屏幕中间聚拢，或者作为一组卡片靠左排列，而不是 `MainAxisAlignment.spaceBetween` 或 `spaceAround` 铺满全屏。
+
+---
+
+### Phase 1: 立即执行的修复指令 (The Fix Code)
+
+把这段代码直接发给你的开发（或者你自己执行），这是解决上述两个问题的标准 Flutter 写法。
+
+#### 1. 修复 "Bottom Overflowed" (针对离线/下载页)
+
+不要让整个页面在 `Column` 里裸奔。使用 `Expanded` 包裹你的列表区。
+
+```dart
+// ❌ 错误写法 (导致溢出的原因)
+Column(
+  children: [
+    HeaderSection(), // 顶部标题
+    StatsBar(),      // 统计栏
+    SearchBar(),     // 搜索框
+    // 问题在这里：ListView 试图占据无限高度，或者 Column 不知道给它多少空间
+    ListView(shrinkWrap: true, ...), 
+  ],
+)
+
+// ✅ 正确写法 (The Fix)
+Column(
+  children: [
+    SizedBox(height: 20),
+    HeaderSection(),
+    StatsBar(),
+    SearchBar(), 
+    
+    // 核心修复：使用 Expanded 告诉 ListView "占用剩余所有空间，并且在内部滚动"
+    Expanded(
+      child: contentList.isEmpty 
+          ? EmptyStateWidget() // 空状态
+          : ListView.builder(
+              padding: EdgeInsets.only(bottom: 20), // 底部留白，防止贴底
+              itemCount: items.length,
+              itemBuilder: (context, index) => MusicListTile(items[index]),
+            ),
+    ),
+  ],
+)
+
+```
+
+#### 2. 修复 "视觉离散" (针对 macOS 宽屏适配)
+
+我们需要限制统计栏的最大宽度，不要让它无限拉伸。
+
+```dart
+// ✅ 响应式统计栏组件 (Responsive Stats Bar)
+class ResponsiveStatsBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // 检测是否为桌面端宽屏
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
+    Widget content = Row(
+      // 桌面端：居中聚拢；移动端：均匀分布
+      mainAxisAlignment: isDesktop 
+          ? MainAxisAlignment.center 
+          : MainAxisAlignment.spaceAround, 
+      children: [
+        _buildStatItem(icon: Icons.download, label: "总任务", count: 0),
+        _buildSpacing(isDesktop), // 桌面端增加固定间距
+        _buildStatItem(icon: Icons.downloading, label: "下载中", count: 0),
+        _buildSpacing(isDesktop),
+        _buildStatItem(icon: Icons.check_circle, label: "已完成", count: 0),
+        _buildSpacing(isDesktop),
+        _buildStatItem(icon: Icons.error, label: "失败", count: 0),
+      ],
+    );
+
+    // 桌面端加一个最大宽度约束，并用磨砂卡片包裹，增加层级感
+    if (isDesktop) {
+      return Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 600), // 限制最大宽度
+          padding: EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.5), // 你的"白陶"材质
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: content,
+        ),
+      );
+    }
+
+    return content;
+  }
+
+  Widget _buildSpacing(bool isDesktop) {
+    return isDesktop ? SizedBox(width: 40) : SizedBox.shrink();
+  }
+}
+
+```
