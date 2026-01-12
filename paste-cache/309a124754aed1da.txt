@@ -1,0 +1,132 @@
+./deploy-win.sh有问题.ultrathink
+最后
+
+══════════════════════════════════════════════════════════
+  在 NAS 上重启服务
+══════════════════════════════════════════════════════════
+[NAS] 删除旧镜像（避免平台不匹配）...
+Untagged: nas-server-frontend:latest
+Untagged: nas-server-content-aggregation:latest
+[NAS] 拉取最新镜像...
+latest: Pulling from nas-server-frontend
+1074353eec0d: Already exists
+d53378de7b14: Already exists
+1e51518bad62: Already exists
+df42fde70614: Already exists
+8ec2beea0d5c: Already exists
+563d6430d5db: Pulling fs layer
+9e9722fc58a6: Pulling fs layer
+16642e9967d2: Pulling fs layer
+9e9722fc58a6: Verifying Checksum
+9e9722fc58a6: Download complete
+16642e9967d2: Download complete
+563d6430d5db: Verifying Checksum
+563d6430d5db: Download complete
+563d6430d5db: Pull complete
+9e9722fc58a6: Pull complete
+16642e9967d2: Pull complete
+Digest: sha256:060738a3b51d664119fb3dd5647bcdc4ca08a031bd3b1a143cd25815956f5feb
+Status: Downloaded newer image for 192.168.0.100:50038/nas-server-frontend:latest
+192.168.0.100:50038/nas-server-frontend:latest
+latest: Pulling from nas-server-python-backend
+02d7611c4eae: Already exists
+fe2d526e7d41: Already exists
+61a9f733534e: Already exists
+d7c2baa095fb: Already exists
+dc2dc28fdddf: Already exists
+8c1181f503e8: Pulling fs layer
+2bf331702420: Pulling fs layer
+699ff7b89f3f: Pulling fs layer
+0da27b60b9a5: Pulling fs layer
+02c3ba5870d9: Pulling fs layer
+cff7fb021cdc: Pulling fs layer
+2b7419d4a09e: Pulling fs layer
+b9b2b6c7edf7: Pulling fs layer
+cff7fb021cdc: Waiting
+2b7419d4a09e: Waiting
+b9b2b6c7edf7: Waiting
+0da27b60b9a5: Waiting
+02c3ba5870d9: Waiting
+699ff7b89f3f: Verifying Checksum
+699ff7b89f3f: Download complete
+0da27b60b9a5: Verifying Checksum
+0da27b60b9a5: Download complete
+02c3ba5870d9: Download complete
+cff7fb021cdc: Verifying Checksum
+cff7fb021cdc: Download complete
+2b7419d4a09e: Verifying Checksum
+2b7419d4a09e: Download complete
+b9b2b6c7edf7: Verifying Checksum
+b9b2b6c7edf7: Download complete
+2bf331702420: Verifying Checksum
+2bf331702420: Download complete
+8c1181f503e8: Verifying Checksum
+8c1181f503e8: Download complete
+8c1181f503e8: Pull complete
+2bf331702420: Pull complete
+699ff7b89f3f: Pull complete
+0da27b60b9a5: Pull complete
+02c3ba5870d9: Pull complete
+cff7fb021cdc: Pull complete
+2b7419d4a09e: Pull complete
+b9b2b6c7edf7: Pull complete
+Digest: sha256:a6b159e6fafc79324751372171ee37a3152b42088993a751818ce4f51b874038
+Status: Downloaded newer image for 192.168.0.100:50038/nas-server-python-backend:latest
+192.168.0.100:50038/nas-server-python-backend:latest
+latest: Pulling from nas-server-content-aggregation
+1074353eec0d: Already exists
+d53378de7b14: Already exists
+1e51518bad62: Already exists
+df42fde70614: Already exists
+8ec2beea0d5c: Already exists
+da631f0ce0ef: Pulling fs layer
+6c9d384fb54d: Pulling fs layer
+d7bccd9327d6: Pulling fs layer
+c6f2770c98e0: Pulling fs layer
+c35a9c9f681e: Pulling fs layer
+4dc73986674e: Pulling fs layer
+c6f2770c98e0: Waiting
+c35a9c9f681e: Waiting
+4dc73986674e: Waiting
+6c9d384fb54d: Verifying Checksum
+6c9d384fb54d: Download complete
+d7bccd9327d6: Verifying Checksum
+d7bccd9327d6: Download complete
+da631f0ce0ef: Verifying Checksum
+da631f0ce0ef: Download complete
+c35a9c9f681e: Verifying Checksum
+c35a9c9f681e: Download complete
+4dc73986674e: Verifying Checksum
+4dc73986674e: Download complete
+c6f2770c98e0: Verifying Checksum
+c6f2770c98e0: Download complete
+da631f0ce0ef: Pull complete
+6c9d384fb54d: Pull complete
+d7bccd9327d6: Pull complete
+c6f2770c98e0: Pull complete
+c35a9c9f681e: Pull complete
+4dc73986674e: Pull complete
+Digest: sha256:abee9a294b4618b79af71c6ee6e507ba1d948eeb89fa1148ffef4293048e0dfb
+Status: Downloaded newer image for 192.168.0.100:50038/nas-server-content-aggregation:latest
+192.168.0.100:50038/nas-server-content-aggregation:latest
+[NAS] 重新标记镜像为本地名称...
+[NAS] 重启服务...
+ Network nas-server_nas-network  Creating
+ Network nas-server_nas-network  Created
+ Network nas-server_nas-external  Creating
+ Network nas-server_nas-external  Created
+ Container nas-content-aggregation  Creating
+ Container nas-python-backend  Creating
+ Container nas-python-backend  Created
+ Container nas-frontend  Creating
+ Container nas-content-aggregation  Created
+ frontend The requested image's platform (linux/arm64) does not match the detected host platform (linux/amd64/v2
+) and no specific platform was requested
+ Container nas-frontend  Created
+ Container nas-content-aggregation  Starting
+ Container nas-python-backend  Starting
+ Container nas-python-backend  Started
+ Container nas-python-backend  Waiting
+ Container nas-content-aggregation  Started
+ Container nas-python-backend  Error
+dependency failed to start: container nas-python-backend is unhealthy
