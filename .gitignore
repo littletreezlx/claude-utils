@@ -6,6 +6,7 @@ todos/
 debug/
 projects/
 statsig/
+telemetry/
 
 # 缓存目录
 cache/
