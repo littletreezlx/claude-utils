@@ -7,6 +7,11 @@ debug/
 projects/
 statsig/
 
+# 缓存目录
+cache/
+paste-cache/
+plans/
+
 # 插件运行时缓存
 plugins/known_marketplaces.json
 plugins/marketplaces/
