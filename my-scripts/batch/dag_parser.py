@@ -39,6 +39,7 @@ class StageNode:
     mode: str  # serial 或 parallel
     max_workers: int  # 最大并发数（仅 parallel 模式）
     tasks: List[TaskNode]  # 任务列表
+    description: str = ""  # 阶段描述（可选，用于上下文传递）
 
     def __repr__(self):
         return f"Stage#{self.stage_id}: {self.name} [{self.mode}] ({len(self.tasks)} tasks)"
@@ -50,6 +51,7 @@ class DAGParser:
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.stages: List[StageNode] = []
+        self.global_goal: str = ""  # 项目宏观目标（从文件头部解析）
         # 文件引用的基准目录（使用当前工作目录，而非文件所在目录）
         self.base_dir = Path.cwd()
 
@@ -74,6 +76,10 @@ class DAGParser:
         # 按 ## STAGE ## 分割
         stage_sections = re.split(r'^## STAGE ##', content, flags=re.MULTILINE)
 
+        # 解析文件头部的项目目标（第一个 STAGE 之前的内容）
+        if stage_sections:
+            self.global_goal = self._extract_global_goal(stage_sections[0])
+
         stage_id = 0
         # 跳过第一段（文件头）
         for section in stage_sections[1:]:
@@ -91,6 +97,41 @@ class DAGParser:
             raise ValueError("未找到任何 STAGE 定义")
 
         return self.stages
+
+    def _extract_global_goal(self, header_section: str) -> str:
+        """
+        从文件头部提取项目宏观目标
+
+        支持的格式：
+        - # 项目目标：xxx
+        - # 宏观目标：xxx
+        - 文件的第一个 # 标题作为目标
+
+        Args:
+            header_section: 文件头部内容（第一个 STAGE 之前）
+
+        Returns:
+            项目目标描述
+        """
+        lines = header_section.strip().split('\n')
+        goal_lines = []
+
+        for line in lines:
+            stripped = line.strip()
+            # 跳过空行
+            if not stripped:
+                continue
+            # 跳过纯注释行（但保留有内容的行）
+            if stripped.startswith('#') and len(stripped) <= 1:
+                continue
+            # 收集非空内容行（最多 5 行）
+            if len(goal_lines) < 5:
+                # 移除 markdown 标题符号
+                if stripped.startswith('#'):
+                    stripped = stripped.lstrip('#').strip()
+                goal_lines.append(stripped)
+
+        return '\n'.join(goal_lines) if goal_lines else ""
 
     def _parse_stage(self, section: str, stage_id: int) -> StageNode:
         """解析单个 STAGE"""
@@ -115,6 +156,9 @@ class DAGParser:
         if mode not in ['serial', 'parallel']:
             raise ValueError(f"STAGE mode 必须是 'serial' 或 'parallel'，当前: {mode}")
 
+        # 提取 STAGE 描述（参数行和第一个 TASK 之间的内容）
+        description = self._extract_stage_description(section)
+
         # 解析 TASK
         tasks = self._parse_tasks(section)
 
@@ -123,8 +167,47 @@ class DAGParser:
             name=name,
             mode=mode,
             max_workers=max_workers,
-            tasks=tasks
+            tasks=tasks,
+            description=description
         )
+
+    def _extract_stage_description(self, section: str) -> str:
+        """
+        提取 STAGE 描述（参数行和第一个 TASK 之间的内容）
+
+        Args:
+            section: STAGE 内容
+
+        Returns:
+            STAGE 描述
+        """
+        # 找到第一个 TASK 标记的位置
+        task_match = re.search(r'^## TASK\s*##\s*:?|^## TASK\s*:', section, flags=re.MULTILINE)
+
+        if task_match:
+            # 取 TASK 之前的内容
+            before_task = section[:task_match.start()]
+        else:
+            # 没有 TASK，取全部内容
+            before_task = section
+
+        # 分割成行，跳过第一行（参数行）
+        lines = before_task.split('\n')[1:]
+        desc_lines = []
+
+        for line in lines:
+            stripped = line.strip()
+            # 跳过空行和纯注释
+            if not stripped or stripped == '#':
+                continue
+            # 收集描述行（最多 10 行）
+            if len(desc_lines) < 10:
+                # 移除 markdown 标题符号但保留内容
+                if stripped.startswith('#'):
+                    stripped = stripped.lstrip('#').strip()
+                desc_lines.append(stripped)
+
+        return '\n'.join(desc_lines) if desc_lines else ""
 
     def _parse_tasks(self, stage_section: str) -> List[TaskNode]:
         """解析 STAGE 中的所有 TASK

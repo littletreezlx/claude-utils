@@ -41,11 +41,51 @@ import time
 import subprocess
 import argparse
 import os
+import signal
 from typing import Tuple, List
 from pathlib import Path
 from batch_executor_base import BaseBatchExecutor, TaskResult
 from dag_parser import DAGParser, TaskNode
 from dag_executor import DAGExecutor
+
+
+# 全局变量：跟踪当前运行的子进程
+_current_process: subprocess.Popen = None
+_interrupted = False
+
+
+def _signal_handler(signum, frame):
+    """
+    处理 Ctrl+C 信号
+
+    优雅退出：
+    1. 终止当前运行的 Claude 子进程
+    2. 保留状态文件（任务标记为 interrupted）
+    3. 打印友好提示
+    """
+    global _interrupted, _current_process
+    _interrupted = True
+
+    print("\n\n⚠️  收到中断信号 (Ctrl+C)")
+
+    if _current_process and _current_process.poll() is None:
+        print("🛑 正在终止当前任务...")
+        try:
+            _current_process.terminate()
+            _current_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            _current_process.kill()
+        except Exception:
+            pass
+
+    print("💾 状态已保存，下次运行将从断点继续")
+    print("💡 使用 --restart 可以重新开始\n")
+    sys.exit(130)  # 标准的 Ctrl+C 退出码
+
+
+# 注册信号处理器
+signal.signal(signal.SIGINT, _signal_handler)
+signal.signal(signal.SIGTERM, _signal_handler)
 
 
 class ClaudeCodeBatchExecutor(BaseBatchExecutor):
@@ -56,6 +96,10 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         self.auto_commit = True  # 默认启用自动执行 git commit
         self.state_manager = None  # 状态管理器（由 DAGExecutor 注入）
         self.current_stage_id = None  # 当前执行的阶段ID
+        # 上下文信息（由 DAGExecutor 注入）
+        self.global_goal = ""  # 项目宏观目标
+        self.stage_context = ""  # 当前阶段上下文
+        self.current_verify_cmd = ""  # 当前任务的验证命令
 
     def set_state_manager(self, state_manager, stage_id: int = None):
         """
@@ -67,6 +111,17 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         """
         self.state_manager = state_manager
         self.current_stage_id = stage_id
+
+    def set_context(self, global_goal: str, stage_context: str):
+        """
+        注入上下文信息
+
+        Args:
+            global_goal: 项目宏观目标
+            stage_context: 当前阶段上下文
+        """
+        self.global_goal = global_goal
+        self.stage_context = stage_context
 
     def _auto_commit_if_needed(self, task_description: str, task_id: int = None):
         """
@@ -131,32 +186,43 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         获取 DAG 自动化执行指示前缀
 
         这个前缀会被自动注入到每个 DAG 任务的描述前，
-        确保 Claude 知道这是自动化任务，不应该询问用户。
+        包含三层上下文：项目目标 → 阶段目标 → 当前任务
 
         Returns:
             自动化执行指示文本
         """
-        return """⚠️ DAG 自动化任务执行模式
+        # 构建上下文部分
+        context_section = ""
 
-你现在正在执行一个通过 batchcc.py 编排的 DAG 自动化任务。
+        if self.global_goal:
+            context_section += f"""🎯 **项目宏观目标** (The Big Picture):
+{self.global_goal}
 
-🤖 **必须遵守的行为准则**：
-1. **完全自主执行** - 不询问用户任何问题
-2. **自主决策** - 基于优先级、影响面、技术可行性选择最优方案
-3. **直接实施** - 不等待确认，直接执行
-4. **记录理由** - 在输出中说明决策依据
-5. **失败标记** - 只在真正无法决策时标记失败
+"""
 
-❌ **严格禁止**：
-- 询问"需要我帮您...吗？"
-- 列出选项让用户选择
-- 等待用户确认
-- 设计交互式环节
+        if self.stage_context:
+            context_section += f"""📍 **当前阶段目标** (Stage Context):
+{self.stage_context}
 
-✅ **串行任务额外要求**：
-- **必须确保编译通过** - 串行任务完成后必须验证代码能够编译/构建成功
-- **编译失败等于任务失败** - 如果代码无法编译，任务视为失败，需要修复
-- **自动验证构建** - 主动运行相关的编译/构建命令（如 npm build, cargo check, go build 等）
+"""
+
+        # 构建验证命令部分
+        verify_section = ""
+        if self.current_verify_cmd:
+            verify_section = f"""
+🧪 **验证命令**：任务完成后必须执行 `{self.current_verify_cmd}` 确保无报错
+"""
+
+        return f"""⚠️ DAG 自动化任务执行模式
+
+{context_section}🤖 **行为准则**：
+1. **完全自主执行** - 不询问用户，直接决策并实施
+2. **参考上下文** - 遇到不确定性时，优先参考上述宏观目标
+3. **保持一致性** - 代码风格、命名约定与项目整体保持一致
+4. **必须自测** - 任务完成前，必须运行测试/编译命令验证无报错
+5. **善用工具** - 必须使用文件写入工具应用更改，不要只输出代码块
+{verify_section}
+❌ **严格禁止**：询问用户、列选项让用户选、等待确认
 
 ---
 
@@ -272,6 +338,11 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         Returns:
             执行是否成功
         """
+        global _current_process, _interrupted
+
+        if _interrupted:
+            return False
+
         print(f"\n{'=' * 80}")
         print(f"[{task_id}] 执行命令: {command}")
         print(f"工作目录: {working_dir}")
@@ -296,24 +367,29 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
                 print(f"✅ 已注入自动化执行指示")
 
-                # 执行claude命令
-                result = subprocess.run(
+                # 使用 Popen 以便可以被信号处理器终止
+                _current_process = subprocess.Popen(
                     claude_cmd,
                     cwd=working_dir,
-                    capture_output=False,  # 实时显示输出
                     text=True
                 )
+                returncode = _current_process.wait()
+                _current_process = None
             else:
                 # 直接执行原命令
-                result = subprocess.run(
+                _current_process = subprocess.Popen(
                     command,
                     shell=True,
                     cwd=working_dir,
-                    capture_output=False,
                     text=True
                 )
+                returncode = _current_process.wait()
+                _current_process = None
 
-            if result.returncode == 0:
+            if _interrupted:
+                return False
+
+            if returncode == 0:
                 print("✅ 命令执行成功")
 
                 # 自动提交（如果启用）
@@ -323,10 +399,11 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
                 return True
             else:
-                print(f"❌ 命令执行失败，返回码: {result.returncode}")
+                print(f"❌ 命令执行失败，返回码: {returncode}")
                 return False
 
         except Exception as e:
+            _current_process = None
             print(f"❌ 执行命令时发生异常: {e}")
             return False
 
@@ -345,6 +422,9 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         Returns:
             执行是否成功
         """
+        # 0. 设置当前任务的验证命令（用于注入到 Prompt）
+        self.current_verify_cmd = task.verify_cmd if task.verify_cmd else ""
+
         # 1. 自动标记任务开始
         if self.state_manager and self.current_stage_id is not None:
             self.state_manager.start_task(self.current_stage_id, task.task_id)
@@ -424,12 +504,12 @@ def main():
     """主函数"""
     parser = argparse.ArgumentParser(description='批量执行 Claude Code 命令 - 支持 DAG 格式')
     parser.add_argument('template', nargs='?', help='template文件路径')
-    parser.add_argument('-p', '--parallel', type=int, default=3,
-                       help='并行执行的最大工作线程数 (默认: 3)')
+    parser.add_argument('-p', '--parallel', type=int, default=2,
+                       help='并行执行的最大工作线程数 (默认: 2)')
     parser.add_argument('--single', action='store_true',
                        help='强制串行执行 (一次只执行一个任务)')
-    parser.add_argument('--max-parallel', type=int, default=3,
-                       help='允许的最大并行数 (默认: 3)')
+    parser.add_argument('--max-parallel', type=int, default=2,
+                       help='允许的最大并行数 (默认: 2)')
     parser.add_argument('--dry-run', action='store_true',
                        help='仅显示执行计划，不实际执行')
     parser.add_argument('--restart', action='store_true',

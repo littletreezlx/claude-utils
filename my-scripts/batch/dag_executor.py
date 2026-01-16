@@ -26,10 +26,12 @@ class DAGExecutor:
         self.stages: List[StageNode] = []
         self.use_state = use_state
         self.state_manager = StateManager(file_path) if use_state else None
+        self.global_goal: str = ""  # 项目宏观目标（从 parser 获取）
 
     def parse(self) -> List[StageNode]:
         """解析 DAG 文件"""
         self.stages = self.parser.parse()
+        self.global_goal = self.parser.global_goal  # 获取项目宏观目标
         return self.stages
 
     def print_plan(self):
@@ -330,19 +332,27 @@ class DAGExecutor:
 
     def _inject_state_to_executor(self, stage_id: int):
         """
-        将状态管理器注入到任务执行器（如果执行器支持）
+        将状态管理器和上下文注入到任务执行器（如果执行器支持）
 
         Args:
             stage_id: 当前阶段ID
         """
-        if not self.use_state or not self.state_manager:
+        # 检查 task_executor 是否是一个绑定方法
+        if not hasattr(self.task_executor, '__self__'):
             return
 
-        # 检查 task_executor 是否是一个绑定方法，且所属对象有 set_state_manager 方法
-        if hasattr(self.task_executor, '__self__'):
-            executor_obj = self.task_executor.__self__
+        executor_obj = self.task_executor.__self__
+
+        # 注入状态管理器
+        if self.use_state and self.state_manager:
             if hasattr(executor_obj, 'set_state_manager'):
                 executor_obj.set_state_manager(self.state_manager, stage_id)
+
+        # 注入上下文（global_goal + stage 信息）
+        if hasattr(executor_obj, 'set_context'):
+            stage = self.stages[stage_id] if stage_id < len(self.stages) else None
+            stage_context = f"Stage: {stage.name}\n{stage.description}" if stage else ""
+            executor_obj.set_context(self.global_goal, stage_context)
 
     def _get_stage_id_for_task(self, task: TaskNode) -> Optional[int]:
         """

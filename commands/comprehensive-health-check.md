@@ -13,7 +13,7 @@ description: 全面健康检查
 - 📊 结构化问题报告（按优先级分类）
 - 🔄 两阶段工作流（诊断 → 治疗）
 
-**关键约束**：生成的任务将由**低智能模型**（如 GLM4.7）执行，必须遵循"执行模型友好规范"。
+**关键约束**：任务描述要清晰简洁，目标明确可验证。
 
 ---
 
@@ -38,14 +38,9 @@ python batchcc.py task-refactor
 
 ## 🤖 自主执行原则
 
-**⛔ 强制前置阅读**：
-1. @templates/workflow/DAG_TASK_FORMAT.md 的"自主执行原则"章节
-2. @templates/workflow/DAG_TASK_FORMAT.md 的"执行模型友好规范"章节 ⭐
-
-**核心**：完全自动化、无人值守执行
-
-✅ **应该做**：自主诊断 → 自主判断严重性 → 自主决策修复方案 → 直接执行
-❌ **不应该**：询问"是否需要修复？"、列选项让用户选择
+> **⛔ 强制阅读**：@templates/workflow/DAG_TASK_FORMAT.md（自主执行原则 + 执行模型友好规范）
+>
+> 核心：自主诊断 → 自主决策修复方案 → 直接执行（不询问用户）
 
 ### 问题分级标准
 
@@ -60,16 +55,13 @@ python batchcc.py task-refactor
 
 ## 📋 执行策略
 
-### 第一步：了解项目状态
-快速读取关键文档（如存在）：
-- `FEATURE_CODE_MAP.md` - 功能模块位置
-- `PROJECT_STATUS.md` - 已知技术债务
-- `package.json` / `pubspec.yaml` / `pyproject.toml` - 技术栈
+### 第一步：充分探索项目 ⭐ 关键
 
-**记录项目背景信息**（用于生成任务时填充）：
-- 项目类型：Web 应用 / 移动端 / CLI 工具 / ...
-- 技术栈：React + TypeScript / Flutter / Python FastAPI / ...
-- 当前状态：新项目 / 已上线 / 重构中 / ...
+**诊断质量决定修复效率**。快速但全面地了解项目：
+
+- 阅读核心文档（README、CLAUDE.md、FEATURE_CODE_MAP.md）
+- 浏览项目结构，理解模块划分
+- 识别技术栈和测试框架
 
 ### 第二步：生成任务编排文件
 

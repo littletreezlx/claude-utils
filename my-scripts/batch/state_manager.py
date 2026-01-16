@@ -6,6 +6,7 @@ DAG 任务状态管理器
 
 import json
 import os
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -88,13 +89,32 @@ class StateManager:
             return False
 
     def save_state(self):
-        """保存状态文件"""
+        """
+        保存状态文件（原子写入）
+
+        使用临时文件 + 重命名的方式，确保写入操作是原子的。
+        即使写入过程中断电或崩溃，也不会损坏原有的状态文件。
+        """
         try:
             self.state['last_update'] = self._now()
-            with open(self.state_file, 'w', encoding='utf-8') as f:
+
+            # 1. 写入临时文件
+            temp_file = self.state_file + ".tmp"
+            with open(temp_file, 'w', encoding='utf-8') as f:
                 json.dump(self.state, f, indent=2, ensure_ascii=False)
+
+            # 2. 原子重命名（要么成功，要么失败，不会留下半个文件）
+            shutil.move(temp_file, self.state_file)
+
         except Exception as e:
             print(f"⚠️  保存状态文件失败: {e}")
+            # 清理临时文件
+            temp_file = self.state_file + ".tmp"
+            if os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                except:
+                    pass
 
     def clear_state(self):
         """清空状态文件"""
