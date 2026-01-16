@@ -1,5 +1,5 @@
 # Claude Code 对话历史和临时文件
-history.jsonl
+history.jsonlc
 file-history/
 shell-snapshots/
 todos/

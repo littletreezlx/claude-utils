@@ -74,26 +74,22 @@ python batchcc.py task-refactor-project
 项目根目录/
 ├── task-refactor-project                # 主任务文件
 └── .refactor-tasks/                     # 重构任务细节
-    ├── stage-1-infrastructure.md        # 基础设施准备
-    ├── stage-2-module-refactor.md       # 模块重构（并行）
-    ├── stage-3-integration-test.md      # 集成测试
-    └── stage-4-documentation.md         # 文档更新
+    ├── stage-1-module-refactor.md       # 模块重构（并行）
+    ├── stage-2-integration.md           # 集成验证
+    └── stage-3-documentation.md         # 文档更新
 ```
 
 **主任务文件格式**：
 
 ```markdown
-## STAGE ## name="infrastructure" mode="serial"
-@.refactor-tasks/stage-1-infrastructure.md
-
 ## STAGE ## name="module-refactor" mode="parallel" max_workers="4"
-@.refactor-tasks/stage-2-module-refactor.md
+@.refactor-tasks/stage-1-module-refactor.md
 
-## STAGE ## name="integration-test" mode="serial"
-@.refactor-tasks/stage-3-integration-test.md
+## STAGE ## name="integration" mode="serial"
+@.refactor-tasks/stage-2-integration.md
 
 ## STAGE ## name="documentation" mode="parallel" max_workers="2"
-@.refactor-tasks/stage-4-documentation.md
+@.refactor-tasks/stage-3-documentation.md
 ```
 
 ### ⚠️ 子文件 TASK 格式（执行模型友好版）
@@ -154,10 +150,14 @@ python batchcc.py task-refactor-project
 
 | 阶段 | 内容 | 执行模式 |
 |------|------|---------|
-| **Stage 1** 基础设施 | 测试环境、回滚方案、质量检查 | 串行 |
-| **Stage 2** 模块重构 | 各模块独立重构 | **并行** |
-| **Stage 3** 集成测试 | 完整测试套件、性能验证 | 串行 |
-| **Stage 4** 文档更新 | 架构文档、功能映射、ADR | 并行 |
+| **Stage 1** 模块重构 | 各模块独立重构（每个任务自带单元测试验证） | **并行** |
+| **Stage 2** 集成验证 | 全量测试 + 跨模块集成检查 | 串行 |
+| **Stage 3** 文档更新 | 架构文档、功能映射、ADR | 并行 |
+
+**设计理念**：
+- ❌ 不需要单独的"基础设施准备"阶段 — Git 本身就是回滚方案
+- ✅ 每个模块任务自带验证命令，边重构边测试
+- ✅ 集成验证阶段统一运行全量测试，确保跨模块兼容
 
 ---
 
