@@ -1,5 +1,5 @@
 ---
-description: CLAUDE.md生成
+description: CLAUDE.md生成 ultrathink
 
 ---
 

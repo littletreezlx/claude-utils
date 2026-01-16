@@ -1,5 +1,5 @@
 ---
-description: 🚀 Flutter UI 文档系统全量初始化 (v3.0 - Pro Multi-Platform)
+description: 🚀 Flutter UI 文档系统全量初始化 (v3.0 - Pro Multi-Platform) ultrathink
 
 ---
 

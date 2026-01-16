@@ -1,5 +1,5 @@
 ---
-description: 针对 UI 截图或功能规范(Spec)进行视觉重塑和 Flutter 技术落地生成的 Lead Designer 工作流
+description: 针对 UI 截图或功能规范(Spec)进行视觉重塑和 Flutter 技术落地生成的 Lead Designer 工作流 ultrathink
 
 ---
 

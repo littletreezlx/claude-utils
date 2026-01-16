@@ -1,5 +1,5 @@
 ---
-description: 快速健康检查
+description: 快速健康检查 ultrathink
 
 ---
 

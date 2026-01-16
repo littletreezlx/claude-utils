@@ -1,5 +1,5 @@
 ---
-description: 🤖 Gemini 产品方案咨询 (完整版 - 含上下文收集)
+description: 🤖 Gemini 产品方案咨询 (完整版 - 含上下文收集) ultrathink
 ---
 
 # Gemini 产品方案咨询（完整版）

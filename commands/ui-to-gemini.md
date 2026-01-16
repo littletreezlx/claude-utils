@@ -1,5 +1,5 @@
 ---
-description: UI 截图转 Gemini 素材
+description: UI 截图转 Gemini 素材 ultrathink
 
 ---
 
