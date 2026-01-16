@@ -76,7 +76,35 @@ flutter test --reporter=compact 2>&1 | head -20
 pytest --collect-only 2>&1 | head -20
 ```
 
-### 第四步：更新项目文档
+### 第四步：CI/CD 兼容性检查
+
+> 本地跑通 ≠ CI 跑通，环境差异是常见问题
+
+**检查文件**：
+- `.github/workflows/*.yml`
+- `.gitlab-ci.yml`
+- `Jenkinsfile`
+- `.circleci/config.yml`
+
+**常见问题排查**：
+
+| 问题 | 本地 vs CI | 修复方式 |
+|------|-----------|---------|
+| 环境变量缺失 | 本地有 `.env` | CI 中添加 secrets/变量 |
+| `CI=true` 行为差异 | Jest 交互模式 | 脚本中显式设置 `CI=true` |
+| 浏览器缺失 | 本地有 Chrome | CI 中添加 `npx playwright install` |
+| 时区/Locale | 本地中文 | CI 中设置 `TZ=UTC` |
+| 并发冲突 | 单用户本地 | CI 中隔离测试数据库 |
+
+**检查项**：
+- [ ] CI 配置中的测试命令与本地 `package.json` 一致
+- [ ] 环境变量在 CI secrets 中已配置
+- [ ] 依赖安装步骤完整（含 dev dependencies）
+- [ ] E2E 测试有浏览器安装步骤
+
+**发现问题时**：直接修复 CI 配置文件，或在输出中注明"CI 配置需要更新"。
+
+### 第五步：更新项目文档
 
 在 `CLAUDE.md` 添加/更新测试命令部分。
 
@@ -186,6 +214,11 @@ cd ../app && flutter test
 - [创建] scripts/run-e2e.sh
 - [更新] package.json
 - [更新] .gitignore
+
+### CI/CD 兼容性 ⚠️ 需关注
+- [检查] .github/workflows/test.yml
+- [问题] 缺少 `npx playwright install` 步骤
+- [问题] 环境变量 DATABASE_URL 未配置
 
 ### 已更新文档
 - CLAUDE.md 测试命令部分

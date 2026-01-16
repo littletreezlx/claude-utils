@@ -96,6 +96,15 @@ grep -E "(FAIL|Error|✕)" /tmp/test-result.txt
 - 多次运行验证稳定性（E2E）
 - **Token 优化**: 使用紧凑模式，避免完整日志输出，只报告关键失败信息
 
+**⚠️ 死循环熔断机制**：
+同一测试修复 **3 次仍失败**时，必须：
+1. **停止修复** - 不再继续尝试
+2. **标记状态** - 在输出中标记为"需要人工介入"
+3. **跳过继续** - 处理下一个失败测试
+4. **记录尝试** - 简要说明已尝试的修复方向
+
+> 避免在复杂依赖问题上死磕耗尽 Token
+
 ---
 
 ## 输出格式
@@ -256,7 +265,32 @@ function hasMatch(str: string): boolean {
 
 ### Node.js (Jest) 测试常见问题
 
-#### 1. ESM 模块问题
+#### 1. Snapshot 不匹配
+```
+Snapshot name: `MyComponent renders correctly 1`
+- Snapshot  - 1
++ Received  + 1
+```
+
+**判断逻辑**：
+- **逻辑变更导致** → 修复代码，不更新快照
+- **非逻辑变更导致**（格式调整、依赖升级等） → 允许更新快照
+
+**更新快照**：
+```bash
+# 更新单个测试的快照
+npx jest path/to/test.ts -u
+
+# 更新所有快照
+npx jest -u
+```
+
+**⚠️ 必须遵守**：
+- 更新前确认变更是**预期的**
+- 在输出中注明"已更新快照: xxx"
+- 如果无法判断是否应该更新，标记为"需要人工确认"
+
+#### 2. ESM 模块问题
 ```
 SyntaxError: Cannot use import statement outside a module
 ```
@@ -266,7 +300,7 @@ SyntaxError: Cannot use import statement outside a module
 NODE_OPTIONS="--experimental-vm-modules" npx jest
 ```
 
-#### 2. 测试断言与实际输出不匹配
+#### 3. 测试断言与实际输出不匹配
 ```
 Expected: "<files_info>"
 Actual: "<files_info count=\"1\">"
@@ -277,7 +311,7 @@ Actual: "<files_info count=\"1\">"
 - 更新断言以匹配实际（正确的）输出
 - 使用 `toContain()` 或正则匹配而非完全相等
 
-#### 3. Jest watchman 卡住问题
+#### 4. Jest watchman 卡住问题
 ```
 watchman warning: Recrawled this watch 5 times
 RUNS  test/xxx.test.ts  # 卡住不动
@@ -298,7 +332,7 @@ npx jest --no-watchman --forceExit test/xxx.test.ts
 npx jest --runInBand --forceExit
 ```
 
-#### 4. beforeAll 创建的测试数据被 beforeEach 清理
+#### 5. beforeAll 创建的测试数据被 beforeEach 清理
 ```
 Foreign key constraint failed / Record not found
 ```
@@ -336,7 +370,7 @@ beforeEach(async () => {
 - 使每个测试独立，不依赖前一个测试创建的数据
 - 如果测试间有数据依赖，在测试内部直接创建所需数据
 
-#### 5. Content-Type 断言过于严格
+#### 6. Content-Type 断言过于严格
 ```
 Expected: "text/event-stream; charset=utf-8"
 Received: "text/event-stream"
