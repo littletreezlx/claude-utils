@@ -79,3 +79,4 @@ Desktop.ini
 *.sublime-project
 *.sublime-workspace
 stats-cache.json
+history.jsonl
