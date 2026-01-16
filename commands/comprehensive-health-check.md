@@ -1,191 +1,170 @@
 ---
-description: 全面健康检查
-
+description: 全面健康检查 (DAG 编排) - 深度诊断与报告生成
 ---
 
-# 全面健康检查
+# 全面健康检查 (Comprehensive Health Check)
 
-> 项目全面深度体检，适合定期检查或接手项目时使用
+> 项目级深度体检系统。通过自动化工具运行测试、静态分析和架构扫描，生成结构化的诊断报告，为后续重构提供决策依据。
 
-## 核心价值
-- 🔍 真正的深度分析（实际运行测试）
-- 🤖 完全自动化执行（AI 自主诊断和决策）
-- 📊 结构化问题报告（按优先级分类）
-- 🔄 两阶段工作流（诊断 → 治疗）
-
-**关键约束**：任务描述要清晰简洁，目标明确可验证。
+## 🌟 核心理念
+1.  **先诊断，后治疗**：只发现问题，**绝不**在检查阶段尝试修复代码。
+2.  **数据总线模式**：由于任务间上下文隔离，必须通过**中间文件**传递诊断结果。
+3.  **工具驱动**：优先使用 `npm test`, `madge`, `tsc` 等客观工具，而非仅靠 AI 主观阅读。
+4.  **失败即信息**：测试失败属于“诊断出的病症”，**不应**导致任务本身报错停止。
 
 ---
 
 ## 🚀 使用方式
 
 ```bash
-# 1. 生成健康检查任务
+# 1. 生成检查计划
 /comprehensive-health-check
 
-# 2. 执行健康检查（完全自动化）
+# 2. 执行诊断（完全自动化）
 python batchcc.py task-health-check
 
-# 3. 查看诊断报告
-cat docs/health-check/$(date +%Y-%m-%d)/SUMMARY.md
+# 3. 阅读报告
+open docs/health-check/$(date +%Y-%m-%d)/SUMMARY.md
 
-# 4. 如需修复，执行自动生成的修复任务
-git commit -am "Before refactor"
-python batchcc.py task-refactor
 ```
 
 ---
 
-## 🤖 自主执行原则
+## 📂 数据流转架构 (关键)
 
-> **⛔ 强制阅读**：@templates/workflow/DAG_TASK_FORMAT.md（自主执行原则 + 执行模型友好规范）
->
-> 核心：自主诊断 → 自主决策修复方案 → 直接执行（不询问用户）
+由于 `batchcc` 的每个 TASK 运行在独立会话中，必须严格遵守以下数据流转规范：
 
-### 问题分级标准
+1. **中间产物 (Stage 1-4)**：
+* 所有诊断任务必须将结果写入 `docs/health-check/temp/` 目录。
+* 命名规范：`{stage}-{module}.md` (例: `test-backend-results.md`)。
+* 内容格式：结构化的 Markdown 片段，包含“问题列表”、“严重等级”、“相关文件”。
 
-| 级别 | 问题类型 | 处理方式 |
-|------|---------|---------|
-| **Critical** | 核心测试失败、严重循环依赖、数据安全 | 必须修复 → task-refactor |
-| **High** | 重要功能缺测试、文档严重过时 | 建议修复 → task-refactor |
-| **Medium** | 代码重复、部分文档缺失 | 仅记录 |
-| **Low** | 代码风格、注释不足 | 仅记录 |
+
+2. **最终汇总 (Stage 5)**：
+* 读取 `docs/health-check/temp/` 下的所有文件。
+* 整合生成最终报告 `docs/health-check/{YYYY-MM-DD}/SUMMARY.md`。
+* 完成后清理 temp 目录。
+
+
 
 ---
 
 ## 📋 执行策略
 
-### 第一步：充分探索项目 ⭐ 关键
+### 第一步：探索与规划
 
-**诊断质量决定修复效率**。快速但全面地了解项目：
+1. **识别技术栈**：读取 `package.json` 确认测试框架 (Jest/Vitest/Mocha) 和构建工具。
+2. **规划阶段**：
+* Stage 1: **测试健康度** (Unit/E2E Tests)
+* Stage 2: **代码质量** (Lint, Type Check)
+* Stage 3: **架构分析** (Circular Deps, Dead Code)
+* Stage 4: **文档/安全** (Security Audit, Readme Check)
+* Stage 5: **汇总报告** (Summary)
 
-- 阅读核心文档（README、CLAUDE.md、FEATURE_CODE_MAP.md）
-- 浏览项目结构，理解模块划分
-- 识别技术栈和测试框架
 
-### 第二步：生成任务编排文件
 
-```
-项目根目录/
-├── task-health-check                    # 主任务文件
-├── .health-check-tasks/                 # 检查任务细节
-│   ├── stage-1-test-health.md
-│   ├── stage-2-code-quality.md
-│   ├── stage-3-architecture.md
-│   ├── stage-4-documentation.md
-│   └── stage-5-summary.md
-└── task-refactor                        # 修复任务（stage-5 自动生成）
-```
+### 第二步：生成任务文件
+
+生成主任务文件 `task-health-check` 及子任务目录 `.health-check-tasks/`。
 
 ---
 
-## 🎯 格式规范（必须遵守）
+## 🎯 任务格式规范 (必须遵守)
 
-### 主任务文件格式（task-health-check）
+所有生成的 `.health-check-tasks/*.md` 文件中的任务，必须严格遵循以下格式：
 
-```markdown
-# 项目健康检查任务
-
-## STAGE ## name="test-health" mode="parallel" max_workers="4"
-@.health-check-tasks/stage-1-test-health.md
-
-## STAGE ## name="code-quality" mode="parallel" max_workers="4"
-@.health-check-tasks/stage-2-code-quality.md
-
-## STAGE ## name="architecture" mode="serial"
-@.health-check-tasks/stage-3-architecture.md
-
-## STAGE ## name="documentation" mode="parallel" max_workers="2"
-@.health-check-tasks/stage-4-documentation.md
-
-## STAGE ## name="summary" mode="serial"
-@.health-check-tasks/stage-5-summary.md
-```
-
-### ⚠️ 子文件 TASK 格式（执行模型友好版）
-
-被引用的子文件（如 `stage-1-test-health.md`）中，**每个任务必须使用增强格式**：
+### 1. 诊断任务模板 (Stage 1-4)
 
 ```markdown
-# Stage 1: 测试健康检查
-
-> **🏠 项目背景**：[项目类型] + [技术栈] + [当前状态]
-> 本阶段检查测试基础设施健康状况。
-
 ## TASK ##
-后端测试执行与分析
+[模块名] 循环依赖扫描
 
 **🏠 项目背景**：
-[继承自 STAGE 头部，或单独说明]
+[简述]
 
 **🎯 任务目标**：
-运行后端测试套件，统计通过/失败数量，记录失败详情。
+使用工具扫描 [模块/目录] 的循环依赖情况，将结果写入中间文件。
 
 **📁 核心文件**：
-- `server/` - [分析] 后端代码目录
-- `server/package.json` - [参考] 查看测试命令
-- `docs/health-check/YYYY-MM-DD/server-tests.md` - [新建] 输出诊断报告
+- `src/modules/` - [扫描] 目标目录
+- `docs/health-check/temp/arch-circular.md` - [新建] 中间诊断结果
+
+**🛠️ 诊断工具 (优先使用)**：
+- 循环依赖：`npx madge --circular --extensions ts ./src`
+- 类型检查：`npx tsc --noEmit`
+- 依赖安全：`npm audit`
+- 测试运行：`npm test` (务必带上 CI 参数如 --watch=false)
 
 **🔨 执行步骤**：
-1. 阅读 `server/package.json` 找到测试命令（通常是 `npm test`）
-2. 运行测试命令，捕获输出
-3. 统计测试通过/失败数量
-4. 将失败详情写入诊断报告
+1. 确保 `docs/health-check/temp/` 目录存在
+2. 执行 `npx madge ...` 捕获输出
+3. 分析输出内容（即使工具返回错误代码，也要捕获 stderr）
+4. 将分析结果按以下 Markdown 格式写入 `docs/health-check/temp/arch-circular.md`：
+   ```markdown
+   ### 🔴 循环依赖 (Critical)
+   - `A.ts` -> `B.ts` -> `A.ts`
 
-**✅ 完成标志**：
-- [ ] 测试命令已执行完成
-- [ ] 诊断报告已生成到指定路径
-- [ ] 报告包含通过/失败统计
-
-文件: server/
-
-## TASK ##
-前端测试执行与分析
-
-**🎯 任务目标**：
-运行前端测试套件，统计结果，记录失败详情。
-
-**📁 核心文件**：
-- `app/` - [分析] 前端代码目录
-- `app/package.json` - [参考] 查看测试命令
-
-**🔨 执行步骤**：
-1. 阅读 `app/package.json` 找到测试命令
-2. 运行测试命令，使用 `--silent` 减少输出
-3. 统计结果，记录失败详情
-
-**✅ 完成标志**：
-- [ ] 测试命令已执行完成
-- [ ] 诊断报告已生成
-
-文件: app/
 ```
 
-**格式要点**：
-- 使用 `## TASK ##`（注意两边都有 `##`）
-- **必须包含**：🎯 任务目标、📁 核心文件、✅ 完成标志
-- **推荐包含**：🏠 项目背景（可在 STAGE 头部统一）、🔨 执行步骤
-- 执行模型需要知道**具体做什么**和**如何验证完成**
+**✅ 完成标志**：
+
+* [ ] 诊断工具已执行（**即使发现大量问题，任务也算成功**）
+* [ ] 中间结果文件已生成
+* [ ] **未**尝试修复任何代码
+
+文件: src/
+验证: ls docs/health-check/temp/arch-circular.md
+
+```
+
+### 2. 汇总任务模板 (Stage 5)
+
+```markdown
+## TASK ##
+生成最终健康诊断报告
+
+**🎯 任务目标**：
+读取所有中间诊断文件，生成汇总报告，并提出修复建议。
+
+**📁 核心文件**：
+- `docs/health-check/temp/*.md` - [读取] 所有中间结果
+- `docs/health-check/{Date}/SUMMARY.md` - [新建] 最终报告
+
+**🔨 执行步骤**：
+1. 创建日期目录 `docs/health-check/202X-XX-XX/`
+2. 读取 `temp/` 目录下所有 Markdown 文件
+3. 按照 Critical > High > Medium > Low 优先级整合问题
+4. 生成 `SUMMARY.md`，包含：
+   - 🏥 **总体健康评分** (0-100)
+   - 🔴 **高危问题清单** (必须修复)
+   - 🟡 **警告问题清单** (建议修复)
+   - 💡 **后续重构建议** (具体的 /refactor-project 策略)
+5. 删除 `temp/` 目录
+
+**✅ 完成标志**：
+- [ ] SUMMARY.md 已生成且内容完整
+- [ ] temp 目录已清理
+
+文件: docs/health-check/
+验证: ls docs/health-check/*/SUMMARY.md
+
+```
 
 ---
 
-## 📏 字数约束
+## 💎 严格禁止 (Constraints)
 
-- **Stage 1-4 任务文件**：60-120 行
-- **Stage 5 汇总任务**：100-150 行
-- **单个 TASK 描述**：20-40 行
+1. **禁止修复** ⛔：此命令只读不写（除了生成报告）。发现 Bug 不要改，记下来。
+2. **禁止中断** ⛔：如果 `npm test` 失败，**不要**让 Task 失败。捕获错误日志写入报告，然后让 Task 标记为完成。
+3. **禁止幻觉** ⛔：不要凭空猜测代码问题，必须基于工具输出（Run log）或明确的代码模式。
+4. **禁止交互** ⛔：不要生成“请用户检查...”的步骤，所有检查必须自动化完成。
 
----
+## 🛠️ 推荐工具清单
 
-## 💎 严格禁止
+* **Madge**: 循环依赖 (`npx madge`)
+* **TypeScript**: 类型检查 (`tsc --noEmit`)
+* **Tests**: 单元测试 (`npm test`)
+* **Audit**: 依赖漏洞 (`npm audit`)
+* **Duplication**: 代码重复率 (`jscpd` 或手动分析)
 
-1. **错误的 TASK 格式** ⛔ - 必须用 `## TASK ##`，不能用 `## TASK:` 或其他变体
-2. **内嵌详细示例** ⛔ - 只说明生成逻辑（<10行）
-3. **硬编码具体命令** ⛔ - 让 AI 根据项目配置查找
-4. **过度详细步骤** ⛔ - 描述目标和维度，而非具体步骤
-
----
-
-## 相关文档
-- @templates/workflow/DAG_TASK_FORMAT.md - 详细格式规范
-- `/health-check` - 快速健康检查（即时执行）
+```
