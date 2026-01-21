@@ -25,4 +25,3 @@ description: Git规范提交
 ## 注意事项
 - 优先使用对话中已知的改动意图，不要重新读代码猜测
 - 如果 `git status` 显示的文件与对话内容不符，询问用户
-- 排除敏感文件（.env, credentials 等）
