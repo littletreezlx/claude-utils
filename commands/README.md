@@ -64,6 +64,7 @@
 | `/feat-discuss` | 功能方案讨论 |
 | `/feat-discuss-gemini` | Gemini 咨询（轻量版，Gems 已有上下文） |
 | `/feat-discuss-gemini-full-context` | Gemini 咨询（完整版，含上下文收集） |
+| `/feat-done` | 代码执行完成后的收尾工作|
 | `/prd-to-doc` | PRD 转文档 |
 
 ### 🧪 测试
