@@ -320,3 +320,56 @@ CLAUDE.md            → AI 操作指南
 - 截图: `{base_name}.png` (例如: `ios_main_page.png`)
 - Spec: `{base_name}_spec.md` (例如: `main_page_spec.md`)
 - 映射关系维护在 `docs/ui/UI_SHOWCASE.md`。
+
+---
+
+## Gemini Context 工作流 (Product Partner Handoff)
+
+### 核心理念：文档分层
+
+**问题**: Gemini (产品合伙人) 不需要知道代码路径，但需要理解产品逻辑和用户体验。
+
+**解决方案**: 维护两类文档
+
+| 文档类型 | 目标读者 | 内容重点 | 示例 |
+|---------|---------|---------|------|
+| **技术实现文档** | Claude Code | 代码路径、行号、技术方案 | `docs/features/xxx.md` |
+| **产品逻辑文档** | Gemini | 用户体验、设计哲学、产品权衡 | `${项目名}-context-for-gemini.md` |
+
+### Gemini Context 原则 ⭐ Critical
+
+**必须遵守的规则**:
+
+1. **用产品语言，不写代码路径**
+   - ✅ Good: "右滑标记已读，1:1 跟手，触觉反馈增强物理质感"
+   - ❌ Bad: "使用 Dismissible Widget (article_list.dart:411)，触发 HapticFeedback.lightImpact()"
+
+2. **聚焦用户体验和产品决策**
+   - ✅ 描述功能对用户的价值（"地铁上仍可离线阅读"）
+   - ❌ 描述技术实现细节（"使用 Drift 本地数据库"）
+
+3. **必须包含"快速状态总览"**
+   - 在文档开头列出完成度、核心能力、已知缺口
+   - 避免 Gemini 误判项目进度（需要读完整文档才能了解现状）
+
+4. **优先级明确，工时透明**
+   - 下一步方向必须标注 P0/P1/P2/P3
+   - 已知缺口必须包含预估工时（帮助 Gemini 决策）
+
+### 相关 Commands
+
+- **`/init-context-for-gemini`**: 生成/更新 Gemini context 文档
+- **`/feat-discuss`**: 与 Gemini 讨论新功能，同步到 Spec 文档
+- **`/feat-done`**: 功能完成后，生成 Gemini 验收报告
+
+### 工作流示例
+
+```
+1. Claude 完成代码 → 更新技术文档 (docs/features/xxx.md)
+2. Claude 同步更新 Gemini context (context-for-gemini.md)
+3. Claude 生成验收报告 (/feat-done)
+4. 用户将报告发给 Gemini → Gemini 基于 context 做产品决策
+5. Gemini 给出下一步方向 → Claude 继续开发
+```
+
+**关键点**: Gemini 永远基于 `context-for-gemini.md` 做决策，而非技术实现文档。
