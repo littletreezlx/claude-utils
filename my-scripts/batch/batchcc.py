@@ -268,7 +268,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
                 # 构建claude命令
                 claude_cmd = [
-                    "/Users/zhanglingxiao/.nvm/versions/node/v22.18.0/bin/claude",
+                    "/Users/zhanglingxiao/.local/bin/claude",
                     "-p", enhanced_content,
                     "--allowedTools", "*",
                     "--permission-mode", "bypassPermissions"
@@ -359,7 +359,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
                 # 构建claude命令
                 claude_cmd = [
-                    "/Users/zhanglingxiao/.nvm/versions/node/v22.18.0/bin/claude",
+                    "/Users/zhanglingxiao/.local/bin/claude",
                     "-p", enhanced_content,
                     "--allowedTools", "*",
                     "--permission-mode", "bypassPermissions"
