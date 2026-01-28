@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "运行基线测试",
+  "description": "运行 flutter analyze 和 ../scripts/test.sh 记录基线状态",
+  "activeForm": "运行基线测试",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

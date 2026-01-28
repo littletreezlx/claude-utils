@@ -1,0 +1,12 @@
+{
+  "id": "4",
+  "subject": "P1: SearchViewModel 迁移到 @riverpod",
+  "description": "将 SearchViewModel 从 BaseViewModel 迁移到 @riverpod 规范",
+  "activeForm": "迁移 SearchViewModel 到 @riverpod",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "note": "SearchViewModel 迁移需要更多评估，SearchPage 尚未实际使用 ViewModel"
+  }
+}

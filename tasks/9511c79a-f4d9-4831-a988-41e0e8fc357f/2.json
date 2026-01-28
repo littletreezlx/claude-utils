@@ -1,0 +1,9 @@
+{
+  "id": "2",
+  "subject": "P0: 移除硬编码凭据",
+  "description": "从 app_config.dart 移除硬编码密码，使用环境变量或 .gitignore 文件",
+  "activeForm": "移除硬编码凭据",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

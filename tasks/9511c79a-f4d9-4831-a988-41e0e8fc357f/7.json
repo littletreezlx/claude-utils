@@ -1,0 +1,9 @@
+{
+  "id": "7",
+  "subject": "P2: 迁移其他桌面端组件硬编码尺寸",
+  "description": "迁移其他桌面端组件的硬编码尺寸（desktop_scaffold.dart, sidebar_tile.dart, breadcrumb_bar.dart）",
+  "activeForm": "迁移其他桌面端组件硬编码尺寸",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

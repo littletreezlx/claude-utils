@@ -1,0 +1,9 @@
+{
+  "id": "6",
+  "subject": "P2: 迁移 desktop_player_bar.dart 硬编码尺寸",
+  "description": "迁移 desktop_player_bar.dart 中的 37 处硬编码尺寸到 AdaptiveSize API",
+  "activeForm": "迁移 desktop_player_bar.dart 硬编码尺寸",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

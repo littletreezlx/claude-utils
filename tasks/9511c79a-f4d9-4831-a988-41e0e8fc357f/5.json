@@ -1,0 +1,12 @@
+{
+  "id": "5",
+  "subject": "P1: 移动 SearchHistoryService",
+  "description": "将 SearchHistoryService 从 data/services 移动到 core/services",
+  "activeForm": "移动 SearchHistoryService",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "note": "先处理更安全的文件移动任务"
+  }
+}
