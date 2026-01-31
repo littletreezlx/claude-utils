@@ -254,6 +254,6 @@ git log 显示近期频繁修改，需要测试保护。
 ---
 
 ## 相关文档
-- @templates/workflow/DAG_TASK_FORMAT.md - 详细格式规范
+- @templates/workflow/DAG_TASK_FORMAT.md - 格式严格参照此详细格式规范
 - `/test-run` - 运行测试并修复失败
 - `/comprehensive-health-check` - 全面健康检查（包含测试诊断）

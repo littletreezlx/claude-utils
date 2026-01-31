@@ -304,7 +304,7 @@ python batchcc.py todo-task
 
 ## 📚 延伸阅读
 
-- **详细格式规范**: `DAG_TASK_FORMAT.md` - 完整的 STAGE/TASK 语法（如果需要更多细节）
+- **格式严格参照此详细格式规范**: `DAG_TASK_FORMAT.md` - 完整的 STAGE/TASK 语法（如果需要更多细节）
 - **命令文档**: `todo-huge-task.md` - 拆分策略和智能判断
 - **实际示例**:
   - `DAG_EXAMPLE_DETAILED.md` - 详细任务描述示例

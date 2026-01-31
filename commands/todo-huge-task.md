@@ -143,6 +143,6 @@ python batchcc.py todo-task            # 执行
 ---
 
 ## 相关文档
-- @templates/workflow/DAG_TASK_FORMAT.md - 详细格式规范（含执行模型友好规范）
+- @templates/workflow/DAG_TASK_FORMAT.md - 格式严格参照此详细格式规范（含执行模型友好规范）
 - @templates/workflow/DAG_TASK_TEMPLATE.md - 空白模板
 - `/todo-write` - 简单串行任务

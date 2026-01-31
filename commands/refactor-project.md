@@ -243,7 +243,7 @@ UserService 当前混合了认证、个人信息、订单查询等多个职责�
 ---
 
 ## 相关文档
-- @templates/workflow/DAG_TASK_FORMAT.md - 详细格式规范
+- @templates/workflow/DAG_TASK_FORMAT.md - 格式严格参照此详细格式规范
 - @comprehensive-health-check.md - 建议先运行健康检查
 - `/refactor-module` - 单模块重构
 - `/refactor` - 简单重构（单文件）
