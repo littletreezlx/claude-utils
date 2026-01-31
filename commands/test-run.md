@@ -28,11 +28,35 @@ description: 测试运行与修复 ultrathink
 - **Flutter 检查**: `flutter pub get`, `flutter packages pub run build_runner build`
 
 ### 2. 运行测试
+
+**⭐ Flutter 项目特殊处理**：
+
+**检测条件**：
+- 存在 `pubspec.yaml`
+- 项目路径包含 `flutter/` 目录
+
+**优先使用统一测试脚本**：
+```bash
+# 检查上层统一脚本是否存在
+if [ -f ../../scripts/test.sh ]; then
+    # 单元测试：使用统一脚本（AI 友好）
+    ../../scripts/test.sh                           # 全量
+    ../../scripts/test.sh test/unit/xxx_test.dart   # 单文件
+
+    # E2E 测试：使用统一 E2E 脚本
+    ../../scripts/run-e2e.sh                        # 全量
+    ../../scripts/run-e2e.sh integration_test/xxx.dart  # 单文件
+else
+    # 回退到标准命令
+    flutter test --reporter=compact
+fi
+```
+
+**其他项目**：
 - **使用紧凑模式避免日志爆炸**: `--reporter=compact` 或 `--reporter=json`
 - 执行测试命令，收集结果
 - 记录失败用例和错误信息
 - E2E 测试需收集截图/日志
-- **Flutter 特定**: 使用 `flutter test --reporter=compact` 而非 `expanded`
 
 **⚠️ 必须将输出重定向到文件**：
 ```bash
@@ -59,7 +83,7 @@ grep -E "(FAIL|Error|✕)" /tmp/test-result.txt
 - Token 消耗激增，可能被截断丢失关键信息
 
 **应对策略**：
-1. **先跑一次快速扫描**：`flutter test --reporter=compact 2>&1 | head -100` 获取失败概览
+1. **先跑一次快速扫描**：`../../scripts/test.sh` 或 `flutter test --reporter=compact 2>&1 | head -100` 获取失败概览
 2. **聚焦单个失败**：`flutter test path/to/failing_test.dart` 只看一个失败的完整日志
 3. **按目录分批**：`flutter test test/unit/` 而非全量运行
 4. **识别共同原因**：大量失败通常有共同根因，修一个可能修复多个

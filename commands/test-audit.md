@@ -29,16 +29,65 @@ description: 测试基础设施审计与修复 ultrathink
 
 ### 第一步：识别项目类型
 
-| 标识文件 | 项目类型 |
-|----------|----------|
-| `pubspec.yaml` | Flutter |
-| `package.json` + `src/` | Node.js |
-| `pyproject.toml` | Python |
-| `server/` + `app/` | 全栈（分别处理）|
+| 标识文件 | 项目类型 | 特殊处理 |
+|----------|----------|----------|
+| `pubspec.yaml` | Flutter | **检查是否在 flutter/ 目录下，使用统一测试脚本** |
+| `package.json` + `src/` | Node.js | 标准处理 |
+| `pyproject.toml` | Python | 标准处理 |
+| `server/` + `app/` | 全栈 | 分别处理 |
 
 ### 第二步：检查测试脚本
 
-#### 必须检查的项目
+#### ⭐ Flutter 项目特殊处理
+
+**检测条件**：
+- 存在 `pubspec.yaml`
+- 项目路径包含 `flutter/` 目录（如 `/path/to/flutter/flametree_pick`）
+
+**测试脚本位置**：
+- **优先使用**：`../../scripts/test.sh`（上层统一脚本）
+- **E2E 使用**：`../../scripts/run-e2e.sh`
+
+**检查项目本地脚本目录**：
+```bash
+# 检查是否存在过时的本地测试脚本
+ls scripts/run_tests.sh scripts/quick_test.sh scripts/enhanced_test_runner.sh 2>/dev/null
+
+# 如果存在，建议归档到 scripts/archive/
+```
+
+**Flutter 项目必须检查的项目**：
+
+1. **上层统一脚本存在**：
+   ```bash
+   # 检查上层脚本
+   test -f ../../scripts/test.sh && echo "✓ 统一测试脚本存在"
+   test -f ../../scripts/run-e2e.sh && echo "✓ 统一E2E脚本存在"
+   ```
+
+2. **本地脚本无冲突**：
+   - 本地 `scripts/` 不应包含 `run_tests.sh`、`quick_test.sh` 等通用测试脚本
+   - 应只保留项目特定脚本（如 `start-dev.sh`、`dev-screenshot.sh`）
+
+3. **项目文档一致性**：
+   ```bash
+   # 检查 CLAUDE.md 是否引用统一测试脚本
+   grep "../scripts/test.sh" CLAUDE.md
+   ```
+
+**缺失时的处理**：
+
+```bash
+# 如果上层统一脚本不存在，创建目录结构
+mkdir -p ../../scripts
+
+# 提示用户需要创建统一测试脚本
+echo "⚠️ 缺少上层统一测试脚本，需要创建："
+echo "  - ../../scripts/test.sh"
+echo "  - ../../scripts/run-e2e.sh"
+```
+
+#### 其他项目类型检查
 
 **package.json scripts 或等效配置：**
 
@@ -65,14 +114,18 @@ description: 测试基础设施审计与修复 ultrathink
 1. 读取项目结构
 2. 识别测试框架
 3. 生成适配的脚本
-4. 更新 package.json
+4. 更新配置文件
 
 ### 第三步：验证测试可运行
 
 ```bash
-# 快速验证测试能否运行（不需要全部通过）
+# Flutter 项目（使用统一脚本）
+../../scripts/test.sh 2>&1 | head -20
+
+# Node.js (Jest/Vitest)
 npm test -- --passWithNoTests --forceExit 2>&1 | head -20
-flutter test --reporter=compact 2>&1 | head -20
+
+# Python
 pytest --collect-only 2>&1 | head -20
 ```
 
@@ -95,12 +148,14 @@ pytest --collect-only 2>&1 | head -20
 | 浏览器缺失 | 本地有 Chrome | CI 中添加 `npx playwright install` |
 | 时区/Locale | 本地中文 | CI 中设置 `TZ=UTC` |
 | 并发冲突 | 单用户本地 | CI 中隔离测试数据库 |
+| Flutter SDK | 本地有 flutter | CI 中添加 `flutter: sdk: flutter` |
 
 **检查项**：
-- [ ] CI 配置中的测试命令与本地 `package.json` 一致
+- [ ] CI 配置中的测试命令与本地一致
 - [ ] 环境变量在 CI secrets 中已配置
 - [ ] 依赖安装步骤完整（含 dev dependencies）
-- [ ] E2E 测试有浏览器安装步骤
+- [ ] E2E 测试有浏览器安装步骤（非 Flutter）
+- [ ] Flutter CI 配置包含 `submodule` 更新（flutter_common）
 
 **发现问题时**：直接修复 CI 配置文件，或在输出中注明"CI 配置需要更新"。
 
@@ -108,9 +163,62 @@ pytest --collect-only 2>&1 | head -20
 
 在 `CLAUDE.md` 添加/更新测试命令部分。
 
+**Flutter 项目文档格式**：
+```markdown
+## 测试命令
+
+```bash
+# 单元测试（AI 友好）
+../scripts/test.sh                           # 全量测试
+../scripts/test.sh test/unit/xxx_test.dart   # 单文件测试
+../scripts/test.sh test/unit/domain/         # 目录级测试
+
+# E2E/集成测试
+../scripts/run-e2e.sh                        # 全量 E2E
+../scripts/run-e2e.sh integration_test/xxx.dart  # 单文件 E2E
+```
+```
+
 ---
 
 ## 技术栈方案参考
+
+### ⭐ Flutter 项目（统一测试脚本）
+
+**关键点**：
+- **统一入口**：所有 Flutter 子项目共用 `../../scripts/test.sh`
+- **AI 友好输出**：精简输出格式，成功显示摘要，失败显示详情
+- **精准测试**：支持单文件、目录级测试
+- **E2E 分离**：`run-e2e.sh` 单独处理集成测试
+
+**脚本功能**：
+```bash
+# 单元测试
+../../scripts/test.sh                           # 全量
+../../scripts/test.sh test/unit/xxx_test.dart   # 单文件
+../../scripts/test.sh test/unit/domain/         # 目录
+
+# E2E 测试
+../../scripts/run-e2e.sh                        # 全量
+../../scripts/run-e2e.sh integration_test/xxx.dart  # 单文件
+```
+
+**输出格式**（AI 友好）：
+```
+✓ 全部通过 (N 个测试)
+```
+或
+```
+✗ 失败 (X 个测试)
+- test/unit/xxx_test.dart: 测试名称
+  Error: 错误信息
+```
+
+**项目本地脚本保留**：
+- `start-dev.sh` - 启动开发环境
+- `dev-screenshot.sh` - 截图管理
+- `view-dev-log.sh` - 日志查看
+- `coverage-exclude-generated.sh` - 覆盖率（特有功能）
 
 ### Node.js 后端（参考 nas-server）
 
@@ -148,29 +256,6 @@ else
 fi
 ```
 
-### Flutter 项目
-
-**关键点：**
-- macOS 需要逐个文件运行 E2E（避免 log reader 错误）
-- 需要清理 flutter_tester 进程
-- 需要清理 build.db 锁文件
-- 可选：后台运行支持（修改 MainFlutterWindow.swift）
-
-**E2E 脚本核心功能：**
-```bash
-# 进程清理
-pkill -f "flutter_tester" 2>/dev/null || true
-rm -f build/macos/.../build.db* 2>/dev/null || true
-
-# 逐个运行测试文件
-for test_file in integration_test/*_test.dart; do
-    flutter test "$test_file" -d macos
-done
-
-# 生成报告
-echo "| 测试 | 状态 | 耗时 |" >> report.md
-```
-
 ### Python 项目
 
 **pytest 配置：**
@@ -199,29 +284,28 @@ cd ../app && flutter test
 ## 测试基础设施审计结果
 
 ### 项目: xxx
-- **类型**: Flutter + Node.js
-- **路径**: /path/to/project
+- **类型**: Flutter
+- **路径**: /path/to/flutter/project
+- **测试脚本**: ../../scripts/test.sh (统一)
 
 ### 单元测试 ✅
-- 测试目录存在
-- 测试命令正常
+- 统一测试脚本存在
+- 项目文档已更新引用
 
 ### 集成测试 ⚠️ 已修复
-- [创建] test:integration 命令
-- [更新] jest.config.js
+- [更新] CLAUDE.md 测试命令部分
 
-### E2E 测试 ⚠️ 已修复
-- [创建] scripts/run-e2e.sh
-- [更新] package.json
-- [更新] .gitignore
+### E2E 测试 ✅
+- 统一 E2E 脚本存在
+- [归档] scripts/run_tests.sh → archive/
 
 ### CI/CD 兼容性 ⚠️ 需关注
 - [检查] .github/workflows/test.yml
-- [问题] 缺少 `npx playwright install` 步骤
-- [问题] 环境变量 DATABASE_URL 未配置
+- [问题] 需添加 flutter_common submodule 更新
 
 ### 已更新文档
 - CLAUDE.md 测试命令部分
+- scripts/README.md
 ```
 
 ---
@@ -232,6 +316,7 @@ cd ../app && flutter test
 2. **不询问是否修复** - 直接修复
 3. **不生成报告文件** - 只在对话中输出
 4. **不修改业务代码** - 只处理测试基础设施
+5. **不为 Flutter 创建本地测试脚本** - 使用上层统一脚本
 
 ---
 
