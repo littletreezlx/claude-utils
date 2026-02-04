@@ -1,0 +1,28 @@
+{
+  "id": "1",
+  "subject": "修复剩余的 E2E 测试失败",
+  "description": "剩余需要修复的测试：\n1. random_selection_test.dart - 需要进一步调试\n2. option_repository_integration_test.dart - toggleOptionSelection 测试失败\n3. master_detail_core_flow_e2e_test.dart - 找不到\"首页\"文本\n4. master_detail_interaction_test.dart - 找不到\"管理\"文本\n5. 多个 UI 组件测试 - 图标查找问题\n\n已完成修复：\n- simple_smoke_test.dart ✓\n- settings_integration_test.dart ✓\n- performance_stress_test.dart ✓\n- option_dao.dart (bug 修复)\n- test_helpers.dart (等待策略)\n- widget_helpers.dart (图标和导航)",
+  "activeForm": "修复剩余 E2E 测试",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "已完成修复": [
+      "simple_smoke_test.dart",
+      "settings_integration_test.dart",
+      "performance_stress_test.dart",
+      "option_repository toggleOptionSelection",
+      "option_repository setOptionsSelection",
+      "option_repository moveOptionsToGroup"
+    ],
+    "已修复代码Bug": [
+      "OptionDao.updateOption 添加 description 参数",
+      "OptionRepo.toggleOptionSelection 使用 write 而非 replace",
+      "OptionRepo.setOptionsSelection 批量更新",
+      "OptionRepo.moveOptionsToGroup 批量更新",
+      "OptionEntityConverter.createStatsFromOptions 新增方法"
+    ],
+    "剩余失败": 4,
+    "option_repository测试从-5降到-4": true
+  }
+}
