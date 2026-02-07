@@ -184,6 +184,30 @@ jest / pytest / flutter test
 - 推荐：架构决策 → ADR | 新功能 → 更新功能映射文档 | 临时总结 → 只在对话中展示
 - markdown 文档中的图表使用 mermaid 格式
 
+### 项目文档标准结构
+
+**根目录只留入口文件**：`README.md`（人类入口）、`CLAUDE.md`（AI 入口）、`TODO.md`（临时工作文件）
+
+**所有项目文档统一放 `docs/`**：
+
+| 文件 | 更新频率 | 内容 |
+|------|---------|------|
+| `docs/PRODUCT_SOUL.md` | 极少变 | 产品愿景、设计隐喻、情感目标、核心哲学 |
+| `docs/ARCHITECTURE.md` | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
+| `docs/ROADMAP.md` | 高频 | 当前阶段状态、Known Issues、Next Steps、待办 |
+| `docs/FEATURE_CODE_MAP.md` | 中频 | 功能→代码路径索引（GPS 导航） |
+| `docs/ui/UI_SHOWCASE.md` | 低频 | 设计系统工程参考手册 |
+
+迁移规则（旧→新）：
+- `PROJECT_STATUS.md` → `docs/ROADMAP.md`
+- `TECHNICAL.md` → `docs/ARCHITECTURE.md`
+- `FEATURE_CODE_MAP.md`（根目录）→ `docs/FEATURE_CODE_MAP.md`
+- `*context-for-gemini.md` → 拆分到 SOUL/ARCH/ROADMAP
+
+**使用命令**：
+- `/doc-update-context` — 检查/初始化 docs/ 结构，同步到 Gemini Context Hub
+- `/doc-update-context migrate` — 将旧文档体系统一迁移到新结构
+
 ### AI 上下文优化
 > **核心理念**：让 AI 用最少 token 获取最关键上下文
 
@@ -235,5 +259,5 @@ jest / pytest / flutter test
 - 项目特定的文档体系（FEATURE_CODE_MAP、PROJECT_STATUS 等）
 - 项目特定的工作流（E2E 驱动闭环、服务启动方式等）
 - 技术栈特定的测试策略（冰山策略、Test Facade 模式等）
-- AI 协作生态（UI Spec、Gemini Context 等工作流）
+- AI 协作生态（UI Spec、Gemini Context Hub 等工作流）
 - 项目特定的命名规范和目录约定

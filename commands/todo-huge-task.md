@@ -34,7 +34,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 
 **规划质量决定执行效率**。在生成任务前，必须深入理解项目：
 
-- 阅读核心文档（README、CLAUDE.md、FEATURE_CODE_MAP.md）
+- 阅读核心文档（README、CLAUDE.md、docs/FEATURE_CODE_MAP.md）
 - 浏览项目结构，理解模块划分
 - 查看现有代码模式和约定
 - 识别技术栈和依赖关系

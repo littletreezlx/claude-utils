@@ -14,7 +14,8 @@ description: 任务收尾：文档同步 -> Git 提交 -> 生成验收报告
 
 - 检查刚才修改的代码文件
 - **对比**对应的 `docs/features/xxx.md` 或 `docs/ui/specs/xxx.md`
-- 较大改动需更新项目上下文文档（如 FEATURE_CODE_MAP.md）、UI 风格改动需更新 `docs/ui/UI_SHOWCASE.md`
+- 较大改动需更新 `docs/FEATURE_CODE_MAP.md`、`docs/ROADMAP.md`（功能完成度）
+- UI 风格改动需更新 `docs/ui/UI_SHOWCASE.md`
 - **动作**：如果代码实现与文档不符，**立即更新文档**
 
 ### Step 2: 提交构建

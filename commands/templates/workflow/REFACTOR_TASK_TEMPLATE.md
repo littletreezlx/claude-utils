@@ -158,7 +158,7 @@
    - 方案3：重构模块职责
 3. 实施重构
 4. 运行测试验证
-5. 更新文档：FEATURE_CODE_MAP.md（如果文件路径有变化）
+5. 更新文档：docs/FEATURE_CODE_MAP.md（如果文件路径有变化）
 
 **重构示例**（接口抽象方案）：
 ```typescript
@@ -263,12 +263,12 @@ test('用户完整登录流程', async () => {
 **任务**：
 1. 读取问题清单
 2. 验证实际文件路径
-3. 更新 FEATURE_CODE_MAP.md
+3. 更新 docs/FEATURE_CODE_MAP.md
 4. 检查是否有其他遗漏
 5. 验证更新后的准确性
 
-文件: FEATURE_CODE_MAP.md
-验证: [ -f FEATURE_CODE_MAP.md ] && echo "✅ 文档已更新"
+文件: docs/FEATURE_CODE_MAP.md
+验证: [ -f docs/FEATURE_CODE_MAP.md ] && echo "✅ 文档已更新"
 
 ## TASK ##
 更新测试覆盖度文档

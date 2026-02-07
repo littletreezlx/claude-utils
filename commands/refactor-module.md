@@ -33,7 +33,7 @@ python batchcc.py task-refactor-module-[模块名]            # 执行
 | Stage 1 | 分析模块文件、识别问题、制定重构计划 | serial |
 | Stage 2 | 拆分职责、消除循环依赖、优化接口 | serial |
 | Stage 3 | 运行模块测试、验证接口兼容性 | serial |
-| Stage 4 | 更新 TECHNICAL.md、FEATURE_CODE_MAP | serial |
+| Stage 4 | 更新 docs/ARCHITECTURE.md、docs/FEATURE_CODE_MAP.md | serial |
 
 **生成文件结构**：
 ```

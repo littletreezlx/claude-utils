@@ -55,7 +55,7 @@ python batchcc.py task-refactor-project  # 执行
 ### 第一步：充分探索项目
 
 **规划质量决定执行效率**：
-- 阅读核心文档（README、CLAUDE.md、PROJECT_STATUS.md）
+- 阅读核心文档（README、CLAUDE.md、docs/ROADMAP.md）
 - 浏览项目结构，理解模块划分和依赖关系
 - 查找 TODO/FIXME 注释（真实痛点）
 - 按优先级识别：职责混乱 > 循环依赖 > 代码重复

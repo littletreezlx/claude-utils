@@ -251,10 +251,10 @@
 检查功能映射文档的准确性
 
 **背景**：
-验证 FEATURE_CODE_MAP.md 文档是否与实际代码一致。
+验证 docs/FEATURE_CODE_MAP.md 文档是否与实际代码一致。
 
 **任务**：
-1. 读取 FEATURE_CODE_MAP.md（如果存在，不存在则跳过）
+1. 读取 docs/FEATURE_CODE_MAP.md（如果存在，不存在则跳过）
 2. 验证每个功能的文件路径是否存在
 3. 验证是否有遗漏的功能（代码存在但文档未记录）
 4. 记录问题到：docs/health-check/YYYY-MM-DD/doc-feature-map.md

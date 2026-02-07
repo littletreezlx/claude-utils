@@ -20,7 +20,7 @@ description: 你是一位具有顶尖审美和产品思维的 Lead Designer，�
 ### 第一阶段：上下文同步 (Context Sync)
 
 在开始审计前，先了解项目的技术现状：
-1. 检查 `PROJECT_STATUS.md` (如果存在) 了解当前已知问题。
+1. 检查 `docs/ROADMAP.md` (如果存在) 了解当前已知问题。
 2. 检查 `docs/ui/` 下是否已有相关设计文档。
 
 ### 第二阶段：整体印象扫描

@@ -23,7 +23,7 @@ description: 快速健康检查 ultrathink
 ### Step 1: 项目概览
 
 **读取关键文档**：
-- README.md / FEATURE_CODE_MAP.md / PROJECT_STATUS.md
+- README.md / docs/FEATURE_CODE_MAP.md / docs/ROADMAP.md
 
 **快速评估**：项目类型、核心模块数、文档完整性、测试文件分布
 
@@ -108,7 +108,7 @@ description: 快速健康检查 ultrathink
 | 文档 | 用途 |
 |------|------|
 | /comprehensive-health-check | 全面深度检查（DAG） |
-| /e2e-readiness | E2E 测试专项检查 |
+| /test-audit | 测试基础设施审计 |
 | /refactor-project | 项目级重构（DAG） |
 
 ---

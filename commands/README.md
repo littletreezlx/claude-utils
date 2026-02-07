@@ -48,7 +48,7 @@
 │  └─ 大任务拆分（DAG）──── /todo-huge-task
 │
 └─ 跨工具协作
-   ├─ Gemini 上下文 ────────── /init-context-for-gemini
+   ├─ 文档上下文管理 ────────── /doc-update-context
    └─ 全面健康检查（DAG）── /comprehensive-health-check
 ```
 
@@ -112,7 +112,7 @@
 | `/todo-doit` | 串行 | 执行待办任务 |
 | `/todo-huge-task` | DAG | 大任务智能拆分 |
 | `/screen` | 即时 | 截图分析辅助 |
-| `/init-context-for-gemini` | 即时 | Gemini 上下文初始化 |
+| `/doc-update-context` | 即时 | 项目文档结构管理 + Gemini Context Hub 同步 |
 
 ---
 
@@ -170,4 +170,4 @@ python batchcc.py todo-task
 
 ---
 
-**命令总数**：30 个 | **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：30 个（含 1 个新增 `/doc-update-context`，替代 `/init-context-for-gemini`）| **设计原则**：目标导向、自主执行、单一真相源
