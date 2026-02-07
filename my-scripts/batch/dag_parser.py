@@ -290,64 +290,31 @@ class DAGParser:
         else:
             return default
 
+    # Maximum recursion depth for file references
+    _MAX_REF_DEPTH = 10
+
     def _resolve_file_references(self, content: str) -> str:
         """
         解析文件引用（@文件路径）
 
-        将 @文件路径 替换为文件的实际内容
-
-        Args:
-            content: 原始内容
-
-        Returns:
-            解析后的内容
+        将 @文件路径 替换为文件的实际内容。
+        防止循环引用：使用已访问文件集合 + 最大深度限制。
         """
-        lines = content.split('\n')
-        result_lines = []
+        return self._resolve_refs(content, self.base_dir, depth=0, visited=set())
 
-        for line in lines:
-            stripped = line.strip()
-
-            # 检查是否是文件引用行
-            if stripped.startswith('@'):
-                # 提取文件路径
-                ref_path = stripped[1:].strip()
-
-                # 构建完整路径（相对于主任务文件的目录）
-                full_path = self.base_dir / ref_path
-
-                # 读取引用的文件
-                try:
-                    with open(full_path, 'r', encoding='utf-8') as f:
-                        ref_content = f.read()
-                    # 递归解析引用文件中的引用（支持嵌套引用）
-                    ref_content = self._resolve_file_references_recursive(ref_content, full_path.parent)
-                    result_lines.append(ref_content)
-                except FileNotFoundError:
-                    # 文件不存在，保留原始引用行并添加警告注释
-                    result_lines.append(f"# ⚠️ 文件引用失败: {ref_path} (文件不存在)")
-                    result_lines.append(line)
-                except Exception as e:
-                    # 读取失败，保留原始引用行并添加错误注释
-                    result_lines.append(f"# ⚠️ 文件引用失败: {ref_path} (错误: {e})")
-                    result_lines.append(line)
-            else:
-                # 非引用行，直接保留
-                result_lines.append(line)
-
-        return '\n'.join(result_lines)
-
-    def _resolve_file_references_recursive(self, content: str, base_dir: Path) -> str:
+    def _resolve_refs(self, content: str, base_dir: Path, depth: int, visited: set) -> str:
         """
-        递归解析文件引用（支持嵌套引用）
+        递归解析文件引用（带循环保护）
 
         Args:
             content: 文件内容
             base_dir: 基准目录
-
-        Returns:
-            解析后的内容
+            depth: 当前递归深度
+            visited: 已访问的文件绝对路径集合
         """
+        if depth > self._MAX_REF_DEPTH:
+            return f"# ⚠️ 文件引用超过最大深度 ({self._MAX_REF_DEPTH})，停止解析\n" + content
+
         lines = content.split('\n')
         result_lines = []
 
@@ -356,16 +323,24 @@ class DAGParser:
 
             if stripped.startswith('@'):
                 ref_path = stripped[1:].strip()
-                full_path = base_dir / ref_path
+                full_path = (base_dir / ref_path).resolve()
+
+                # 循环引用检测
+                if str(full_path) in visited:
+                    result_lines.append(f"# ⚠️ 跳过循环引用: {ref_path}")
+                    continue
 
                 try:
                     with open(full_path, 'r', encoding='utf-8') as f:
                         ref_content = f.read()
-                    # 继续递归解析
-                    ref_content = self._resolve_file_references_recursive(ref_content, full_path.parent)
+                    visited.add(str(full_path))
+                    ref_content = self._resolve_refs(ref_content, full_path.parent, depth + 1, visited)
                     result_lines.append(ref_content)
-                except:
-                    result_lines.append(f"# ⚠️ 嵌套引用失败: {ref_path}")
+                except FileNotFoundError:
+                    result_lines.append(f"# ⚠️ 文件引用失败: {ref_path} (文件不存在)")
+                    result_lines.append(line)
+                except Exception as e:
+                    result_lines.append(f"# ⚠️ 文件引用失败: {ref_path} (错误: {e})")
                     result_lines.append(line)
             else:
                 result_lines.append(line)
@@ -421,8 +396,30 @@ class ConflictDetector:
 
     @staticmethod
     def _get_effective_files(task: TaskNode) -> Set[str]:
-        """获取有效文件范围（排除 excludes）"""
-        return set(task.files) - set(task.excludes)
+        """获取有效文件范围（排除 excludes）
+
+        排除逻辑：
+        1. 精确匹配：files 和 excludes 中完全相同的字符串会被移除
+        2. 目录排除：如果 exclude 是某个 file pattern 的父目录前缀，该 pattern 被移除
+        """
+        effective = set()
+        for f in task.files:
+            excluded = False
+            f_normalized = f.rstrip('/')
+            for ex in task.excludes:
+                ex_normalized = ex.rstrip('/')
+                # 精确匹配
+                if f_normalized == ex_normalized:
+                    excluded = True
+                    break
+                # 目录前缀排除：exclude 是 file 的父目录
+                f_dir = f_normalized.split('*')[0].rstrip('/')
+                if f_dir.startswith(ex_normalized + '/') or f_dir == ex_normalized:
+                    excluded = True
+                    break
+            if not excluded:
+                effective.add(f)
+        return effective
 
     @staticmethod
     def _patterns_overlap(pattern_a: str, pattern_b: str) -> bool:
@@ -457,7 +454,9 @@ class ConflictDetector:
                 return True
 
             # 如果一个目录是另一个的父目录，认为可能冲突
-            if dir_a in dir_b or dir_b in dir_a:
+            # 使用路径前缀检查，避免 src/user 和 src/user-profile 的误判
+            if (dir_a.startswith(dir_b + '/') or dir_b.startswith(dir_a + '/') or
+                    dir_a == dir_b):
                 return True
         else:
             # 都是具体文件路径，只有完全相同才冲突

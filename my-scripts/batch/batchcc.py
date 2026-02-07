@@ -31,9 +31,8 @@ python batchcc.py --restart
 ```
 
 ## 文档参考
-- README_DAG.md: DAG 格式详细说明和示例
-- TECHNICAL.md: 技术架构和实现细节
-- CLAUDE.md: Claude Code 维护指南
+- ~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md: DAG 格式规范
+- CLAUDE.md: 维护指南
 """
 
 import sys
@@ -467,16 +466,19 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         working_dir = os.getcwd()
         results = self.execute_parallel(commands, working_dir, max_workers)
 
-        # 3. 自动标记所有任务完成，并对成功的任务执行自动提交
+        # 3. 自动标记所有任务完成
         if self.state_manager and self.current_stage_id is not None:
             for i, result in enumerate(results):
                 task = tasks[i]
                 error_msg = result.error_msg if not result.success else None
                 self.state_manager.complete_task(self.current_stage_id, task.task_id, result.success, error_msg)
 
-                # 对成功的任务执行自动提交
-                if result.success:
-                    self._auto_commit_if_needed(task.description, task.task_id)
+        # 4. 并行批次完成后统一提交一次（避免逐任务 commit 的竞态风险）
+        success_tasks = [tasks[i] for i, r in enumerate(results) if r.success]
+        if success_tasks:
+            descriptions = [t.description.replace('\n', ' ').strip()[:50] for t in success_tasks]
+            summary = f"并行批次完成 ({len(success_tasks)} 任务): {', '.join(descriptions)}"
+            self._auto_commit_if_needed(summary)
 
         return results
 
@@ -608,14 +610,10 @@ def main():
             # 并行执行
             results = executor.execute_parallel(commands, os.getcwd(), max_workers)
 
-            # 对成功的任务执行自动提交
-            for i, result in enumerate(results):
-                if result.success:
-                    # 提取原始命令内容（去掉 cc ' 前缀）
-                    command = commands[i]
-                    if command.startswith("cc '") and command.endswith("'"):
-                        content = command[4:-1]  # 移除 cc ' 和 '
-                        executor._auto_commit_if_needed(content, result.task_id)
+            # 并行批次完成后统一提交一次（避免竞态）
+            success_count_commit = sum(1 for r in results if r.success)
+            if success_count_commit > 0:
+                executor._auto_commit_if_needed(f"并行批次完成 ({success_count_commit} 任务)")
 
             executor.print_parallel_results(results)
             success_count = sum(1 for r in results if r.success)

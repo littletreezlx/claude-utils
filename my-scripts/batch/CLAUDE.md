@@ -21,12 +21,7 @@ batch/
 ├── dag_executor.py         # DAG 执行引擎
 ├── state_manager.py        # 状态管理（断点续传）
 ├── batch_executor_base.py  # 基础执行器（复用）
-│
-├── README.md               # 项目说明
-├── README_DAG.md           # DAG 格式详细文档
-├── TECHNICAL.md            # 技术架构说明
 ├── CLAUDE.md               # 本文档
-│
 └── test-state.md           # 测试用例
 ```
 
@@ -109,45 +104,9 @@ batch/
 
 ## DAG 任务格式
 
-### STAGE 定义
-```markdown
-## STAGE ## name="阶段名" mode="serial"
-# 🎯 阶段目标：[阶段目标]
-# 📥 输入：[需要什么]
-# 📤 输出：[产出什么]
-# 🔗 为下一阶段提供：[传递什么]
-```
-
-**参数**：
-- `name` (必填) - 阶段名称
-- `mode` (必填) - serial 或 parallel
-- `max_workers` (可选) - 最大并发数，默认 4
-
-### TASK 定义
-```markdown
-## TASK ##
-[任务标题]
-
-**📖 背景**：
-[为什么要做这个任务]
-
-**🔨 要做什么**：
-1. [步骤1]
-2. [步骤2]
-
-**✅ 完成标志**：
-- [如何判断完成]
-
-**📥 输入依赖**：（串行任务必须）
-- ⬆️ [依赖什么]
-
-**📤 输出状态**：（串行任务必须）
-- ✅ [产出什么]
-
-文件: [文件范围]
-排除: [排除文件]
-验证: [验证命令]
-```
+> **权威规范**：`~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md`
+>
+> 本文件不重复格式定义，修改格式请更新上述文件。
 
 ## 开发规范
 
@@ -156,8 +115,7 @@ batch/
 1. 在对应模块添加功能
 2. 更新类型注解
 3. 添加测试用例
-4. 更新相关文档（README_DAG.md）
-5. 更新 TECHNICAL.md（如果涉及架构变化）
+4. 更新 DAG_TASK_FORMAT.md（如果涉及格式变化）
 
 **禁止**：
 - 不要添加过度设计的参数（如 --from-stage, --no-state）
@@ -178,16 +136,10 @@ state_manager.py 修改 → 影响：dag_executor.py
 - 确保向后兼容
 
 ### 3. 文档更新
-**同步更新**：
-- README.md - 基础说明
-- README_DAG.md - DAG 格式和使用方式
-- TECHNICAL.md - 技术架构
-- CLAUDE.md - 本文档
-
-**避免重复**：
-- 格式定义只在 README_DAG.md
-- 架构说明只在 TECHNICAL.md
-- 使用示例可以在多处出现
+**单一信息源**：
+- DAG 格式规范 → `~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md`
+- 引擎维护指南 → 本文档（CLAUDE.md）
+- 不要在多处重复定义同一信息
 
 ## 测试策略
 
@@ -287,13 +239,5 @@ python batchcc.py task-refactor --dry-run
 
 ## 相关文档
 
-- `README.md` - 项目基础说明
-- `README_DAG.md` - DAG 格式详细文档
-- `TECHNICAL.md` - 技术架构说明
-- `~/.claude/commands/todo-huge-task.md` - 使用这个工具的命令
-
----
-
-**维护者**: Claude Code AI
-**更新日期**: 2025-11-13
-**版本**: v2.0 (支持状态管理)
+- `~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md` - DAG 格式权威规范
+- `~/.claude/commands/todo-huge-task.md` - DAG 任务生成命令

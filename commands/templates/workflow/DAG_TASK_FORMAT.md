@@ -371,7 +371,11 @@ DAG 任务设计为**完全自动化、无人值守**的执行系统。
 
 ## 📚 相关文档
 
-- `DAG_TASK_TEMPLATE.md` - 空白模板
-- `DAG_EXAMPLE_ECOMMERCE.md` - 电商系统示例
-- `DAG_EXAMPLE_MIGRATION.md` - 数据迁移示例
-- `~/.claude/my-scripts/batch/CLAUDE.md` - batchcc.py 维护指南
+| 文档 | 用途 |
+|------|------|
+| `DAG_TASK_TEMPLATE.md` | 空白模板（可直接复制使用） |
+| `DAG_EXAMPLE_ECOMMERCE.md` | 电商系统示例 |
+| `DAG_EXAMPLE_MIGRATION.md` | 数据迁移示例 |
+| `HEALTH_CHECK_TASK_TEMPLATE.md` | 健康检查任务模板 |
+| `REFACTOR_TASK_TEMPLATE.md` | 重构任务模板 |
+| `~/.claude/my-scripts/batch/CLAUDE.md` | batchcc.py 执行引擎维护指南 |
