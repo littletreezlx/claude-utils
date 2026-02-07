@@ -8,9 +8,7 @@ description: 项目文档结构管理 + Gemini Context Hub 同步 ultrathink
 
 维护项目的标准化 `docs/` 文档结构，并同步到 `~/.gemini-context-hub/` 供 Gemini 跨项目读取。
 
-**两种模式**：
-- **默认模式**：检查 → 初始化/更新 → 同步到 Hub
-- **迁移模式**（`$ARGUMENTS` 含 `migrate`）：将旧文档体系统一迁移到新结构
+检查 → 初始化/更新 → 同步到 Hub
 
 ---
 
@@ -65,7 +63,7 @@ docs/
 
 ---
 
-## 默认模式：检查 + 同步
+## 执行流程
 
 ### Step 1: 检查 docs/ 结构
 
@@ -103,72 +101,7 @@ Gemini Context Hub:
   ~/.gemini-context-hub/{项目名}_ARCH.md    → ✅
   ~/.gemini-context-hub/{项目名}_ROADMAP.md → ✅
 
-已归档旧文件:
-  (无 / 列出已归档文件)
 ```
-
----
-
-## 迁移模式：统一旧文档体系
-
-当 `$ARGUMENTS` 包含 `migrate` 时执行。
-
-### Step 1: 扫描旧文档
-
-查找以下旧文档（可能存在也可能不存在）：
-
-| 旧文件（根目录） | 操作 |
-|--------|---------|
-| `*context-for-gemini.md` | 拆分到三个核心文档 |
-| `PROJECT_STATUS.md` | → 合并到 `docs/ROADMAP.md` |
-| `TECHNICAL.md` | → 合并到 `docs/ARCHITECTURE.md` |
-| `FEATURE_CODE_MAP.md` | → 移动到 `docs/FEATURE_CODE_MAP.md`（不改内容） |
-
-**不存在的直接跳过，不报错。**
-
-### Step 2: 合并策略
-
-#### context-for-gemini.md → 三文档拆分
-
-| 旧文件章节 | 目标文件 |
-|-----------|---------|
-| 产品识别与灵魂 / 设计隐喻 / 情感目标 / 交互质感 / 协作备注 / 设计标准附录 | `PRODUCT_SOUL.md` |
-| 技术架构支撑 / 核心界面与交互逻辑 / 深度特性分析 | `ARCHITECTURE.md` |
-| 快速状态总览 / 现状与待办 / 下一步可选方向 | `ROADMAP.md` |
-
-#### PROJECT_STATUS.md → ROADMAP.md 吸收
-
-- 功能完成度矩阵 → ROADMAP 的"已实现功能速查表"
-- 健康度评分 / 综合评估 → ROADMAP 的"健康度评分"
-- 已知问题 / 技术债务 → ROADMAP 的"Known Issues"
-- 改进历史 → 精简保留最近 3 次，更早的丢弃
-
-#### TECHNICAL.md → ARCHITECTURE.md 吸收
-
-- 分层架构说明 → ARCHITECTURE 的"技术架构"
-- 错误处理 / 依赖注入 / 平台适配 → ARCHITECTURE 的"技术设计"
-- 避免重复：如果 context-for-gemini 的技术章节和 TECHNICAL.md 有重叠，以 TECHNICAL.md 为准（更详细）
-
-### Step 3: 去重规则
-
-- 功能速查表：只在 `ROADMAP.md` 保留一份
-- 设计 Token / 色彩系统：只在 `PRODUCT_SOUL.md` 保留一份
-- 技术栈描述：只在 `ARCHITECTURE.md` 保留一份
-- 版本演进历史：放在 `PRODUCT_SOUL.md`
-
-### Step 4: 归档旧文件
-
-合并完成后：
-- `*context-for-gemini.md` → 重命名为 `{原名}.archived`
-- `PROJECT_STATUS.md` → 重命名为 `PROJECT_STATUS.md.archived`
-- `TECHNICAL.md` → 重命名为 `TECHNICAL.md.archived`
-- `FEATURE_CODE_MAP.md`（根目录）→ 移动到 `docs/FEATURE_CODE_MAP.md`（无需归档，只是搬家）
-
-**不删除，留作备份。确认无误后用户自行删除。**
-
-### Step 5: 执行默认模式
-
-自动执行 Step 2（同步到 Hub）+ 输出报告。
 
 ---
 

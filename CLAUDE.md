@@ -198,15 +198,7 @@ jest / pytest / flutter test
 | `docs/FEATURE_CODE_MAP.md` | 中频 | 功能→代码路径索引（GPS 导航） |
 | `docs/ui/UI_SHOWCASE.md` | 低频 | 设计系统工程参考手册 |
 
-迁移规则（旧→新）：
-- `PROJECT_STATUS.md` → `docs/ROADMAP.md`
-- `TECHNICAL.md` → `docs/ARCHITECTURE.md`
-- `FEATURE_CODE_MAP.md`（根目录）→ `docs/FEATURE_CODE_MAP.md`
-- `*context-for-gemini.md` → 拆分到 SOUL/ARCH/ROADMAP
-
-**使用命令**：
-- `/doc-update-context` — 检查/初始化 docs/ 结构，同步到 Gemini Context Hub
-- `/doc-update-context migrate` — 将旧文档体系统一迁移到新结构
+**使用命令**：`/doc-update-context` — 检查/初始化 docs/ 结构，同步到 Gemini Context Hub
 
 ### AI 上下文优化
 > **核心理念**：让 AI 用最少 token 获取最关键上下文
