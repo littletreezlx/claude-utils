@@ -1,109 +1,115 @@
-# Role: Command Architect & Automation Engineer
+# 命令编写指南
 
-## Context & Purpose
-你是指挥 Claude Code 编写、优化和执行斜杠命令（Slash Commands）的架构师。你的目标是维护项目中 `commands/*.md` 的高质量标准，确保所有自动化流程——特别是基于 DAG 的复杂任务——能够无人值守地高效运行。
+本文件指导如何编写和优化 `commands/*.md` 斜杠命令。
 
-## 🧠 Cognitive Workflow (思维决策流)
-
-在设计或执行命令前，必须遵循以下决策逻辑：
-
-1.  **意图识别**：该命令试图解决什么核心问题？
-2.  **模式选择**（严格根据复杂度分流）：
-    * *Case A: 单一原子操作* -> 选择 **[即时执行型]** (e.g., /gitcommit)
-    * *Case B: < 3 个步骤且必须按序* -> 选择 **[串行任务型]** (e.g., /todo-write)
-    * *Case C: ≥ 3 个步骤、复杂或可并行* -> 选择 **[DAG 任务型]** (e.g., /refactor-project)
-3.  **约束检查**：确保方案符合“自主执行”原则，拒绝微管理。
-
-## 📏 Core Design Principles (设计原则)
-
-* **Intent over Steps**: 定义“做什么”和“为什么”，严禁定义“怎么做”（具体的 CLI 步骤由执行时的 AI 决定）。
-* **Single Responsibility**: 一个命令文件 (`.md`) 只解决一类特定问题。
-* **Pragmatism**: 简单够用 > 完美复杂。文件长度控制在 100 行以内。
-* **No Redundancy**: 优先组合现有命令，而非重复造轮子。
+> 命令索引和使用说明见 `@README.md`
 
 ---
 
-## 🏗️ Schema: Command File Structure
+## 设计原则
 
-编写 `.md` 命令文件时，必须严格遵守以下结构：
+- **意图优先**：定义"做什么"和"为什么"，AI 自行决定"怎么做"
+- **一类问题一个命令**：按用户视角的"一件事"划分，而非按技术操作划分
+- **务实简洁**：文件控制在 100 行以内，简单够用 > 完美复杂
+- **复用优先**：引用已有命令或 `@templates/`，不重复造轮子
+
+---
+
+## 命令形态
+
+不同复杂度的命令适用不同写法：
+
+### 原子型（单一目标，直接执行）
+
+代表：`git-commit`, `claudemd`, `screen`
 
 ```markdown
 # [Command Name]
-
 ## 目标
-[一句话定义核心价值]
-
+[一句话]
 ## 执行策略
-[指导性方针，非具体步骤]
-- 关注点：...
-- 分析维度：...
-
+[指导性方针，非具体 CLI 步骤]
 ## 约束条件
-- [关键技术限制]
-- [禁止的操作]
-- [必须遵守的 Linter/Format 规范]
-
-## 输出交付物
-- [明确的文件格式或状态]
-
+[限制和禁止项]
 ```
 
-### ❌ Anti-Patterns (严格禁止)
+### 流程型（多阶段，可能含用户交互断点）
 
-1. **禁止微操**：不要写 "Step 1: git status, Step 2: cat file"。
-2. **禁止硬编码大量示例**：引用 `@templates/` 而非内嵌长代码。
-3. **禁止混合职责**：不要在一个命令中同时做“代码分析”和“文档生成”和“测试提交”。
-4. **禁止休眠**：严禁使用 `sleep`。
-
----
-
-## ⚙️ Special Protocol: DAG Tasks (DAG 任务规范)
-
-**定义**：DAG 任务通过 `batchcc.py` 运行，旨在实现**完全自动化、无人值守**。
-
-### 关键机制
-
-* **Automation Injection**: `batchcc.py` 会自动注入 prompt，告知 AI 这是一个自动化批处理任务。
-* **No Interruption**: 系统设计假定过程中**无法询问用户**。
-
-### DAG 生成规则 (必须遵守)
-
-当命令的目标是“生成 DAG 任务列表”时：
-
-1. **产物必须是任务文件**：严禁生成“诊断报告”或“分析总结”。
-2. **文件结构**：
-* 主入口文件包含 `## STAGE ##` 定义。
-* 子任务文件存放在 `.{command}-tasks/` 隐藏目录。
-
-
-3. **语法示例**：
+代表：`feat-discuss`, `feat-done`, `code-review`
 
 ```markdown
-# ✅ 正确的主任务文件格式
-## STAGE ## name="analysis" mode="parallel"
-@.refactor-tasks/01-analyze-deps.md
-
-## STAGE ## name="execution" mode="serial"
-@.refactor-tasks/02-apply-changes.md
-
+# [Command Name]
+## 角色定位
+[一句话定义在这个流程中扮演的角色]
+## 核心工作流
+### Phase/Step 1: [阶段名]
+[该阶段的目标和策略]
+### Phase/Step 2: [阶段名]
+[该阶段的目标和策略]
+## 约束条件
 ```
 
-### DAG 常见错误修正
+**流程型的判断标准**：
+- 一个完整工作流中的多个阶段，用户期望一次调用走完
+- 阶段之间有自然的交互断点（如等待外部输入）也可以，在命令中说明即可
+- 阶段描述应是**目标和策略**，而非具体 CLI 操作
 
-* 🔴 **错误**：生成了一个 Markdown 列表，列出了 10 个 bug。
-* 🟢 **正确**：生成了一个 `.md` 文件，其中包含 10 个 `## TASK ##` 块，每个块对应修复一个 bug。
+### DAG 型（生成任务文件，无人值守执行）
+
+代表：`refactor-project`, `test-plan`, `todo-huge-task`
+
+DAG 命令的产出是**任务文件**（非报告），通过 `batchcc.py` 自动化执行。
+编写规范参见 `@templates/workflow/DAG_TASK_FORMAT.md`。
+
+### 工具型（辅助操作，格式驱动）
+
+代表：`todo-write`, `create-page-doc`
+
+核心是定义**输出格式**，AI 按格式填充内容。输出格式定义可以内嵌在命令中。
 
 ---
 
-## 📂 System Architecture Reference
+## 编写规则
 
-### 目录结构
+### 必须
 
-* `commands/*.md`: 可执行命令
-* `commands/templates/`: 标准模版 (引用源)
-* `commands/templates/workflow/`: DAG 格式说明 (`DAG_TASK_FORMAT.md`)
+- Frontmatter 包含 `description`（简短说明，显示在命令列表中）
+- 开头明确命令的**核心目标**
+- 约束条件中包含**禁止的操作**
+- DAG 型命令引用 `@templates/workflow/` 而非内嵌格式说明
 
-### 常用引用
+### 避免
 
-* 需要编写文档时 -> 参阅 `@templates/docs/`
-* 需要构建复杂流 -> 参阅 `@templates/workflow/DAG_TASK_FORMAT.md`
+- **微操指令**：不要写 `git status` → `cat file` → `grep xxx` 这样的 CLI 步骤序列
+- **大段内嵌模板**：超过 10 行的模板应外置到 `templates/`（输出格式定义除外）
+- **sleep 命令**：严禁使用
+- **无用重复**：如果已有命令覆盖了某个能力（如 `/git-commit`），引用它而非重写
+
+### 判断灰区
+
+| 场景 | 建议 |
+|------|------|
+| 命令需要 Step 1/2/3？ | 流程型允许，但每步写目标而非操作 |
+| 需要内嵌代码示例？ | 短示例（< 10 行）OK，长的外置到 templates |
+| 一个命令做了 3 件事？ | 如果用户视角是"一件事"就 OK，按技术操作拆才需要分离 |
+| 命令之间有重叠？ | 检查是否可以在一方引用另一方，而非各自实现 |
+
+---
+
+## 目录结构
+
+```
+commands/
+├── CLAUDE.md              # 本文件（编写指南）
+├── README.md              # 命令索引（面向用户）
+├── *.md                   # 可执行命令
+└── templates/
+    ├── docs/              # 文档模板
+    └── workflow/           # DAG 格式规范和示例
+```
+
+---
+
+## 质量标杆
+
+写得好的命令参考：`refactor.md`、`git-commit.md`、`claudemd.md`、`refactor-project.md`

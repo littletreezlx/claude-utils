@@ -20,39 +20,20 @@ description: 任务收尾：文档同步 -> Git 提交 -> 生成验收报告
 
 ### Step 2: 提交构建
 
-- 基于修改内容，生成符合 Semantic Commit 规范的提交信息
-- 格式：`feat(scope): 简短描述` + body 详述
-- 执行 `git commit`
+按 `/git-commit` 规范执行提交。
 
 ### Step 3: 生成验收报告
 
-生成一份给产品/架构角色（如 Gemini）的汇报，供用户复制转发：
+生成一份给产品/架构角色（如 Gemini）的汇报，供用户复制转发。
 
-```text
-------- REVIEW -------
-# Implementation Report
+**核心要素**（按需取舍）：
+- 做了什么（变更概述）
+- 与 Spec 的偏差（如有）
+- 当前状态（文档、测试）
+- 请求 Review 的问题
 
-## Context
-Engineering Partner (Claude) 已完成 [任务/功能名称] 的代码实现。
-
-## Changes Delivered
-- [核心修改概述]
-- [UI 变更概述]
-
-## Diff from Spec (偏差说明)
-- [如有偏差，坦诚说明原因]
-
-## Current Status
-- 文档已更新: [文件名]
-- 测试: [Pass/Skip/Fail]
-
-## Request for Review
-1. 实现方式是否符合产品愿景？
-2. 下一步应该做什么？
-------- END -------
-```
+**原则**：诚实汇报，技术债务必须说明
 
 ## 约束条件
 
 - 不在该阶段写新代码（除非修复明显 Bug）
-- 汇报必须诚实，如有技术债必须说明

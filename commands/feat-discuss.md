@@ -1,5 +1,5 @@
 ---
-description: 启动新功能：工程现场扫描 -> 架构咨询(Gemini) -> 方案落库(Checklist)
+description: 启动新功能：工程现状梳理 -> 架构咨询(Gemini) -> 方案落库(Checklist)
 ---
 
 # Feature Discussion & Architecture Design
@@ -12,49 +12,28 @@ description: 启动新功能：工程现场扫描 -> 架构咨询(Gemini) -> 方
 
 ## 核心工作流
 
-### Phase 1: 现场勘查 (Site Survey)
+### Phase 1: 现状梳理 (Context Brief)
 
-**在生成 Prompt 前，先扫描工程现场**：
-1. **Legacy Check**: 现有逻辑是如何实现的？（读取相关代码）
-2. **UI Inventory**: 检查 `UI_SHOWCASE.md`，寻找可复用的 Design Tokens
-3. **Tech Constraints**: 识别技术限制（依赖版本、平台差异等）
+基于对话上下文和需求，梳理与新功能相关的工程现状。根据需求复杂度自行判断深度：
+- 简单需求：总结对话中已有的上下文即可
+- 复杂需求：按需扫描相关代码、已有组件、技术限制等
 
-**输出**: 简报现状（中文 + 英文术语）。
+**输出**：简报现状（中文 + 英文术语）。
 
 ---
 
 ### Phase 2: 发起架构咨询 (Bridge to Gemini)
 
-基于 Phase 1 的扫描结果，生成一份**高上下文密度**的 Prompt 供用户转发给 Gemini。
+基于 Phase 1 的梳理结果，生成一份**高上下文密度**的 Prompt 供用户转发给 Gemini。
 
-**Prompt 结构**：
-```text
-# Architecture Consultation Request
+**核心要素**（按需取舍，不必面面俱到）：
+- 用户需求描述
+- 工程现状（现有实现、技术栈、限制条件、可复用资产等，哪些相关写哪些）
+- 明确请求 Gemini 输出 Architectural Brief
 
-## User Requirement
-[原始需求描述]
-
-## Engineering Reality (Code Scan Results)
-### Current Implementation
-[Phase 1 扫描到的现有逻辑]
-
-### Tech Stack & Constraints
-[技术栈、已有依赖、平台限制]
-
-### Reusable Assets
-[可复用的组件、Design Tokens、已有模式]
-
-## Request
-请基于以上工程现实，输出 Architectural Brief：
-1. 推荐的技术方案（含取舍理由）
-2. 组件/模块划分建议
-3. 需要注意的风险点
-```
-
-**生成原则**：
-- 上下文越丰富，Gemini 的建议越精准
-- 必须包含代码扫描发现的**限制条件**，避免 Gemini 给出不可行的方案
-- Prompt 中使用英文技术术语，中文描述业务逻辑
+**原则**：
+- 必须包含发现的**限制条件**，避免 Gemini 给出不可行的方案
+- 英文技术术语，中文描述业务逻辑
 
 ---
 
