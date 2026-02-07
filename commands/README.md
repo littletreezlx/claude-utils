@@ -2,100 +2,121 @@
 
 精简高效的斜杠命令库，遵循"**目标导向、自主执行**"设计理念。
 
-## 🚀 快速开始
+## 快速选择
 
-### 工作流选择
-
-| 模式 | 适用场景 | 命令示例 |
-|------|---------|---------|
-| **即时执行** | 单一操作 | `/code-review`, `/gitcommit` |
-| **串行任务** | 2-5 个线性任务 | `/todo-write` → `/todo-doit` |
-| **DAG 任务** ⭐ | ≥3 个复杂任务 | `/todo-huge-task`, `/comprehensive-health-check` |
-
-### 新手入门
-
-1. 从即时执行命令开始：`/code-review`, `/gitcommit`
-2. 尝试串行任务：`/todo-write` + `/todo-doit`
-3. 掌握 DAG 任务：`/todo-huge-task`
-
----
-
-## 📋 命令索引
-
-### 🔍 代码质量
-| 命令 | 说明 |
-|------|------|
-| `/code-review` | 代码审查 |
-
-### ♻️ 代码重构
-| 命令 | 说明 |
-|------|------|
-| `/refactor` | 简单重构（单文件） |
-| `/refactor-module` | 模块重构（DAG） |
-| `/refactor-project` | 项目级重构（DAG） |
-
-### 📋 项目管理
-| 命令 | 说明 |
-|------|------|
-| `/gitcommit` | Git 提交 |
-| `/todo-write` | 生成待办清单 |
-| `/todo-doit` | 执行待办任务 |
-| `/todo-huge-task` | 大任务智能拆分（DAG）⭐ |
-
-### 🔬 项目分析
-| 命令 | 说明 |
-|------|------|
-| `/learn_new_project` | 快速学习新项目 |
-| `/catchup` | 赶上项目进度 |
-| `/e2e-readiness` | E2E 测试就绪检查 |
-
-### 📚 文档生成
-| 命令 | 说明 |
-|------|------|
-| `/claudemd` | 生成 CLAUDE.md |
-| `/techdoc` | 生成技术文档 |
-| `/create-page-doc` | 生成页面文档 |
-| `/doc-organize` | 文档组织 |
-| `/cleanup-docs` | 清理文档 |
-
-### 💡 方案设计
-| 命令 | 说明 |
-|------|------|
-| `/feat-discuss` | 功能方案讨论 |
-| `/feat-discuss-gemini` | Gemini 咨询（轻量版，Gems 已有上下文） |
-| `/feat-discuss-gemini-full-context` | Gemini 咨询（完整版，含上下文收集） |
-| `/feat-done` | 代码执行完成后的收尾工作|
-| `/prd-to-doc` | PRD 转文档 |
-
-### 🧪 测试
-| 命令 | 说明 |
-|------|------|
-| `/test-plan` | 测试规划（DAG） |
-| `/test-unit` | 单元测试 |
-| `/test-integration` | 集成测试 |
-| `/test-e2e` | E2E 测试 |
-| `/create-e2e-test` | 创建 E2E 测试 |
-
-### 🏥 健康检查
-| 命令 | 说明 |
-|------|------|
-| `/health-check` | 快速健康检查 |
-| `/comprehensive-health-check` | 全面健康检查（DAG）⭐ |
-
-### 🔗 Work Projects 专项
-| 命令 | 说明 |
-|------|------|
-| `/work-android-base-pre-merge` | android-base 合并前检查 ⭐ |
-
-### 🛠️ 工具
-| 命令 | 说明 |
-|------|------|
-| `/screen` | 截图分析 |
-| `/init_ui_showcase` | UI 组件展示初始化 |
+```
+我要做什么？
+│
+├─ 快速操作（单次执行）
+│  ├─ 审查代码 ──────────── /code-review
+│  ├─ 提交代码 ──────────── /git-commit
+│  ├─ 截图分析 ──────────── /screen
+│  └─ 快速体检 ──────────── /health-check
+│
+├─ 功能开发
+│  ├─ 方案讨论 ──────────── /feat-discuss → [Gemini] → /feat-done
+│  ├─ PRD 转需求 ─────────── /prd-to-doc
+│  └─ 学习新项目 ─────────── /learn-new-project
+│
+├─ 代码重构
+│  ├─ 单文件 ──────────────── /refactor
+│  ├─ 模块级（DAG）────────── /refactor-module
+│  └─ 项目级（DAG）────────── /refactor-project
+│
+├─ 测试工程
+│  ├─ 测试规划（DAG）────── /test-plan
+│  ├─ 运行与修复 ─────────── /test-run
+│  ├─ 基础设施审计 ────────── /test-audit
+│  └─ 创建 E2E 测试 ──────── /create-e2e-test
+│
+├─ 文档生成
+│  ├─ 生成 CLAUDE.md ──────── /claudemd
+│  ├─ 技术文档 ────────────── /techdoc
+│  ├─ 页面文档 ────────────── /create-page-doc
+│  ├─ 文档组织 ────────────── /doc-organize
+│  └─ 文档清理 ────────────── /doc-clean
+│
+├─ UI 工程
+│  ├─ 逆向生成 Spec ────────── /ui-spec
+│  ├─ 全局 UI 审计 ────────── /ui-audit
+│  ├─ 视觉重塑 ────────────── /ui-redesign
+│  ├─ 截图转 Gemini ────────── /ui-to-gemini
+│  └─ UI 文档初始化 ────────── /init-ui-showcase
+│
+├─ 任务管理
+│  ├─ 保存待办 ────────────── /todo-write → /todo-doit
+│  └─ 大任务拆分（DAG）──── /todo-huge-task
+│
+└─ 跨工具协作
+   ├─ Gemini 上下文 ────────── /init-context-for-gemini
+   └─ 全面健康检查（DAG）── /comprehensive-health-check
+```
 
 ---
 
-## 🤖 DAG 任务系统
+## 命令索引
+
+### 代码质量 & 重构
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/code-review` | 即时 | 代码审查与提测单生成 |
+| `/refactor` | 即时 | 单文件/类级别重构 |
+| `/refactor-module` | DAG | 模块重构 |
+| `/refactor-project` | DAG | 项目级重构 |
+
+### 功能开发 & 方案设计
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/feat-discuss` | 即时 | 工程现场扫描 + Gemini 咨询 Prompt |
+| `/feat-done` | 即时 | 方案落库 + 验收报告 |
+| `/prd-to-doc` | 即时 | PRD 转客户端需求文档 |
+| `/learn-new-project` | 即时 | 快速学习陌生项目 |
+
+### 测试工程
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/test-plan` | DAG | 测试规划与批量编写 |
+| `/test-run` | DAG | 测试运行与修复 |
+| `/test-audit` | DAG | 测试基础设施审计 |
+| `/create-e2e-test` | 即时 | 创建 E2E 测试 |
+
+### 文档生成
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/claudemd` | 即时 | 生成项目 CLAUDE.md |
+| `/techdoc` | 即时 | 技术文档撰写 |
+| `/create-page-doc` | 即时 | 页面双文档体系生成 |
+| `/doc-organize` | 串行 | 文档结构优化 |
+| `/doc-clean` | 串行 | 文档清理归档 |
+
+### 健康检查
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/health-check` | 即时 | 快速健康检查 |
+| `/comprehensive-health-check` | DAG | 全面深度诊断 |
+
+### UI 工程
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/ui-spec` | 即时 | 逆向生成功能规范文档 |
+| `/ui-audit` | 即时 | 全局 UI 设计审计 |
+| `/ui-redesign` | 即时 | 视觉重塑 + Flutter 落地 |
+| `/ui-to-gemini` | 即时 | UI 截图转 Gemini 素材 |
+| `/init-ui-showcase` | 即时 | Flutter UI 文档系统初始化 |
+
+### 项目管理 & 工具
+| 命令 | 类型 | 说明 |
+|------|------|------|
+| `/git-commit` | 即时 | Git 规范提交 |
+| `/todo-write` | 串行 | 保存待办清单 |
+| `/todo-doit` | 串行 | 执行待办任务 |
+| `/todo-huge-task` | DAG | 大任务智能拆分 |
+| `/screen` | 即时 | 截图分析辅助 |
+| `/init-context-for-gemini` | 即时 | Gemini 上下文初始化 |
+
+---
+
+## DAG 任务系统
 
 ### 什么是 DAG 任务？
 
@@ -103,11 +124,11 @@ DAG（有向无环图）任务编排是**完全自动化、无人值守**的任�
 
 ### 核心特性
 
-- ✅ **STAGE 阶段控制** - 串行/并行模式
-- ✅ **TASK 任务单元** - 细粒度执行
-- ✅ **文件冲突检测** - 自动分析，无冲突并行
-- ✅ **断点续传** - 中断后自动继续
-- ✅ **自动化保证** - batchcc 统一注入自动化指示
+- **STAGE 阶段控制** - 串行/并行模式
+- **TASK 任务单元** - 细粒度执行
+- **文件冲突检测** - 自动分析，无冲突并行
+- **断点续传** - 中断后自动继续
+- **自动化保证** - batchcc 统一注入自动化指示
 
 ### 使用流程
 
@@ -122,7 +143,7 @@ python batchcc.py todo-task --dry-run
 python batchcc.py todo-task
 ```
 
-### DAG 命令
+### DAG 命令一览
 
 | 命令 | 用途 |
 |------|------|
@@ -131,12 +152,14 @@ python batchcc.py todo-task
 | `/refactor-project` | 项目级重构 |
 | `/refactor-module` | 模块重构 |
 | `/test-plan` | 测试规划与批量编写 |
+| `/test-run` | 测试运行与修复 |
+| `/test-audit` | 测试基础设施审计 |
 
 > 详细格式参见 @templates/workflow/DAG_TASK_FORMAT.md
 
 ---
 
-## 📖 相关文档
+## 相关文档
 
 | 文档 | 说明 |
 |------|------|
@@ -147,14 +170,4 @@ python batchcc.py todo-task
 
 ---
 
-## 💡 最佳实践
-
-- ✅ **Git 优先** - 每个功能完成后立即提交
-- ✅ **失败即重置** - 失败 3 次考虑 `git reset --hard HEAD`
-- ✅ **E2E 驱动** - 改代码 → 写测试 → 运行 → 验证
-- ✅ **场景导航** - 根据任务类型选择合适命令
-
----
-
-**命令总数**：30 个
-**设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：30 个 | **设计原则**：目标导向、自主执行、单一真相源
