@@ -1,42 +1,52 @@
 ---
-description: 项目文档结构管理 + Gemini Context Hub 同步 ultrathink
+description: 项目文档深度审查与修正 ultrathink
 ---
 
 # 项目文档上下文管理
 
 ## 目标
 
-维护项目的标准化 `docs/` 文档结构，并同步到 `~/.gemini-context-hub/` 供 Gemini 跨项目读取。
+**深度审查**项目的 `docs/` 核心文档，对比实际代码和项目状态，修正过时/错误/遗漏的内容。
 
-检查 → 初始化/更新 → 同步到 Hub
+重点是**内容质量**，不是文件是否存在。
 
 ---
 
 ## 标准文档结构
 
-### 核心三文档（docs/ 下，按更新频率分层）
-
 ```
 docs/
-├── PRODUCT_SOUL.md    # [极少变] 产品愿景、设计隐喻、情感目标、核心哲学
-├── ARCHITECTURE.md    # [中频]   技术架构、数据流、技术决策、目录结构
-└── ROADMAP.md         # [高频]   当前状态、Known Issues、Next Steps、待办
+├── PRODUCT_SOUL.md       # [极少变] 产品愿景、设计隐喻、情感目标、核心哲学
+├── PRODUCT_BEHAVIOR.md   # [中频]   用户流程、导航系统、交互模式、全局状态
+├── ARCHITECTURE.md       # [中频]   技术架构、数据流、技术决策、目录结构
+├── ROADMAP.md            # [高频]   当前状态、Known Issues、Next Steps、待办
+├── FEATURE_CODE_MAP.md   # [中频]   功能→代码路径索引
+└── ui/UI_SHOWCASE.md     # [低频]   设计系统工程参考
 ```
 
-**PRODUCT_SOUL.md** — 产品灵魂
+### 各文档应包含的内容
+
+**PRODUCT_SOUL.md** — 产品灵魂（Why）
 - 一句话定义、核心设计隐喻、情感目标
 - 目标用户画像、产品哲学
 - 设计语言（Design Tokens、色彩系统、交互质感）
 - 给 Gemini 的协作备注
-- 写一次几乎不改，除非产品方向大转
 
-**ARCHITECTURE.md** — 技术架构
+**PRODUCT_BEHAVIOR.md** — 产品行为（Behavior & Flow）
+- 全局导航系统：路由表、Tab 结构、导航模型（Hub & Spoke 等）
+- 核心用户流程：端到端的 Mermaid 流程图（冷启动→核心操作→完成目标）
+- 交互模式库：项目中复用的特殊交互机制（幻影选项、乐观更新、物理仿真等）
+- 全局业务规则：跨模块的领域约束（如"超过30天不可退款"）
+- 全局状态策略：离线模式、Auth 状态、错误恢复等跨页面行为
+- 简单项目 All-in-One，复杂项目作为 Hub 索引 `features/*.md`
+
+**ARCHITECTURE.md** — 技术架构（Tech How）
 - 技术栈速查、目录结构说明
 - 核心数据流（Mermaid 图）
-- 关键技术约束（Local-First / Offline-ready 等）
-- 核心界面与交互逻辑（页面构成、导航架构）
-- 深度特性分析（选 1-2 个最有特色的功能）
+- 核心数据模型：ER 图或关键实体字段说明（不要让 AI 每次去翻代码）
+- 关键技术约束
 - 分层架构、错误处理、依赖注入等技术设计
+- 深度特性分析（选 1-2 个技术上最有特色的实现）
 
 **ROADMAP.md** — 动态状态
 - TL;DR 快速总览（当前阶段、完成度）
@@ -46,75 +56,114 @@ docs/
 - 健康度评分、技术债务汇总
 - TODO/FIXME 扫描结果
 
-### 其他 docs/ 文档（独立职责，不合并到核心三文档）
+**FEATURE_CODE_MAP.md** — 功能代码索引
+- 功能名称 → 对应代码文件/目录路径
+- "改这个功能改哪个文件"的导航表
+- 新增/删除/重命名文件后最容易过时
 
-| 文件 | 职责 |
-|------|------|
-| `docs/FEATURE_CODE_MAP.md` | 功能→代码路径索引（"改这个功能改哪个文件"） |
-| `docs/ui/UI_SHOWCASE.md` | 设计系统工程参考（Token 值、组件参数、截图规范） |
-
-### 根目录只留入口文件
-
-| 文件 | 理由 |
-|------|------|
-| `README.md` | 人类入口 |
-| `CLAUDE.md` | AI 入口 |
-| `TODO.md` | `/todo-write` + `/todo-doit` 的工作文件 |
+**ui/UI_SHOWCASE.md** — 设计系统工程参考
+- Design Tokens 实际值、组件参数、截图规范
+- 审查时检查 Token 值和组件描述是否与代码一致
 
 ---
 
-## 执行流程
+## 执行策略
 
-### Step 1: 检查 docs/ 结构
+**核心原则：分块串行，每次只深审一个文档。**
 
-扫描项目：
-- `docs/PRODUCT_SOUL.md` 是否存在？
-- `docs/ARCHITECTURE.md` 是否存在？
-- `docs/ROADMAP.md` 是否存在？
+本命令**不试图一次做完所有文档**。采用 Phase 1 评估 → Phase 2 生成审查计划（`/todo-write`）→ 后续通过 `/todo-doit` 逐文档执行的模式。
 
-**缺失文件**：通过阅读项目代码和现有文档，自动生成。
+> 文档间有强一致性依赖（BEHAVIOR 改了 → ARCH 可能同步调整），不适合 DAG 并行，必须串行处理。
 
-**已存在**：检查 `ROADMAP.md` 是否需要更新（扫描 TODO/FIXME、对比功能完成度）。
+### Phase 1: 快速锚定变更范围
 
-### Step 2: 同步到 Gemini Context Hub
+只读取轻量信息来判断哪些文档最可能需要更新：
+- 读 `docs/ROADMAP.md`（了解项目当前状态）
+- 读项目配置文件（package.json / pubspec.yaml）
+- 浏览目录结构
+- 查看 git log 最近变更
 
-目标目录：`~/.gemini-context-hub/`
+基于以上信息，对每个文档评估：
+- **存在性**：文档是否存在？不存在则标记为"从零生成"
+- **变更风险**：自上次审查以来，相关代码/功能变动多大？
+- **审查优先级**：风险高的排前面
 
-1. 确保 Hub 目录存在
-2. 检测项目名（从 `basename $(pwd)` 或 package name 推断）
-3. 创建软链接，**带项目名前缀**防冲突：
-   - `docs/PRODUCT_SOUL.md` → `~/.gemini-context-hub/{项目名}_SOUL.md`
-   - `docs/ARCHITECTURE.md` → `~/.gemini-context-hub/{项目名}_ARCH.md`
-   - `docs/ROADMAP.md` → `~/.gemini-context-hub/{项目名}_ROADMAP.md`
-4. 清理已失效的软链接
+### Phase 2: 生成审查计划
 
-### Step 3: 输出报告
+将评估结果写入 `TODO.md`（遵循 `/todo-write` 格式），每个文档一个任务块：
 
+```markdown
+# TODO - docs 审查
+
+## 🏠 项目背景
+- **技术栈**: [从 Phase 1 获取]
+- **整体目标**: 深度审查 docs/ 文档，对比代码修正过时/错误/遗漏
+
+## 🎯 下一步行动
+> 优先级最高的那个文档任务（完整自包含）
+
+- [ ] 审查 docs/ROADMAP.md
+  - 🎯 对比代码和 git log，修正过时状态、补充缺失功能、更新 Known Issues
+  - 📁 `docs/ROADMAP.md` - [修改]
+  - 🔨 1. 读文档全文 2. 按需查代码验证关键断言 3. 修正不一致 4. 完成标志检查
+  - ✅ 文档内容与代码实际状态一致
+
+## 待办任务
+### 高优先级
+- [ ] 审查 docs/PRODUCT_BEHAVIOR.md（含审查维度 + 完成标志）
+### 普通优先级
+- [ ] 审查 docs/ARCHITECTURE.md
+- [ ] ...
 ```
-docs/ 结构状态:
-  PRODUCT_SOUL.md  ✅ (128行)
-  ARCHITECTURE.md  ✅ (245行)
-  ROADMAP.md       ✅ (89行)
 
-Gemini Context Hub:
-  ~/.gemini-context-hub/{项目名}_SOUL.md    → ✅
-  ~/.gemini-context-hub/{项目名}_ARCH.md    → ✅
-  ~/.gemini-context-hub/{项目名}_ROADMAP.md → ✅
+**每个任务必须包含**：审查该文档时应关注的具体维度（从下方审查维度表中选取相关项）。
 
-```
+向用户报告审查计划摘要后，提示使用 `/todo-doit` 开始逐文档执行。
+
+### 单文档审查流程（`/todo-doit` 执行时）
+
+每个文档任务内部执行 **调查-验证-修正** 循环：
+
+1. **Read**：读取该文档全文
+2. **Investigate**：针对文档中的关键断言，按需搜索/读取相关代码片段验证（Lazy Loading，不预加载）
+3. **Update**：发现不一致就直接修正文档
+4. **Report**：在 TODO.md 中标记完成，记录实际修改内容（`[修正]`/`[补充]`/`[删除]`/`[新增]`）
+
+**不存在的文档**：基于已收集的信息按标准结构生成。
+
+**不确定的改动**：先列出来询问用户，不要猜。
+
+### 审查维度
+
+| 维度 | 检查什么 |
+|------|---------|
+| **准确性** | 文档描述与代码实际是否一致？技术栈版本对吗？目录结构对吗？ |
+| **完整性** | 有没有重要功能/模块文档没提到？有没有该有的章节缺失？ |
+| **时效性** | 有没有过时的信息？已完成的 TODO 还在列表里？已删除的功能还在写？ |
+| **可操作性** | ROADMAP 的 Next Steps 是否清晰可执行？Known Issues 优先级合理吗？ |
+| **一致性** | 各文档之间有没有矛盾？同一件事在不同地方描述不同？ |
+| **路径有效性** | FEATURE_CODE_MAP 中的文件路径是否还存在？有没有新文件/模块未收录？ |
+| **行为覆盖** | PRODUCT_BEHAVIOR 的导航图和流程是否反映当前实际路由？新增页面/交互模式是否已记录？ |
 
 ---
+
+## 边界裁决
+
+审查时如果发现信息放错了位置，按以下规则迁移：
+
+| 边界 | 裁决标准 |
+|------|---------|
+| BEHAVIOR vs features/ | BEHAVIOR 只写**跨页面的、通用的、核心闭环**流程；features/ 写**页面内部的、分支众多的**局部逻辑 |
+| BEHAVIOR vs ARCHITECTURE | BEHAVIOR 讲**页面怎么流转**（用户视角）；ARCHITECTURE 讲**代码怎么组织**（开发者视角） |
+| ROADMAP vs MEMORY | ROADMAP 关注**进度**（做完了吗）；MEMORY 关注**知识**（为什么难做、怎么避坑） |
 
 ## 质量标准
 
-1. **产品语言优先**：PRODUCT_SOUL 和 ROADMAP 面向产品合伙人，用用户体验描述
+1. **产品语言优先**：PRODUCT_SOUL、PRODUCT_BEHAVIOR 和 ROADMAP 面向产品合伙人，用用户体验描述
 2. **Single Source of Truth**：每条信息只在一个文件中定义
 3. **图表用 Mermaid**
 4. **ROADMAP 可操作**：Next Steps 必须包含优先级
+5. **诚实报告**：只报告实际修改的内容，如果确实没有需要改的就说清楚原因
 
 ## 约束
-
-- 不修改 `README.md`、`CLAUDE.md`、`docs/ui/UI_SHOWCASE.md`
-- 软链接必须用**绝对路径**
-- Hub 中只放软链接，不复制文件内容
-- `docs/features/`、`docs/ui/specs/` 等子目录不动
+- 不要生成"一切 OK"的走过场报告

@@ -193,12 +193,13 @@ jest / pytest / flutter test
 | 文件 | 更新频率 | 内容 |
 |------|---------|------|
 | `docs/PRODUCT_SOUL.md` | 极少变 | 产品愿景、设计隐喻、情感目标、核心哲学 |
+| `docs/PRODUCT_BEHAVIOR.md` | 中频 | 用户流程、导航系统、交互模式库、全局状态策略 |
 | `docs/ARCHITECTURE.md` | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
 | `docs/ROADMAP.md` | 高频 | 当前阶段状态、Known Issues、Next Steps、待办 |
 | `docs/FEATURE_CODE_MAP.md` | 中频 | 功能→代码路径索引（GPS 导航） |
 | `docs/ui/UI_SHOWCASE.md` | 低频 | 设计系统工程参考手册 |
 
-**使用命令**：`/doc-update-context` — 检查/初始化 docs/ 结构，同步到 Gemini Context Hub
+**使用命令**：`/doc-update-context` — 深度审查 docs/ 文档内容，对比代码修正过时/错误/遗漏
 
 ### AI 上下文优化
 > **核心理念**：让 AI 用最少 token 获取最关键上下文

@@ -3,6 +3,8 @@ history.jsonlc
 file-history/
 shell-snapshots/
 todos/
+tasks/
+session-env/
 debug/
 projects/
 statsig/
