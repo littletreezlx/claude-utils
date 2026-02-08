@@ -75,8 +75,8 @@
 | 命令 | 类型 | 说明 |
 |------|------|------|
 | `/test-plan` | DAG | 测试规划与批量编写 |
-| `/test-run` | DAG | 测试运行与修复 |
-| `/test-audit` | DAG | 测试基础设施审计 |
+| `/test-run` | 即时 | 测试运行与修复 |
+| `/test-audit` | 即时 | 测试基础设施审计 |
 | `/create-e2e-test` | 即时 | 创建 E2E 测试 |
 
 ### 文档生成
@@ -150,8 +150,6 @@ python batchcc.py todo-task
 | `/refactor-project` | 项目级重构 |
 | `/refactor-module` | 模块重构 |
 | `/test-plan` | 测试规划与批量编写 |
-| `/test-run` | 测试运行与修复 |
-| `/test-audit` | 测试基础设施审计 |
 
 > 详细格式参见 @templates/workflow/DAG_TASK_FORMAT.md
 
