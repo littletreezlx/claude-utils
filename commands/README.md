@@ -33,7 +33,6 @@
 │  ├─ 生成 CLAUDE.md ──────── /claudemd
 │  ├─ 技术文档 ────────────── /techdoc
 │  ├─ 页面文档 ────────────── /create-page-doc
-│  ├─ 文档组织 ────────────── /doc-organize
 │  └─ 文档清理 ────────────── /doc-clean
 │
 ├─ UI 工程
@@ -86,7 +85,6 @@
 | `/claudemd` | 即时 | 生成项目 CLAUDE.md |
 | `/techdoc` | 即时 | 技术文档撰写 |
 | `/create-page-doc` | 即时 | 页面双文档体系生成 |
-| `/doc-organize` | 串行 | 文档结构优化 |
 | `/doc-clean` | 串行 | 文档清理归档 |
 
 ### 健康检查
@@ -112,7 +110,7 @@
 | `/todo-doit` | 串行 | 执行待办任务 |
 | `/todo-huge-task` | DAG | 大任务智能拆分 |
 | `/screen` | 即时 | 截图分析辅助 |
-| `/doc-update-context` | 即时 | 项目文档结构管理 + Gemini Context Hub 同步 |
+| `/doc-update-context` | 串行 | docs/ 全量文档深度审查与修正 |
 
 ---
 
@@ -170,4 +168,4 @@ python batchcc.py todo-task
 
 ---
 
-**命令总数**：30 个（含 1 个新增 `/doc-update-context`，替代 `/init-context-for-gemini`）| **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：29 个 | **设计原则**：目标导向、自主执行、单一真相源

@@ -20,7 +20,6 @@ FEATURE_CODE_MAP.md  → 功能-代码映射（AI 导航）
 - **严禁**靠猜测定位代码，必须先查此地图
 
 ### 可选文档（按需维护）
-- ABOUT.md - 项目初衷与愿景
 - PROJECT_STATUS.md - 项目状态快照
 - docs/decisions/ - ADR（重要架构决策）
 
@@ -122,28 +121,22 @@ FEATURE_CODE_MAP.md  → 功能-代码映射（AI 导航）
 
 ## Gemini Context 工作流 (按需启用)
 
-### 核心理念：文档分层
+Gemini 直接读 `docs/` 标准文档（PRODUCT_SOUL、PRODUCT_BEHAVIOR、ARCHITECTURE 等），不需要单独维护 context 文件。
 
-| 文档类型 | 目标读者 | 内容重点 | 示例 |
-|---------|---------|---------|------|
-| **技术实现文档** | Claude Code | 代码路径、行号、技术方案 | `docs/features/xxx.md` |
-| **产品逻辑文档** | Gemini | 用户体验、设计哲学、产品权衡 | `${项目名}-context-for-gemini.md` |
+**同步方式**：终端执行 `gemini-sync`，将所有项目文档合并为 Gemini Custom Gems 可上传的文件。
 
-### Gemini Context 原则
+### 文档分层原则
 
-1. **用产品语言，不写代码路径**
-   - ✅ Good: "右滑标记已读，1:1 跟手，触觉反馈增强物理质感"
-   - ❌ Bad: "使用 Dismissible Widget (article_list.dart:411)"
+| 文档类型 | 目标读者 | 内容重点 |
+|---------|---------|---------|
+| **技术实现文档** | Claude Code | 代码路径、行号、技术方案（`docs/features/xxx.md`） |
+| **产品文档** | Gemini / 人类 | 用户体验、设计哲学、产品权衡（`docs/PRODUCT_SOUL.md` 等） |
 
-2. **聚焦用户体验和产品决策**
-   - ✅ "地铁上仍可离线阅读"
-   - ❌ "使用 Drift 本地数据库"
-
-3. **必须包含"快速状态总览"**（完成度、核心能力、已知缺口）
-
-4. **优先级明确，工时透明**（P0/P1/P2/P3 + 预估工时）
+**产品文档写作原则**（面向 Gemini）：
+- 用产品语言，不写代码路径
+- 聚焦用户体验和产品决策
+- ROADMAP 需包含状态总览和优先级
 
 ### 相关 Commands
-- **`/init-context-for-gemini`**: 生成/更新 Gemini context 文档
 - **`/feat-discuss`**: 与 Gemini 讨论新功能
 - **`/feat-done`**: 功能完成后，生成验收报告
