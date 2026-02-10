@@ -19,7 +19,7 @@ python batchcc.py task-refactor-project  # 执行
 
 ## 自主执行原则
 
-> **强制阅读**：@templates/workflow/DAG_TASK_FORMAT.md
+> **格式规范**：DAG_TASK_FORMAT 已通过 @templates/workflow/DAG_TASK_FORMAT.md 加载到上下文，直接参照即可，无需搜索文件
 >
 > 核心：自主分析 → 自主决策 → 直接执行 → 记录理由（不询问用户）
 
@@ -78,7 +78,7 @@ task-refactor-project                    # 主任务文件
 | Stage 2 | 全量测试 + 跨模块集成检查 | 串行 |
 | Stage 3 | 架构文档、功能映射、ADR | 并行 |
 
-> TASK 格式参照 @templates/workflow/DAG_TASK_FORMAT.md
+> TASK 格式遵循上下文中已加载的 DAG_TASK_FORMAT 规范
 
 ---
 

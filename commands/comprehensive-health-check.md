@@ -63,7 +63,7 @@ task-health-check                    # 主任务文件
 - 即使工具报错，也要捕获输出写入报告（失败即信息）
 - **禁止修复代码**
 
-> 格式参照 @templates/workflow/DAG_TASK_FORMAT.md
+> 格式遵循上下文中已加载的 DAG_TASK_FORMAT 规范（通过 @templates/workflow/DAG_TASK_FORMAT.md 注入）
 
 ### 汇总任务 (Stage 5)
 

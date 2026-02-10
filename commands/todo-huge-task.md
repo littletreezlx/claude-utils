@@ -20,7 +20,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 
 ## 🤖 自主执行原则
 
-> **⛔ 强制阅读**：@templates/workflow/DAG_TASK_FORMAT.md（自主执行原则 + 执行模型友好规范）
+> **格式规范**：DAG_TASK_FORMAT 已通过 @templates/workflow/DAG_TASK_FORMAT.md 加载到上下文，直接参照即可，无需搜索文件
 >
 > 核心：自主分析 → 自主决策 → 直接执行 → 记录理由（不询问用户）
 >
@@ -143,6 +143,6 @@ python batchcc.py todo-task            # 执行
 ---
 
 ## 相关文档
-- @templates/workflow/DAG_TASK_FORMAT.md - 格式严格参照此详细格式规范（含执行模型友好规范）
+- @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式规范（已自动加载到上下文）
 - @templates/workflow/DAG_TASK_TEMPLATE.md - 空白模板
 - `/todo-write` - 简单串行任务

@@ -20,7 +20,7 @@ python batchcc.py task-add-test               # 执行
 
 ## 自主执行原则
 
-> **强制阅读**：@templates/workflow/DAG_TASK_FORMAT.md
+> **格式规范**：DAG_TASK_FORMAT 已通过 @templates/workflow/DAG_TASK_FORMAT.md 加载到上下文，直接参照即可，无需搜索文件
 >
 > 核心：识别缺失测试 → 自主决策 → 直接生成任务文件（不询问用户）
 
@@ -79,7 +79,7 @@ task-add-test                          # 主任务文件
 - **推荐包含**：🏠 项目背景、🔨 执行步骤
 - `文件:` 和 `验证:` 字段必填
 
-> 完整格式参照 @templates/workflow/DAG_TASK_FORMAT.md
+> 完整格式遵循上下文中已加载的 DAG_TASK_FORMAT 规范
 
 **业务逻辑不清晰时**：添加 `⚠️ 需要人工确认断言逻辑` 标记
 

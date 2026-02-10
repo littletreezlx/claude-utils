@@ -151,7 +151,7 @@ python batchcc.py todo-task
 | `/refactor-module` | 模块重构 |
 | `/test-plan` | 测试规划与批量编写 |
 
-> 详细格式参见 @templates/workflow/DAG_TASK_FORMAT.md
+> 详细格式参见 DAG_TASK_FORMAT 规范（通过 @templates/workflow/DAG_TASK_FORMAT.md 自动加载到上下文）
 
 ---
 
