@@ -37,7 +37,7 @@ description: 代码审查与提测单生成 ultrathink
 
 | 维度 | 审查红线 |
 |------|---------|
-| 崩溃风险 | `!!` 非空断言、未捕获异常、`lateinit` 误用 |
+| 崩溃风险 | 非空断言、未捕获异常、`lateinit` 误用 |
 | 内存泄漏 | ViewModel 持有 Activity 引用、未注销 Listener、静态 Context |
 | 生命周期 | `lifecycleScope` 外收集 Flow、LiveData 倒灌 |
 | 线程安全 | 主线程 IO、`GlobalScope` 滥用 |

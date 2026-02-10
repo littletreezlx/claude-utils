@@ -17,5 +17,6 @@
     "command": "npx -y ccusage statusline --format '{{percentage}}'",
     "padding": 0
   },
-  "alwaysThinkingEnabled": false
+  "alwaysThinkingEnabled": false,
+  "model": "opus"
 }
