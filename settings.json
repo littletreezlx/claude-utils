@@ -12,11 +12,5 @@
       }
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "npx -y ccusage statusline --format '{{percentage}}'",
-    "padding": 0
-  },
-  "alwaysThinkingEnabled": false,
-  "model": "opus"
+  "alwaysThinkingEnabled": false
 }
