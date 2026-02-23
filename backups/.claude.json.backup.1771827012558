@@ -1,5 +1,13 @@
 {
+<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
+<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
+  "numStartups": 211,
+========
   "numStartups": 210,
+>>>>>>>> 42c9355 (temp):backups/.claude.json.backup.1771826818926
+========
+  "numStartups": 210,
+>>>>>>>> 4c12724 ("AutoSave"):backups/.claude.json.backup.1771827012558
   "installMethod": "native",
   "autoUpdates": false,
   "hasSeenTasksHint": true,
@@ -22,8 +30,8 @@
     "install-slack-app": 207,
     "drag-and-drop-images": 208,
     "double-esc-code-restore": 209,
-    "continue": 200,
-    "shift-tab": 200,
+    "continue": 210,
+    "shift-tab": 210,
     "image-paste": 206,
     "config-thinking-mode": 5,
     "ultrathink-keyword": 47,
@@ -296,10 +304,10 @@
       "hasClaudeMdExternalIncludesWarningShown": false,
       "exampleFiles": [
         "batchcc.py",
-        "settings.json",
-        "known_marketplaces.json",
-        "CLAUDE.md",
-        "test-plan.md"
+        "test-plan.md",
+        "refactor-project.md",
+        "code-review.md",
+        "known_marketplaces.json"
       ],
       "reactVulnerabilityCache": {
         "detected": false,
@@ -340,7 +348,7 @@
       },
       "lastSessionId": "0720ad62-c48d-40e9-979b-6a48c8535c3d",
       "hasCompletedProjectOnboarding": true,
-      "exampleFilesGeneratedAt": 1769523073320,
+      "exampleFilesGeneratedAt": 1771827015053,
       "lastFpsAverage": 18.36,
       "lastFpsLow1Pct": 89.13
     },
@@ -851,7 +859,7 @@
       },
       "referrer_reward": null,
       "remaining_passes": 3,
-      "timestamp": 1771822621117
+      "timestamp": 1771827014688
     }
   },
   "passesUpsellSeenCount": 3,
@@ -941,7 +949,15 @@
   "passesLastSeenRemaining": 3,
   "clientDataCache": {
     "data": {},
-    "timestamp": 1771826088626
+<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
+<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
+    "timestamp": 1771827048658
+========
+    "timestamp": 1771826714642
+>>>>>>>> 42c9355 (temp):backups/.claude.json.backup.1771826818926
+========
+    "timestamp": 1771826832950
+>>>>>>>> 4c12724 ("AutoSave"):backups/.claude.json.backup.1771827012558
   },
   "hasShownOpus46Notice": {
     "e0abaf8d-fafb-4699-b0af-b072bbda7d60": true

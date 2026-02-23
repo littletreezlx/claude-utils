@@ -1,9 +1,13 @@
 {
 <<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
+<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
   "numStartups": 211,
 ========
   "numStartups": 210,
 >>>>>>>> 42c9355 (temp):backups/.claude.json.backup.1771826818926
+========
+  "numStartups": 210,
+>>>>>>>> 4c12724 ("AutoSave"):backups/.claude.json.backup.1771827012558
   "installMethod": "native",
   "autoUpdates": false,
   "hasSeenTasksHint": true,
@@ -946,10 +950,14 @@
   "clientDataCache": {
     "data": {},
 <<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
+<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
     "timestamp": 1771827048658
 ========
     "timestamp": 1771826714642
 >>>>>>>> 42c9355 (temp):backups/.claude.json.backup.1771826818926
+========
+    "timestamp": 1771826832950
+>>>>>>>> 4c12724 ("AutoSave"):backups/.claude.json.backup.1771827012558
   },
   "hasShownOpus46Notice": {
     "e0abaf8d-fafb-4699-b0af-b072bbda7d60": true
