@@ -1,9 +1,5 @@
 {
-<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
   "numStartups": 211,
-========
-  "numStartups": 210,
->>>>>>>> 42c9355 (temp):backups/.claude.json.backup.1771826818926
   "installMethod": "native",
   "autoUpdates": false,
   "hasSeenTasksHint": true,
@@ -12,7 +8,7 @@
   },
   "tipsHistory": {
     "new-user-warmup": 7,
-    "plan-mode-for-complex-tasks": 206,
+    "plan-mode-for-complex-tasks": 211,
     "terminal-setup": 206,
     "memory-command": 199,
     "theme-command": 203,
@@ -36,7 +32,7 @@
     "desktop-app": 201,
     "web-app": 203,
     "mobile-app": 203,
-    "guest-passes": 208,
+    "guest-passes": 211,
     "permissions": 203,
     "rename-conversation": 207,
     "custom-commands": 209,
@@ -46,7 +42,7 @@
     "frontend-design-plugin": 95,
     "overage-promo": 189
   },
-  "promptQueueUseCount": 105,
+  "promptQueueUseCount": 106,
   "cachedStatsigGates": {
     "tengu_prompt_suggestion": true,
     "tengu_year_end_2025_campaign_promo": false,
@@ -945,11 +941,7 @@
   "passesLastSeenRemaining": 3,
   "clientDataCache": {
     "data": {},
-<<<<<<<< HEAD:backups/.claude.json.backup.1771827055774
-    "timestamp": 1771827048658
-========
-    "timestamp": 1771826714642
->>>>>>>> 42c9355 (temp):backups/.claude.json.backup.1771826818926
+    "timestamp": 1771827223857
   },
   "hasShownOpus46Notice": {
     "e0abaf8d-fafb-4699-b0af-b072bbda7d60": true

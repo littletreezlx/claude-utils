@@ -41,6 +41,7 @@ import subprocess
 import argparse
 import os
 import signal
+import shutil
 from typing import Tuple, List
 from pathlib import Path
 from batch_executor_base import BaseBatchExecutor, TaskResult
@@ -92,6 +93,10 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
     def __init__(self):
         super().__init__("batchcc.py")
+        self.claude_bin = shutil.which("claude")
+        if not self.claude_bin:
+            print("❌ 未找到 claude 命令，请确认已安装并在 PATH 中")
+            sys.exit(1)
         self.auto_commit = True  # 默认启用自动执行 git commit
         self.state_manager = None  # 状态管理器（由 DAGExecutor 注入）
         self.current_stage_id = None  # 当前执行的阶段ID
@@ -267,7 +272,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
                 # 构建claude命令
                 claude_cmd = [
-                    "/Users/zhanglingxiao/.local/bin/claude",
+                    self.claude_bin,
                     "-p", enhanced_content,
                     "--allowedTools", "*",
                     "--permission-mode", "bypassPermissions"
@@ -358,7 +363,7 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
                 # 构建claude命令
                 claude_cmd = [
-                    "/Users/zhanglingxiao/.local/bin/claude",
+                    self.claude_bin,
                     "-p", enhanced_content,
                     "--allowedTools", "*",
                     "--permission-mode", "bypassPermissions"
