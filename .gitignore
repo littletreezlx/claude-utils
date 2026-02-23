@@ -1,3 +1,6 @@
+# 备份文件
+backups/
+
 # Claude Code 对话历史和临时文件
 history.jsonlc
 file-history/
