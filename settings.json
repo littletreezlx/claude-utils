@@ -12,7 +12,5 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": false,
-  "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "medium"
+  "alwaysThinkingEnabled": false
 }
