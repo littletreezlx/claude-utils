@@ -18,9 +18,24 @@ description: Git规范提交
 4. **执行提交** - `git add` + `git commit`
 
 ## 提交格式
-`<type>(<scope>): <description>`
+`<type>(<scope>): <summary>`
 
 类型：feat, fix, docs, style, refactor, perf, test, chore, ci
+
+### 精炼原则
+- **只写一行 summary**，不加 body，除非改动涉及 3 个以上独立变更点
+- summary 写**意图**（为什么改），不罗列文件或代码细节
+- 控制在 72 字符以内
+- 禁止添加 `Co-authored-by`、`Co-Authored-By` 等署名行
+
+### 示例
+```
+# ✅ 好
+refactor(offlineSync): 用显式方法调用替换可变字段注入
+
+# ❌ 差 - 罗列细节
+refactor(offlineSync): 用 bindTrigger/triggerSync 替换接口中的 syncTrigger 可变字段
+```
 
 ## 注意事项
 - 优先使用对话中已知的改动意图，不要重新读代码猜测
