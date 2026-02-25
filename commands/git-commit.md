@@ -26,7 +26,7 @@ description: Git规范提交
 - **只写一行 summary**，不加 body，除非改动涉及 3 个以上独立变更点
 - summary 写**意图**（为什么改），不罗列文件或代码细节
 - 控制在 72 字符以内
-- 禁止添加 `Co-authored-by`、`Co-Authored-By` 等署名行
+- 禁止添加 `Co-authored-by`、`Co-Authored-By`、"Co-authored-by: Cursor <cursoragent@cursor.com>"等署名行
 
 ### 示例
 ```
