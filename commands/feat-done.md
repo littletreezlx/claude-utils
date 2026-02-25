@@ -18,9 +18,9 @@ description: 任务收尾：文档同步 -> Git 提交 -> 生成验收报告
 - UI 风格改动需更新 `docs/ui/UI_SHOWCASE.md`
 - **动作**：如果代码实现与文档不符，**立即更新文档**
 
-### Step 2: 提交构建
+### Step 2: Git 提交
 
-按 `/git-commit` 规范执行提交。
+执行 `/git-commit` 完成提交。
 
 ### Step 3: 生成验收报告
 
