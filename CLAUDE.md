@@ -103,6 +103,17 @@ jest / pytest / flutter test
 
 > **原则**：难测的代码 = 难维护的代码
 
+### E2E 测试陷阱（Flutter）
+
+**pumpAndSettle() 卡死**：无限循环动画（如播放器旋转）导致测试永远卡住。
+
+**解决方案**：
+1. App 级 `debugDisableAnimations` 参数禁用页面过渡
+2. 用 `pump(Duration)` 替代 `pumpAndSettle()`
+3. Test Facade 绕过 UI 直接操作 Repository
+
+> 详见 `/flutter/CLAUDE.md` → E2E 测试最佳实践
+
 ---
 
 ## 调试原则
