@@ -103,17 +103,6 @@ jest / pytest / flutter test
 
 > **原则**：难测的代码 = 难维护的代码
 
-### E2E 测试陷阱（Flutter）
-
-**pumpAndSettle() 卡死**：无限循环动画（如播放器旋转）导致测试永远卡住。
-
-**解决方案**：
-1. App 级 `debugDisableAnimations` 参数禁用页面过渡
-2. 用 `pump(Duration)` 替代 `pumpAndSettle()`
-3. Test Facade 绕过 UI 直接操作 Repository
-
-> 详见 `/flutter/CLAUDE.md` → E2E 测试最佳实践
-
 ---
 
 ## 调试原则
@@ -221,6 +210,19 @@ jest / pytest / flutter test
 ├── SNIPPETS.md    # 代码模式速查（正例 + 反例）
 └── MEMORY.md      # 项目长期记忆（业务规则、陷阱、特殊逻辑）
 ```
+
+**MEMORY.md 写法规范**（"结论 + 原因"格式）：
+```markdown
+## [主题分节，如：API 踩坑 / 测试 / 架构决策]
+
+- **结论**：做什么 / 不做什么（一句话）
+  原因：为什么——触发这条结论的具体问题或失败案例
+```
+
+**维护原则**：
+- 触发时机：踩坑后、做出重要决策后、发现反直觉规律后
+- 单文件膨胀时：把已不适用的旧条目移入 `MEMORY_archive.md`，保留仍有效的
+- 禁止写流水账；每条必须是可操作的结论，不是过程记录
 
 ---
 

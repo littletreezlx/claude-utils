@@ -36,6 +36,12 @@ description: 测试运行与修复 ultrathink
 - E2E 使用稳定选择器（data-testid 优先）
 - E2E 多次运行验证稳定性
 
+## Flutter 项目特殊说明
+
+- **日常迭代**：只跑 unit + widget test（`../scripts/test.sh`）
+- **禁止自动跑 E2E**：`integration_test` 需要模拟器，耗时且脆弱，Agent 无法区分环境抖动和真实 Bug
+- **E2E 仅发布前人工触发**，验证 3-5 条核心生死线
+
 ## 相关文档
 
 - `/test-audit` - 测试基础设施审计（环境有问题时先用这个）
