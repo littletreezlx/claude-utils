@@ -69,6 +69,18 @@ description: 快速健康检查 ultrathink
 
 ---
 
+### Step 6: Agent 友好度评估
+
+**CLAUDE.md 质量**：
+- 项目级 CLAUDE.md 是否存在？
+- 内容与代码一致？（抽查 2-3 条规则）
+- 是否包含执行命令、架构决策、禁止事项？
+
+**模式一致性**：
+- 抽查 2 个核心操作（如状态管理、网络请求），全项目是否统一方式？
+
+---
+
 ## 📊 输出格式
 
 ```markdown
@@ -84,6 +96,7 @@ description: 快速健康检查 ultrathink
 | 测试覆盖度 | X/10 | 🟢/🟡/🔴 |
 | 代码-测试-文档一致性 | X/10 | 🟢/🟡/🔴 |
 | 代码质量 | X/10 | 🟢/🟡/🔴 |
+| Agent 友好度 | X/10 | 🟢/🟡/🔴 |
 
 ### 🚨 关键发现（top 5）
 
@@ -108,6 +121,7 @@ description: 快速健康检查 ultrathink
 | 文档 | 用途 |
 |------|------|
 | /comprehensive-health-check | 全面深度检查（DAG） |
+| /codebase-align | 快速对齐（发现不一致直接修复） |
 | /test-audit | 测试基础设施审计 |
 | /refactor-project | 项目级重构（DAG） |
 

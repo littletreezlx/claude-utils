@@ -13,6 +13,13 @@
 │  ├─ 截图分析 ──────────── /screen
 │  └─ 快速体检 ──────────── /health-check
 │
+├─ 代码库维护
+│  ├─ 快速对齐 ──────────── /codebase-align
+│  ├─ 快速体检 ──────────── /health-check
+│  ├─ 生成/更新 CLAUDE.md ── /claudemd
+│  ├─ 文档审查 ──────────── /doc-update-context
+│  └─ 全面体检（DAG）────── /comprehensive-health-check
+│
 ├─ 功能开发
 │  ├─ 方案讨论 ──────────── /feat-discuss → [Gemini] → /feat-done
 │  ├─ PRD 转需求 ─────────── /prd-to-doc
@@ -87,10 +94,11 @@
 | `/create-page-doc` | 即时 | 页面双文档体系生成 |
 | `/doc-clean` | 串行 | 文档清理归档 |
 
-### 健康检查
+### 健康检查 & 代码库维护
 | 命令 | 类型 | 说明 |
 |------|------|------|
 | `/health-check` | 即时 | 快速健康检查 |
+| `/codebase-align` | 即时 | 代码库自洽性对齐（发现不一致直接修复） |
 | `/comprehensive-health-check` | DAG | 全面深度诊断 |
 
 ### UI 工程
@@ -166,4 +174,18 @@ python batchcc.py todo-task
 
 ---
 
-**命令总数**：29 个 | **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：30 个 | **设计原则**：目标导向、自主执行、单一真相源
+
+---
+
+## 矫正坏状态工作流
+
+项目状态不佳？按以下顺序操作：
+
+1. `/health-check` — 快速诊断，了解问题在哪
+2. `/codebase-align` — 快速对齐四要素（代码/测试/文档/CLAUDE.md）
+3. `/test-run` — 修复失败的测试（建立安全网）
+4. `/claudemd` — 生成或更新项目级 CLAUDE.md
+5. `/refactor` / `/refactor-module` — 按诊断结果修复代码
+
+核心原则：先建立测试合约 → 再修复代码 → 最后对齐文档
