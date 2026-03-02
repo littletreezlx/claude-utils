@@ -24,7 +24,7 @@
 │  └─ 项目级（DAG）────────── /refactor-project
 │
 ├─ 测试工程
-│  ├─ 测试规划（DAG）────── /test-plan
+│  ├─ 测试审查与补齐（DAG）── /test-plan
 │  ├─ 运行与修复 ─────────── /test-run
 │  ├─ 基础设施审计 ────────── /test-audit
 │  └─ 创建 E2E 测试 ──────── /create-e2e-test
