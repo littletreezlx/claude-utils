@@ -194,7 +194,7 @@ DAG 任务设计为**完全自动化、无人值守**的执行系统。
 |------|------|------|------|--------|
 | `name` | string | ✅ | 阶段名称 | - |
 | `mode` | enum | ✅ | `serial` 或 `parallel` | - |
-| `max_workers` | int | ❌ | 最大并发数（仅 parallel） | 4 |
+| `max_workers` | int | ❌ | 最大并发数（仅 parallel） | 2 |
 
 ### 执行模式
 

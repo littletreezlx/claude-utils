@@ -150,7 +150,7 @@ class DAGParser:
         # 提取参数
         name = self._extract_param(first_line, 'name', required=True)
         mode = self._extract_param(first_line, 'mode', required=True)
-        max_workers = int(self._extract_param(first_line, 'max_workers', default='4'))
+        max_workers = int(self._extract_param(first_line, 'max_workers', default='2'))
 
         # 验证 mode
         if mode not in ['serial', 'parallel']:

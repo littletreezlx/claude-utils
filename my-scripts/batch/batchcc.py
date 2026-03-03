@@ -17,7 +17,7 @@ python batchcc.py
 # 指定模板文件
 python batchcc.py task-refactor.md
 
-# 并行执行（默认8个线程）
+# 并行执行（默认2个线程）
 python batchcc.py --parallel 4
 
 # 强制串行执行
