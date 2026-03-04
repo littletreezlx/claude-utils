@@ -189,3 +189,4 @@ python batchcc.py todo-task
 5. `/refactor` / `/refactor-module` — 按诊断结果修复代码
 
 核心原则：先建立测试合约 → 再修复代码 → 最后对齐文档
+
