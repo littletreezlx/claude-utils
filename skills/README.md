@@ -28,6 +28,7 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `delivery-workflow` | 完整功能开发结束，进入收尾 | `/feat-done` |
 | `consistency-check` | 开始新功能、首次进入项目 | `/codebase-align` |
 | `code-quality` | 提交前质量关卡、准备 merge | `/code-review` |
+| `feat-discuss-local-gemini` | 讨论新功能、咨询 Gemini 产品/设计意见 | `/feat-discuss-local-gemini` |
 
 ---
 

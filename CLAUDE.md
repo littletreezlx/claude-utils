@@ -70,6 +70,7 @@
 | 一个完整功能开发完毕 | `/feat-done` | 文档同步 + 提交 + 验收报告 |
 | 测试失败需要修复 | `/test-run` | 自动诊断修复，而非手动逐个排查 |
 | 用户说"项目状态不好"或开始陌生项目 | `/health-check` | 快速诊断 |
+| 遇到产品方向/架构/UI 设计决策需要外部意见 | `feat-discuss-local-gemini` skill | 自动调用 Gemini API 咨询 |
 **不自动触发的**（需用户明确要求才通过 Skill 调用）：
 - `/comprehensive-health-check`、`/refactor-project`、`/test-plan`（重型 DAG，耗时长）
 - `/doc-update-context`（深度审查，可能大量改动）

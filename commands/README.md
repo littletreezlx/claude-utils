@@ -21,7 +21,8 @@
 │  └─ 全面体检（DAG）────── /comprehensive-health-check
 │
 ├─ 功能开发
-│  ├─ 方案讨论 ──────────── /feat-discuss → [Gemini] → /feat-done
+│  ├─ 方案讨论（自动）────── /feat-discuss → Gemini API → 自动落库
+│  ├─ 方案讨论（手动）────── /feat-discuss-web-gemini → 复制到 Gemini Web
 │  ├─ PRD 转需求 ─────────── /prd-to-doc
 │  └─ 学习新项目 ─────────── /learn-new-project
 │
@@ -73,7 +74,9 @@
 ### 功能开发 & 方案设计
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/feat-discuss` | 即时 | 工程现场扫描 + Gemini 咨询 Prompt |
+| `/feat-discuss` | 即时 | 路由入口，默认调用 local-gemini |
+| `/feat-discuss-local-gemini` | 即时 | 自动调用 Gemini API + 自动落库 |
+| `/feat-discuss-web-gemini` | 即时 | 生成 Prompt 供手动转发 Gemini Web |
 | `/feat-done` | 即时 | 方案落库 + 验收报告 |
 | `/prd-to-doc` | 即时 | PRD 转客户端需求文档 |
 | `/learn-new-project` | 即时 | 快速学习陌生项目 |
