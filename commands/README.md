@@ -163,18 +163,35 @@ python batchcc.py todo-task
 
 ---
 
+## 自动化 Skills
+
+除了手动触发的命令，还有 5 个自动触发的 Skill（Claude 根据意图自动调用）：
+
+| Skill | 自动触发场景 |
+|-------|-------------|
+| `git-workflow` | 代码改完、测试通过时自动提交 |
+| `test-workflow` | 代码修改后自动验证、测试失败自动修复 |
+| `delivery-workflow` | 功能完成后自动走完收尾流水线 |
+| `consistency-check` | 开始新功能时自动检查代码库自洽性 |
+| `code-quality` | 提交前自动代码审查 |
+
+> Skills 详细说明见 `~/.claude/skills/README.md`
+
+---
+
 ## 相关文档
 
 | 文档 | 说明 |
 |------|------|
 | @CLAUDE.md | 命令设计指南 |
+| ~/.claude/skills/README.md | Skill 编写指南 |
 | @templates/workflow/DAG_TASK_FORMAT.md | DAG 任务格式规范 |
 | @templates/workflow/DAG_EXAMPLE_*.md | DAG 任务示例 |
 | @templates/docs/ | 文档模板 |
 
 ---
 
-**命令总数**：30 个 | **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：30 个 | **Skills**：5 个 | **设计原则**：目标导向、自主执行、单一真相源
 
 ---
 
