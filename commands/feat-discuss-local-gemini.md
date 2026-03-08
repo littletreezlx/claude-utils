@@ -24,8 +24,10 @@ description: (自动模式) 工程现状梳理 -> 自动调用 Gemini API -> Cri
 3. **自动收集项目上下文文档**（存在则读取，不存在则跳过）：
    - `docs/PRODUCT_SOUL.md`、`docs/ROADMAP.md`、`docs/ARCHITECTURE.md`
    - `docs/PRODUCT_BEHAVIOR.md`、`docs/FEATURE_CODE_MAP.md`
-   - `docs/adr/` — 最近的架构决策记录
+   - `docs/adr/` — 架构决策记录（提取策略：全局最新 2 条 + 与当前问题同标签 2 条）
    - `CLAUDE.md` 或 `.claude/CLAUDE.md`
+
+4. **按需附加**（复杂问题时）：核心文件的 Git Diff 或 Provider 结构快照
 
 ---
 
@@ -36,7 +38,7 @@ description: (自动模式) 工程现状梳理 -> 自动调用 Gemini API -> Cri
 node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 ```
 
-Prompt 包含：项目上下文 + 最近 ADR + 工程现状简报 + 用户需求。
+Prompt 包含：项目上下文 + 相关 ADR + 工程现状简报 + 用户需求。
 
 ---
 
@@ -58,9 +60,17 @@ Prompt 包含：项目上下文 + 最近 ADR + 工程现状简报 + 用户需求
 
 ### Phase 4: Founder 审批 & 落库
 
-**等待 Founder 确认后再落库**（用户可以：同意 / 修改 / 追问 / 否决）：
+**等待 Founder 确认后再落库**：
 
-1. Founder 确认后，将方案转化为 `docs/features/xxx.md`
+| 用户操作 | 后续动作 |
+|---------|---------|
+| **同意** | 继续落库 |
+| **修改** | 根据反馈调整 Spec |
+| **追问** | 携带上一轮结论重新调用 Gemini |
+| **否决** | 记录驳回理由到 `docs/adr/rejections/`（防止重复踩坑） |
+
+落库步骤：
+1. 将方案转化为 `docs/features/xxx.md`
 2. 末尾包含可执行 Checklist（`- [ ]` 格式，单文件粒度）
 3. 重要决策记录到 `docs/adr/`
 4. 输出 "Ready to build"
@@ -69,6 +79,10 @@ Prompt 包含：项目上下文 + 最近 ADR + 工程现状简报 + 用户需求
 
 - 用户追问 → 携带上一轮关键结论 + ADR 重新调用脚本
 - 每次调用独立（脚本无状态），所以必须在 Prompt 中携带历史共识
+
+## ADR 格式
+
+参见 `@templates/docs/ADR_TEMPLATE.md`
 
 ## 约束条件
 

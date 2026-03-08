@@ -10,7 +10,7 @@ description: >
   — do not guess on product philosophy or design aesthetics, consult Gemini instead.
   Automatically calls local Gemini API, receives response, and synthesizes into
   actionable spec documents.
-version: 0.1.0
+version: 0.2.0
 ---
 
 # 与 Gemini 自动化协作 — 产品 & 设计咨询
@@ -27,14 +27,17 @@ version: 0.1.0
 3. 用户明确提到"Gemini"、"产品讨论"、"设计讨论"
 4. 需要产品哲学或设计架构层面的外部意见
 5. **Claude Code 自主判断**（硬性触发红线）：
-   - 实现某功能需引入 2 个以上新依赖 → 必须咨询（可能范围膨胀）
-   - 状态管理复杂度升级（Provider 间深层依赖、跨组件通信）→ 必须咨询
-   - 涉及动画曲线、加载状态、空状态等"仪式感"交互 → 必须咨询
-   - 产品方向抉择、架构 trade-off、UI/UX 设计决策
+   - **架构级依赖**：引入涉及核心架构的依赖（路由、状态管理、网络层、本地存储、UI 组件库）→ 必须咨询
+   - **数据层变更**：涉及 Drift/SQLite 表结构变更、Schema 迁移、核心 Entity 修改 → 必须咨询
+   - **状态复杂度升级**：Provider 间深层依赖、跨组件通信、状态共享逻辑复杂化 → 必须咨询
+   - **仪式感交互**：涉及自定义 AnimationController、Hero 动画、物理引擎交互 → 必须咨询
+   - **通用组件新建**：打算创建新的可能具备通用性的 UI Widget，而非复用现有基础组件 → 必须咨询（防止设计语言碎片化）
+   - 产品方向抉择、架构 trade-off
    - 不确定是否符合项目的"灵魂"（PRODUCT_SOUL）
 
 **不触发**：
 - 纯代码实现问题（Claude Code 自己能解决）
+- 轻量级工具依赖（如 `path_provider`、`url_launcher`、`share_plus`）
 - 用户说"提交到 Gemini Web"（→ 用 `/feat-discuss-web-gemini`）
 - 没有产品影响的纯工程决策
 
@@ -49,10 +52,13 @@ version: 0.1.0
 **上下文收集**（读取当前项目文档，存在则读取，不存在则跳过）：
 - `docs/PRODUCT_SOUL.md`、`docs/ROADMAP.md`、`docs/ARCHITECTURE.md`
 - `docs/PRODUCT_BEHAVIOR.md`、`docs/FEATURE_CODE_MAP.md`
-- `docs/adr/` — 最近的架构决策记录（保证多轮讨论连贯性）
+- `docs/adr/` — 架构决策记录（提取策略：全局最新 2 条 + 与当前问题同标签 2 条）
 - `CLAUDE.md` 或 `.claude/CLAUDE.md`
 
-内容过长时提取关键段落，优先保留 PRODUCT_SOUL + ROADMAP + 最近 ADR。
+**按需附加**（复杂问题时）：
+- 核心文件的 Git Diff 或 Provider 结构快照
+
+内容过长时提取关键段落，优先保留 PRODUCT_SOUL + ROADMAP + 相关 ADR。
 
 ### Step 2: 调用 Gemini
 
@@ -68,8 +74,8 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 {文档内容}
 ### ROADMAP
 {文档内容}
-### 最近架构决策 (ADR)
-{最近 3-5 条决策摘要}
+### 相关架构决策 (ADR)
+{按标签提取的 ADR 摘要}
 {... 其他文档 ...}
 
 ## 工程现状
@@ -98,12 +104,37 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 **展示 Gemini 回复 + Claude Code 评估后，等待 Founder 确认，再执行落库：**
 
 1. 向用户展示 Gemini 完整回复 + Claude Code 的 Critical Thinking 评估
-2. **等待 Founder 确认**（用户可以：同意 / 修改 / 追问 Gemini / 否决）
+2. **等待 Founder 确认**：
+   - **同意** → 继续落库
+   - **修改** → 根据反馈调整 Spec
+   - **追问** → 携带上一轮结论重新调用 Gemini
+   - **否决** → 记录驳回理由到 `docs/adr/rejections/`（防止重复踩坑）
 3. 确认后：将方案转化为 Spec 文档（`docs/features/xxx.md`），末尾含可执行 Checklist
 4. 记录本次架构决策到 `docs/adr/`（如果是重要决策）
 5. 输出 "Ready to build"
 
 **多轮追问**：用户不满意时可继续追问，每次携带上一轮关键结论 + ADR 重新调用。
+
+## ADR 格式规范
+
+架构决策记录采用以下精简格式，便于 AI 快速解析：
+
+```markdown
+# ADR-{编号}: {简短标题}
+
+**标签**: `[State]` / `[UI]` / `[Network]` / `[Data]` / `[Architecture]`
+**状态**: Proposed / Accepted / Deprecated
+**日期**: YYYY-MM-DD
+
+## Context
+{100 字以内：为什么做这个决定？遇到了什么问题？}
+
+## Decision
+{明确的技术选型或产品路径，具体到代码层面}
+
+## Consequences
+{引入的技术债、限制、或对后续开发的约束}
+```
 
 ## 沟通规范
 
