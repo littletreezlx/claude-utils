@@ -210,7 +210,7 @@ jest / pytest / flutter test
 
 ### 文档生成规范
 - 禁止：根目录临时文件、日期命名流水账、简单任务生成文档
-- 推荐：架构决策 → ADR | 新功能 → 更新功能映射文档 | 临时总结 → 只在对话中展示
+- 推荐：架构决策 → Feature Spec 的 Architecture Decisions 段 | 新功能 → 更新功能映射文档 | 临时总结 → 只在对话中展示
 - markdown 文档中的图表使用 mermaid 格式
 
 ### 项目文档标准结构
