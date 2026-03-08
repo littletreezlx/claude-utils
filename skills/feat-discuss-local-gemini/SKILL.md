@@ -49,16 +49,26 @@ version: 0.2.0
 - `product` — 产品逻辑、架构推演、需求拷问
 - `design` — UI/UX 决策、视觉规范、像素级解构
 
-**上下文收集**（读取当前项目文档，存在则读取，不存在则跳过）：
-- `docs/PRODUCT_SOUL.md`、`docs/ROADMAP.md`、`docs/ARCHITECTURE.md`
-- `docs/PRODUCT_BEHAVIOR.md`、`docs/FEATURE_CODE_MAP.md`
-- `docs/adr/` — 架构决策记录（提取策略：全局最新 2 条 + 与当前问题同标签 2 条）
-- `CLAUDE.md` 或 `.claude/CLAUDE.md`
+**上下文收集 — 动态组装策略**：
+
+**Global 常驻（每次必带）**：
+- `docs/PRODUCT_SOUL.md` — 产品灵魂，确保不跑偏
+
+**按需上下文（根据角色和话题动态选择）**：
+
+| 角色 / 话题 | 额外携带 | 不携带 |
+|-------------|---------|--------|
+| `product` — 产品方向、需求讨论 | `docs/ROADMAP.md` | `FEATURE_CODE_MAP`（避免被现有代码结构限制想象力） |
+| `product` — 架构 trade-off | `docs/ARCHITECTURE.md`、相关 ADR | — |
+| `design` — UI/UX 设计 | `docs/UI_SHOWCASE.md`、相关页面的 `docs/ui/specs/*.md` | `ARCHITECTURE`（设计不需要技术细节） |
+| 涉及具体功能模块 | `docs/FEATURE_CODE_MAP.md` 中相关段落 | 全文 |
+
+**ADR 提取策略**：`docs/adr/` 目录下，全局最新 2 条 + 与当前问题同标签 2 条（目录为空则跳过）。
 
 **按需附加**（复杂问题时）：
 - 核心文件的 Git Diff 或 Provider 结构快照
 
-内容过长时提取关键段落，优先保留 PRODUCT_SOUL + ROADMAP + 相关 ADR。
+**注意**：不携带 `CLAUDE.md`（这是给 Claude Code 的工程操作指南，Gemini 作为产品/设计顾问不需要）。
 
 ### Step 2: 调用 Gemini
 
@@ -93,6 +103,7 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 2. **过度设计检验**：方案是否引入了不必要的复杂度？是否违反 "Less but Better"？
 3. **一致性检验**：与现有 ADR、已有架构决策是否矛盾？
 4. **成本评估**：实现成本与收益是否匹配？
+5. **PRODUCT_SOUL 守护**：当讨论涉及产品方向调整时，主动对照 `PRODUCT_SOUL.md` 检查 — 如果 Gemini 的建议与产品灵魂存在偏差，必须明确 flag 给 Founder
 
 **输出给用户时，必须包含：**
 - Gemini 的完整回复

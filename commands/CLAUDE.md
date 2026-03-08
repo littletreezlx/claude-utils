@@ -110,6 +110,23 @@ commands/
 
 ---
 
+## Command → Skill 迁移
+
+当一个 Command 被转化为 Skill 后，**对应的 Command 文件可以直接移除**，无需同时保留。
+
+**适合迁移的 Command**：
+- 用户几乎不会主动 `/xxx` 调用的（如 `git-commit` → `git-workflow` skill）
+- Claude 自动触发比手动调用更自然的（如 `code-review` → `code-quality` skill）
+
+**不适合迁移的 Command**：
+- 用户经常主动调用、需要传参数的（如 `/refactor`, `/ui-spec`）
+- DAG 型命令（需要明确启动）
+- 破坏性/重型操作（需要用户主动决策）
+
+迁移后，Skill 成为该功能的唯一入口，参见 `~/.claude/skills/README.md`。
+
+---
+
 ## 质量标杆
 
 写得好的命令参考：`refactor.md`、`git-commit.md`、`claudemd.md`、`refactor-project.md`
