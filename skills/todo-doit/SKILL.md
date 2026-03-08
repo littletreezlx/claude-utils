@@ -1,5 +1,13 @@
 ---
-description: 会话恢复与任务执行
+name: todo-doit
+description: >
+  This skill should be used to resume work from a saved TODO.md, executing the next
+  pending task autonomously. Use PROACTIVELY when: the user starts a new session and
+  TODO.md exists with pending tasks, when the user says "continue", "继续", "接着做",
+  "恢复", or expresses intent to resume previous work, or when another workflow needs
+  to execute a queued task list (e.g., after ui-doctor generates action items saved
+  via todo-write).
+version: 1.0.0
 ---
 
 # 会话恢复与任务执行

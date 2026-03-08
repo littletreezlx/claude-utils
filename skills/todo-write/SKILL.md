@@ -1,5 +1,13 @@
 ---
-description: 会话保存
+name: todo-write
+description: >
+  This skill should be used to save current session context, progress, and pending
+  tasks to TODO.md for later resumption. Use PROACTIVELY when: the conversation is
+  getting long and tasks remain, when the user says "save", "保存", "先到这", "下次继续",
+  or expresses intent to pause work, when a workflow (like ui-doctor or health-check)
+  generates a list of actionable items that should be tracked, or when complex multi-step
+  work needs to be persisted across sessions.
+version: 1.0.0
 ---
 
 # 会话保存
