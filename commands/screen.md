@@ -20,6 +20,13 @@ description: screen - 截屏辅助命令
 - 保存到固定位置：`/Users/zhanglingxiao/dev/phone_screencap/screenshot.png`
 - 不打开 Finder（避免干扰用户）
 
+### 截图归档（截图成功后自动执行）
+- 如果当前工作目录在一个项目中（存在 `CLAUDE.md` 或 `pubspec.yaml` 等项目标志文件），自动将截图归档到项目的 `docs/ui/screenshots/` 目录
+- **归档命名**：`{页面名称}_{YYYYMMDD_HHmmss}.png`（页面名称从截图内容推断，无法推断时用 `screen`）
+- **自动创建目录**：如果 `docs/ui/screenshots/` 不存在，自动创建
+- 归档是**复制**而非移动，原始路径的截图仍保留
+- 归档后在输出中告知用户存档路径
+
 ### 网页截屏（可选）
 - 使用 Playwright/Puppeteer 截取指定 URL 的网页截图
 - 支持全页面截图和视口截图

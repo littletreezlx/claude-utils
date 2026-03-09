@@ -2,12 +2,13 @@
 name: ui-vision-check
 description: >
   This skill should be used to visually verify UI screenshots against the project's
-  design language. Use PROACTIVELY after significant UI changes, after a batch of
-  visual modifications, or when the user says "check UI", "视觉检查", "UI 看看",
-  "截图分析", "design check". Also use when another workflow (like delivery or
-  ui-redesign) needs visual verification. Reads screenshots + design docs, then
+  design language. Supports both single-page checks and full-project UI audits.
+  Use PROACTIVELY after significant UI changes, after a batch of visual modifications,
+  or when the user says "check UI", "视觉检查", "UI 看看", "截图分析", "design check",
+  "UI 审计", "审视整体 UI", "设计债务". Also use when another workflow (like delivery
+  or ui-redesign) needs visual verification. Reads screenshots + design docs, then
   provides observations and suggestions — NOT pass/fail judgments.
-version: 2.0.0
+version: 3.0.0
 ---
 
 # UI Vision Check — AI 视觉灵魂验证
@@ -26,17 +27,26 @@ version: 2.0.0
 - **禁止像素级丈量** — AI 不擅长精确 dp 测量。用定性描述（"显得局促"、"呼吸感充分"），不要输出 "左边距是 12dp 而规范是 16dp"
 - **状态意识** — 截图可能捕获动画中间帧或非 idle 状态，分析前先判断截图属于什么状态
 
+## 工作模式
+
+根据输入自动判断模式：
+- **单页模式**（默认）：分析 1-2 张截图，聚焦单个页面的质感细节
+- **全局审计模式**：用户说"整体看看"/"UI 审计"/"设计债务"时，分析多张截图，输出跨页面的设计一致性诊断 + P0/P1/P2 优先级排序 + 直接可用的 `ui-redesign` 触发建议
+
+两种模式共用同一套分析维度，区别仅在输出粒度和是否包含优先级排序。
+
 ## 执行流程
 
 ### Step 1: 收集截图
 
 按优先级查找截图来源：
 
-1. **运行时截图** (`/tmp/flutter_screenshots/*.png`) — 如果应用正在运行，优先用最新截图
-2. **文档截图** (`docs/ui/screenshots/*.png`) — 已有的存档截图
-3. **用户指定路径** — 用户手动提供的截图
+1. **`/screen` 归档截图** (`docs/ui/screenshots/*.png`) — `/screen` 命令自动归档的截图，优先使用最新的
+2. **运行时截图** (`/tmp/flutter_screenshots/*.png`) — Flutter 测试或自动化生成的截图
+3. **`/screen` 原始截图** (`/Users/zhanglingxiao/dev/phone_screencap/screenshot.png`) — 未归档的最新手机截图
+4. **用户指定路径** — 用户手动提供的截图
 
-如果两个来源都没有截图，提示用户先运行应用并截图。
+如果所有来源都没有截图，提示用户先运行 `/screen` 截图。
 
 使用 Read 工具直接读取图片文件（Claude 的多模态能力可以直接分析图片）。
 
@@ -129,6 +139,25 @@ version: 2.0.0
 ```
 
 **Evolution Dialogue 闭环**：如果 Founder 选择 3（确认演进），Claude Code 应更新 `UI_SHOWCASE.md` 和相关 Spec 中的对应描述，实现代码倒推文档的自动修正。
+
+### 全局审计模式额外输出
+
+当处于全局审计模式时，在常规报告之后追加：
+
+```markdown
+## 全局设计一致性
+
+### 跨页面问题
+- [影响多个页面的共性问题，如阴影风格不统一、间距体系混乱等]
+
+### 优先级排序
+1. **P0 - 必须重塑**：{页面名称} — {简短理由}
+2. **P1 - 应该优化**：{页面名称}
+3. **P2 - 可以打磨**：{页面名称}
+
+### 重塑建议
+对 P0 页面，建议触发 `ui-redesign` 进行重塑。
+```
 
 ## 约束
 

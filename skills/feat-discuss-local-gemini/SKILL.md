@@ -10,7 +10,7 @@ description: >
   — do not guess on product philosophy or design aesthetics, consult Gemini instead.
   Automatically calls local Gemini API, receives response, and synthesizes into
   actionable spec documents.
-version: 0.3.0
+version: 0.4.0
 ---
 
 # 与 Gemini 自动化协作 — 产品 & 设计咨询
@@ -20,6 +20,8 @@ version: 0.3.0
 与 Gemini（产品合伙人 / 设计架构师）进行自动化协作。Claude Code 自动收集项目上下文、调用 Gemini API、接收回复、经过 Engineering Handshake 校验后落库为 Spec 文档。Founder 在关键节点审批。
 
 **模式定位**：本技能是 Local API 自动模式（主力模式）。Web 手动模式（`/feat-discuss-web-gemini`）仅在用户明确要求、或需要多轮视觉反馈的重度脑暴时使用。
+
+**核心铁律：Gemini 是无状态的。每次 API 调用都是全新对话，所有对话历史和上下文必须由 Claude Code 在 Prompt 中显式提供。对话历史的完整性是 Claude Code 的责任。**
 
 ## 触发条件
 
@@ -51,14 +53,10 @@ version: 0.3.0
 - `product` — 产品逻辑、架构推演、需求拷问（左脑：骨架与逻辑）
 - `design` — UI/UX 决策、视觉规范、像素级解构（右脑：血肉与感官）
 
-> **为什么保持双角色而非合并？** product 关注"该不该做、数据怎么流"，design 关注"怎么好看、动效怎么调"。强行合并会导致 AI 注意力稀释，两头都做不深。经 Gemini 评估确认：看完两套完整 System Prompt 后推翻了合并建议。
-
 **上下文收集 — 动态组装策略**：
 
 **Global 常驻（每次必带）**：
 - `docs/PRODUCT_SOUL.md` — 优先读取 `## TL;DR` 摘要段（如有），避免全文塞入浪费 token。若无摘要段则传全文。
-
-> **为什么不硬编码摘要到脚本？** 硬编码意味着 PRODUCT_SOUL 更新时需同步改脚本，违反"单一事实来源"原则。摘要段留在文档中，修改一处即可。
 
 **按需上下文（根据角色和话题动态选择）**：
 
@@ -75,14 +73,29 @@ version: 0.3.0
 
 **注意**：不携带 `CLAUDE.md`（这是给 Claude Code 的工程操作指南，Gemini 作为产品/设计顾问不需要）。
 
-### Step 2: 调用 Gemini
+### Step 1.5: 上下文完整性自检（发送前必须通过）
 
-拼接结构化 Prompt，通过本地脚本调用 Gemini API：
+在组装 Prompt 之前，逐项检查：
+
+| 检查项 | 要求 | 不通过时 |
+|--------|------|---------|
+| PRODUCT_SOUL | 已读取文件内容（不是凭记忆编写） | 去读 `docs/PRODUCT_SOUL.md` |
+| 协作简况 | 已包含团队构成和工作方式 | 补充 |
+| 工程现状 | 描述了与本次话题直接相关的现状 | 补充 |
+| 按需文档 | 根据角色/话题表已收集对应文档 | 去读对应文件 |
+| 多轮历史（如非首轮） | 包含所有前序轮次的问题+回复摘要+反馈 | 补全历史 |
+
+**硬性规则**：如果当前不在具体项目目录中（无法读取 `docs/` 文件），必须向用户说明缺少项目上下文，询问是否继续。禁止凭记忆或猜测编造项目文档内容。
+
+### Step 2: 组装 Prompt 并调用 Gemini
+
+通过本地脚本调用 Gemini API：
 ```bash
 node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 ```
 
-**Prompt 拼接格式**（中文描述 + 英文术语）：
+#### 首轮 Prompt 格式
+
 ```
 ## 项目上下文
 ### PRODUCT_SOUL
@@ -92,23 +105,54 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 {... 其他按需文档 ...}
 
 ## 协作简况
-{用 3-5 行描述当前团队实际的工作方式。目的是让 Gemini 理解"我们怎么工作"，避免脑补。}
-{示例：}
-{- 这是一人公司 + Claude Code（工程）+ Gemini（产品/设计）的精品团队}
-{- 日常开发：Founder 与 Claude Code 结对编程，大部分代码/测试/文档由 Claude Code 自主完成}
-{- 工具体系：Claude Code 有一套按需手动调用的 Skill 工具箱（不是自动化流水线）}
-{- 当前重点：专注 Flutter 移动端 (iOS/Android)，macOS 已废弃}
+{用 3-5 行描述当前团队实际的工作方式}
 
 ## 工程现状
-{当前代码结构、技术限制等简报}
-{重点：描述与本次讨论话题直接相关的工程现状}
-{避免：罗列所有工具/能力清单——Gemini 不需要评价工程工具链}
+{与本次讨论直接相关的工程现状}
 
 ## 需求 / 问题
 {用户的具体需求，或 Claude Code 遇到的决策问题}
 ```
 
-**上下文组装原则**：
+#### 多轮追问 Prompt 格式（关键）
+
+**Gemini 无记忆，多轮对话时必须在 Prompt 中重建完整上下文。**
+
+```
+## 项目上下文
+{与首轮相同——必须重新提供，不可省略}
+
+## 对话历史
+
+### 第 1 轮
+#### 原始问题
+{首轮提出的完整问题，可适当压缩但不可丢失关键信息}
+
+#### Gemini 回复（摘要）
+{Gemini 第 1 轮回复的核心结论和关键论据，300-500 字}
+
+#### 执行者反馈
+{Claude Code 的 Engineering Handshake 中的分歧/补充，200-300 字}
+
+### 第 N 轮（如有更多轮次，依次追加）
+...
+
+## 本轮问题
+{本轮的具体追问/分歧/新需求}
+```
+
+**多轮上下文传递原则：**
+1. **项目上下文必须重传** — 首轮提供的 PRODUCT_SOUL、ROADMAP、工程现状等，在后续轮次中必须原样或等价地重新提供
+2. **对话历史逐轮积累** — 每一轮的问题、Gemini 回复摘要、执行者反馈都要保留。摘要要保留核心论据和推理过程，不能只留结论
+3. **Gemini 回复摘要 300-500 字** — 太短会丢失推理链，太长浪费 token。摘要必须包含三要素：
+   - **已锁定的前提**（双方已达成共识的结论）
+   - **当前争议点**（尚未解决的分歧）
+   - **上一轮核心论据**（Gemini 为什么支持某方案的推理链）
+4. **执行者反馈 200-300 字** — 保留 Claude Code 的分歧点、补充信息、替代方案。这让 Gemini 理解为什么要追问
+5. **超过 3 轮时压缩早期轮次** — 第 1 轮可以压缩为 100 字共识摘要，最近 2 轮保留详细内容
+
+#### Prompt 组装原则
+
 1. **Gemini 需要的是"理解背景"，不是"评价体系"** — 提供足够的上下文让 Gemini 理解问题，但不要把内部工程体系抛出去让它评价
 2. **描述事实，不描述体系** — 说"我们有 1178 个单元测试"比"我们有冰山模式测试策略"更不容易被误解
 3. **标注触发方式** — 如果提到工具/流程，说清楚是"手动按需"还是"自动触发"，避免 Gemini 脑补
@@ -116,8 +160,6 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 ### Step 3: Engineering Handshake — 工程落地校验
 
 **收到 Gemini 回复后，Claude Code 的职责是"执行者校验"，不是"评委打分"。**
-
-> **为什么改名？** 原来的 "Critical Thinking" 步骤深度不确定——有时太浅（走过场），有时太深（花大量 token 质疑合理建议）。固定格式让输出稳定、有价值。
 
 **必须使用以下固定格式输出：**
 
@@ -128,7 +170,7 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 ## Engineering Handshake
 
 ### Conflict Check
-{仅核对是否违反项目现有的技术栈约束（Flutter/Riverpod/Drift 等），是否与已有 Feature Spec 中的架构决策矛盾。无冲突则写"无冲突"，不要废话}
+{核对是否违反项目现有的技术栈约束或架构决策。必须指出具体的代码约束条件（如："违反了 Local-First 的离线同步机制"、"破坏了现有 Widget 颗粒度规范"）。禁止模糊表述如"存在一定风险"。无冲突则写"无冲突"}
 
 ### Breakdown
 {将 Gemini 方案拆解为可执行的 1, 2, 3 步骤}
@@ -139,22 +181,18 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 
 ### Step 4: Founder 审批 & 落库
 
-**展示 Gemini 回复 + Engineering Handshake 后，等待 Founder 确认，再执行落库：**
+展示 Gemini 回复 + Engineering Handshake 后，等待 Founder 确认：
 
-1. 向用户展示 Gemini 完整回复 + Engineering Handshake
-2. **等待 Founder 确认**：
-   - **同意** → 继续落库
-   - **修改** → 根据反馈调整 Spec
-   - **追问** → 携带上一轮结论（浓缩为 100 字以内的 `<Previous_Consensus>`）重新调用 Gemini
-   - **否决** → 在相关 Feature Spec 的 Architecture Decisions 段记录驳回理由（防止重复踩坑）
-3. 确认后：将方案落库为 Feature Brief（格式见下方模板）
-4. 输出 "Ready to build"
+- **同意** → 继续落库
+- **修改** → 根据反馈调整 Spec
+- **追问** → 按多轮追问 Prompt 格式重新调用 Gemini（携带完整对话历史）
+- **否决** → 在相关 Feature Spec 的 Architecture Decisions 段记录驳回理由
 
-**多轮追问**：用户不满意时可继续追问。每次必须将上一轮结论浓缩为 `<Previous_Consensus>`（100 字以内）附加到新请求首部，避免全量历史塞入。
+确认后：将方案落库为 Feature Brief（格式见下方模板），输出 "Ready to build"。
 
 ## Feature Brief 落库模板
 
-无论结论来自 Local API 还是 Web，最终落库到 `docs/features/` 的文档必须遵循以下格式：
+落库到 `docs/features/` 的文档格式：
 
 ```markdown
 # [Feature Name]
@@ -163,9 +201,9 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 - 目标：...
 - 质感/仪式感要求：...
 
-## The Muse Test (守护检查，按需填写)
-- [ ] 是否违反了"少即是多"？(Less but Better)
-- [ ] 交互是否具有精密器物般精准克制的触觉反馈？(Warmth)
+## The Muse Test (守护检查，禁止 Yes/No 勾选，必须描述性回答)
+- **物理隐喻**：这个交互像什么？（如："下拉刷新像拉动打字机的换行拨杆"）
+- **触觉/视觉约束**：关键动效的具体参数（如："高斯模糊配合 150ms 抛物线阻尼曲线"）
 
 ## Architecture & Data Flow (怎么做)
 - State (Riverpod): ...
@@ -180,8 +218,6 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 ## Checklist (可执行任务列表)
 - [ ] 具体到单文件级别的修改...
 ```
-
-> **为什么不用独立 ADR？** 实际项目中 `docs/adr/` 目录始终为空，独立 ADR 机制形同虚设。将架构决策内联到 Feature Spec 的段落中更务实，随功能走、随功能查。
 
 ## 沟通规范
 
