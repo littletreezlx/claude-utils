@@ -66,7 +66,7 @@ version: 0.3.0
 |-------------|---------|--------|
 | `product` — 产品方向、需求讨论 | `docs/ROADMAP.md`（当前 Epic 节点即可） | `FEATURE_CODE_MAP`（避免被现有代码结构限制想象力） |
 | `product` — 架构 trade-off | `docs/ARCHITECTURE.md`、相关 Feature Spec 中的 Architecture Decisions 段 | — |
-| `design` — UI/UX 设计 | `docs/ui/UI_SHOWCASE.md`（大纲即可，非全量）、相关页面的 `docs/ui/specs/*.md` | `ARCHITECTURE`（设计不需要技术细节） |
+| `design` — UI/UX 设计 | `docs/ui/UI_SHOWCASE.md`（大纲即可，非全量）、相关页面的 `docs/ui/specs/*.md`。Prompt 末尾追加："请为本次设计指出一个 Signature Moment（让用户记住的一个点）" | `ARCHITECTURE`（设计不需要技术细节） |
 | 涉及具体功能模块 | `docs/FEATURE_CODE_MAP.md` 中相关段落 | 全文 |
 
 **按需附加**（复杂问题时）：
@@ -165,7 +165,7 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 
 ## The Muse Test (守护检查，按需填写)
 - [ ] 是否违反了"少即是多"？(Less but Better)
-- [ ] 交互是否具有数字玩具的物理反馈感？(Warmth)
+- [ ] 交互是否具有精密器物般精准克制的触觉反馈？(Warmth)
 
 ## Architecture & Data Flow (怎么做)
 - State (Riverpod): ...

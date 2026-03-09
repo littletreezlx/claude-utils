@@ -30,6 +30,8 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `code-quality` | 提交前质量关卡、准备 merge | `/code-review` |
 | `feat-discuss-local-gemini` | 讨论新功能、咨询 Gemini 产品/设计意见 | `/feat-discuss-local-gemini` |
 | `ui-vision-check` | UI 变更后视觉验证、用户说"视觉检查" | — (纯分析，无对应 Command) |
+| `ui-showcase-refresh` | 刷新 UI 系统级文档（theme/components/responsive）| `/init-ui-showcase`（仅初始化） |
+| `skill-creator` | 创建新 Skill、改进现有 Skill、提炼工作流为 Skill | — (元技能，无对应 Command) |
 
 ---
 
