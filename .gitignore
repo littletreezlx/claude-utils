@@ -85,3 +85,4 @@ Desktop.ini
 *.sublime-workspace
 stats-cache.json
 history.jsonl
+mcp-needs-auth-cache.json
