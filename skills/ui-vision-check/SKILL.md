@@ -37,16 +37,29 @@ version: 3.0.0
 
 ## 执行流程
 
-### Step 1: 收集截图
+### Step 1: 获取实时截图
 
-按优先级查找截图来源：
+**优先自动截取，而非使用旧截图。**
 
-1. **`/screen` 归档截图** (`docs/ui/screenshots/*.png`) — `/screen` 命令自动归档的截图，优先使用最新的
-2. **运行时截图** (`/tmp/flutter_screenshots/*.png`) — Flutter 测试或自动化生成的截图
-3. **`/screen` 原始截图** (`/Users/zhanglingxiao/dev/phone_screencap/screenshot.png`) — 未归档的最新手机截图
-4. **用户指定路径** — 用户手动提供的截图
+#### Flutter 项目（检测到 `scripts/take-screenshots.sh`）
 
-如果所有来源都没有截图，提示用户先运行 `/screen` 截图。
+1. 定位项目的截图脚本（通常在 `app/scripts/take-screenshots.sh` 或 `scripts/take-screenshots.sh`）
+2. **直接执行** `bash <script_path> ios`（默认 iOS，脚本会自动启动模拟器）
+   - 不需要预检查模拟器状态或构建产物 — 脚本内置了自动启动逻辑
+   - 使用 timeout 300000（5 分钟），因为需要等待模拟器启动+多页面截图
+3. 截图自动保存到 `docs/ui/screenshots/`
+4. 如果脚本执行失败（应用未安装等），回退到已有截图文件
+
+#### 非 Flutter 项目 / 无截图脚本
+
+按优先级查找已有截图：
+1. `docs/ui/screenshots/*.png` — 归档截图
+2. `/tmp/flutter_screenshots/*.png` — 测试生成
+3. `/Users/zhanglingxiao/dev/phone_screencap/screenshot.png` — 手机截图
+
+如果都没有，提示用户先运行 `/screen` 截图。
+
+#### 通用
 
 使用 Read 工具直接读取图片文件（Claude 的多模态能力可以直接分析图片）。
 
