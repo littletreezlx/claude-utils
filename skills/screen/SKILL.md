@@ -24,14 +24,15 @@ version: 1.0.0
 **执行流程**：
 1. 定位项目的 `take-screenshots.sh` 脚本
 2. **直接执行脚本，不需要预检查模拟器或构建产物** — 脚本内置了自动启动模拟器、查找设备等逻辑
-3. 默认执行 `bash <script_path> ios`（移动端截图最常用）
-   - 脚本会自动：启动模拟器（如果没有运行中的）→ 导航到每个页面 → 截图 → 清理
-   - 如果用户指定 `macos`，执行 `bash <script_path> macos`
+3. **不传平台参数**，直接执行 `bash <script_path>`，让脚本自己决定默认平台
+   - 每个项目的脚本已配置好默认平台（如 macOS 桌面应用默认 macos，移动端项目默认 ios）
+   - 仅当用户**明确指定**平台时才传参：`bash <script_path> ios` / `bash <script_path> macos`
 4. 截图自动保存到 `docs/ui/screenshots/`（脚本内置路径）
 5. 用 Read 工具读取截图展示给用户
 
 **重要**：
 - **不要先检查模拟器状态再决定是否执行** — 直接执行脚本，让脚本处理一切
+- **不要替项目选择平台** — 项目脚本的默认值是经过考虑的，尊重它
 - 脚本**不会构建应用**，但会自动启动模拟器。如果应用未安装到模拟器，脚本会报错并提示构建命令
 - 用户可指定单个页面：`/screen chat` → 只截 chat 页面（需脚本支持）
 - 脚本执行时间较长（需等待模拟器启动+多页面截图），使用 timeout 300000（5 分钟）
@@ -68,7 +69,7 @@ bash /Users/zhanglingxiao/LittleTree_Projects/cs/scripts/common/phone-screencap.
 ## 参数
 
 ```
-/screen                    # 自动检测：Flutter 项目用模拟器，否则用 adb
+/screen                    # 自动检测：Flutter 项目不传参（让脚本决定默认平台），否则用 adb
 /screen ios                # 强制 iOS 模拟器截图
 /screen macos              # 强制 macOS 截图
 /screen phone              # 强制 adb 手机截图
