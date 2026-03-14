@@ -12,10 +12,11 @@
       }
     ]
   },
- "CLAUDE_CODE_AUTO_COMPACT_WINDOW":400000,
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
+  },
   "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true,
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
-  }
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
 }
