@@ -88,3 +88,4 @@ stats-cache.json
 history.jsonl
 mcp-needs-auth-cache.json
 .credentials.json
+settings.local.json
