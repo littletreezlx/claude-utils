@@ -16,17 +16,41 @@ description: Flutter UI 文档系统一次性初始化 ultrathink
 ### Phase 1: 环境探测
 
 - 识别项目平台：macOS / iOS / Android（检查 Runner 目录和配置文件）
-- 检查 `scripts/` 是否已有截图脚本
+- 检查项目的 `scripts/take-screenshots.sh` 是否已存在
 - 检查 `docs/ui/` 是否已有文档结构
 
-### Phase 2: 创建截图脚本
+### Phase 2: 创建项目截图脚本
 
-创建 `scripts/take-screenshots.sh`（已存在则跳过）：
+> **架构说明**：截图能力分两层：
+> - **通用库** `~/LittleTree_Projects/flutter/scripts/screenshot-lib.sh` — 已有，提供 macOS/iOS 截图驱动，**不需要创建**
+> - **项目配置脚本** `scripts/take-screenshots.sh` — 每个项目各自创建，source 通用库 + 定义项目参数
 
-- macOS 驱动：`osascript` 窗口探测 + `click_window_relative(x, y)` 比例点击
-- iOS 模拟器驱动：`xcrun simctl io booted screenshot` + 状态栏清理（9:41）
-- 容错：未检测到模拟器时只做 macOS 截图并提示
-- 入口：`./scripts/take-screenshots.sh --auto` 一键生成 `docs/ui/screenshots/` 下的截图
+创建 `scripts/take-screenshots.sh`（已存在则跳过），模板：
+
+```bash
+#!/bin/bash
+# [项目名] - 截图脚本
+set -e
+
+# ===== 项目配置 =====
+PROCESS_NAME="应用进程名"      # AppInfo.xcconfig 中的 PRODUCT_NAME
+BUNDLE_ID="com.xxx.xxx"         # iOS Bundle ID
+
+# 页面配置：名称:路由
+PAGES=(
+    "page_name:route"
+)
+
+# ===== 加载通用库并执行 =====
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+FLUTTER_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"  # 路径层级按项目结构调整
+
+source "$FLUTTER_ROOT/scripts/screenshot-lib.sh"
+run_main "$@"
+```
+
+注意 `FLUTTER_ROOT` 的相对路径需根据项目在 flutter 目录下的层级调整（如 `littletree_ai/app/` 是两层，普通项目是一层）。
 
 ### Phase 3: 创建文档骨架
 

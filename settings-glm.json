@@ -21,5 +21,10 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": false
+ "CLAUDE_CODE_AUTO_COMPACT_WINDOW":400000,
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  }
 }

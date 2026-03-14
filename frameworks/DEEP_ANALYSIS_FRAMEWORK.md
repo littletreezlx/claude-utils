@@ -718,8 +718,7 @@ find docs/ -mtime +90 -type f
 ### 场景 2：专项检查
 
 **命令**：
-- `/health-check` - 快速健康检查（单次会话）
-- `/e2e-readiness` - E2E 测试专项
+- `/codebase-align` - 快速对齐（单次会话）
 - `/refactor-project` - 重构前评估
 
 **适用**：
@@ -809,8 +808,7 @@ P2 任务（全局检查）→ 最后执行
 
 - **主检查 command**：`~/.claude/commands/comprehensive-health-check.md`
 - **专项检查 commands**：
-  - `~/.claude/commands/health-check.md`
-  - `~/.claude/commands/e2e-readiness.md`
+  - `~/.claude/commands/codebase-align.md`
   - `~/.claude/commands/refactor-project.md`
 
 ---

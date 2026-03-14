@@ -14,9 +14,8 @@ Agent 不会被错误信息误导。适合在开始新功能开发或引入 Agen
 - `/codebase-align $ARGUMENTS` — 指定模块对齐
 
 ## 与现有命令的关系
-- `/health-check` → 诊断问题（浅层扫描，不修复）
-- `/comprehensive-health-check` → 深度诊断（重型 DAG）
 - **`/codebase-align`** → 快速对齐（发现不一致直接修复，轻量级）
+- `/comprehensive-health-check` → 全面体检（DAG，工具驱动诊断 + 行动路线）
 - `/doc-update-context` → 文档深度审查（只管文档）
 
 ---
