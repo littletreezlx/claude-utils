@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "plugins": {
+    "swift-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/zhanglingxiao/.claude/plugins/cache/claude-plugins-official/swift-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-17T05:18:38.967Z",
+        "lastUpdated": "2026-01-17T05:18:38.967Z",
+        "gitCommitSha": "96276205880a60fd66bbae981f5ab568e70c4cbf"
+      }
+    ],
+    "superpowers@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/zhanglingxiao/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.2",
+        "version": "5.0.2",
+        "installedAt": "2026-03-14T01:54:10.246Z",
+        "lastUpdated": "2026-03-14T01:54:10.246Z",
+        "gitCommitSha": "363923f74aa9cd7b470c0aaa73dee629a8bfdc90"
+      }
+    ]
+  }
+}

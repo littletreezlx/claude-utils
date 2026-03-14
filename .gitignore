@@ -19,7 +19,7 @@ paste-cache/
 plans/
 
 # 插件目录（运行时生成）
-plugins/
+# plugins/
 
 # 临时锁文件
 .update.lock
