@@ -8,6 +8,7 @@ shell-snapshots/
 todos/
 tasks/
 session-env/
+session
 debug/
 projects/
 statsig/
