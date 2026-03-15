@@ -19,8 +19,11 @@ cache/
 paste-cache/
 plans/
 
-# 插件目录（运行时生成）
-# plugins/
+# 插件目录（运行时生成，频繁更新时间戳）
+plugins/
+
+# 会话记录（自动生成）
+sessions/
 
 # 临时锁文件
 .update.lock
