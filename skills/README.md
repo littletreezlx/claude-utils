@@ -149,6 +149,18 @@ Skill 支持三级加载：
 
 利用这个机制，把核心内容放 body，详细文档放 references。
 
+### 4. 复合 Skill 设计模式
+
+当 Skill 需要编排多个子步骤或调用其他 Skill 时，遵循以下原则：
+
+| 原则 | 说明 | 示例 |
+|------|------|------|
+| **文件路径传递** | Subagent 之间只传文件路径，不传内容。保持上下文窗口干净 | `writer-agent` 接收 `outline.md` 路径而非内容 |
+| **混合架构** | 确定性逻辑用脚本（`scripts/`），判断性逻辑用 Agent | 格式化用脚本，润色用 Agent |
+| **中间产物持久化** | 每步产出保存为文件，支持断点续传和人工干预 | `source.md → analysis.md → draft.md → final.md` |
+
+> 灵感来源：[Agent + Skills 五步框架](https://x.com/pippingg) —— 用自然语言编排工作流
+
 ---
 
 ## 质量标杆
