@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+  },
   "env": {
     "ANTHROPIC_AUTH_TOKEN": "07a1fdea55ed458fac3986e7088ab62a.ggB7p37dSDErHD5E",
     "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",

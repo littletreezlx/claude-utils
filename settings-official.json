@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+  },
   "hooks": {
     "PreToolUse": [
       {
