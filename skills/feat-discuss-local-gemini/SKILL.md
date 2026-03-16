@@ -10,14 +10,14 @@ description: >
   — do not guess on product philosophy or design aesthetics, consult Gemini instead.
   Automatically calls local Gemini API, receives response, and synthesizes into
   actionable spec documents.
-version: 0.4.0
+version: 0.5.0
 ---
 
 # 与 Gemini 自动化协作 — 产品 & 设计咨询
 
 ## 目的
 
-与 Gemini（产品合伙人 / 设计架构师）进行自动化协作。Claude Code 自动收集项目上下文、调用 Gemini API、接收回复、经过 Engineering Handshake 校验后落库为 Spec 文档。Founder 在关键节点审批。
+与 Gemini（产品合伙人 / 设计架构师）进行自动化协作。Claude Code 自动收集项目上下文、调用 Gemini API、接收回复、校验后落库为 Spec 文档。
 
 **模式定位**：本技能是 Local API 自动模式（主力模式）。Web 手动模式（`/feat-discuss-web-gemini`）仅在用户明确要求、或需要多轮视觉反馈的重度脑暴时使用。
 
@@ -71,21 +71,11 @@ version: 0.4.0
 - 核心文件的 Git Diff 或 Provider 结构快照
 - 相关 Feature Spec 中的历史架构决策
 
-**注意**：不携带 `CLAUDE.md`（这是给 Claude Code 的工程操作指南，Gemini 作为产品/设计顾问不需要）。
+**不携带**：`CLAUDE.md`（工程操作指南，Gemini 不需要）。
 
-### Step 1.5: 上下文完整性自检（发送前必须通过）
-
-在组装 Prompt 之前，逐项检查：
-
-| 检查项 | 要求 | 不通过时 |
-|--------|------|---------|
-| PRODUCT_SOUL | 已读取文件内容（不是凭记忆编写） | 去读 `docs/PRODUCT_SOUL.md` |
-| 协作简况 | 已包含团队构成和工作方式 | 补充 |
-| 工程现状 | 描述了与本次话题直接相关的现状 | 补充 |
-| 按需文档 | 根据角色/话题表已收集对应文档 | 去读对应文件 |
-| 多轮历史（如非首轮） | 包含所有前序轮次的问题+回复摘要+反馈 | 补全历史 |
-
-**硬性规则**：如果当前不在具体项目目录中（无法读取 `docs/` 文件），必须向用户说明缺少项目上下文，询问是否继续。禁止凭记忆或猜测编造项目文档内容。
+**硬性约束**：
+1. 所有文档内容必须通过 Read tool 实际读取，禁止凭记忆编造
+2. 不在项目目录中时（无法读取 `docs/`），必须告知用户缺少上下文并询问是否继续
 
 ### Step 2: 组装 Prompt 并调用 Gemini
 
@@ -97,59 +87,72 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 #### 首轮 Prompt 格式
 
 ```
-## 项目上下文
-### PRODUCT_SOUL
-{TL;DR 摘要或全文}
-### ROADMAP（当前阶段）
-{相关段落}
-{... 其他按需文档 ...}
+## Context & Soul
+{PRODUCT_SOUL TL;DR 摘要或全文}
 
-## 协作简况
-{用 3-5 行描述当前团队实际的工作方式}
+## Current State (工程现状)
+{与本次讨论直接相关的代码架构、数据流、已有实现}
+{按需文档：ROADMAP / ARCHITECTURE / UI_SHOWCASE 等相关段落}
 
-## 工程现状
-{与本次讨论直接相关的工程现状}
-
-## 需求 / 问题
+## The Problem (需求 / 问题)
 {用户的具体需求，或 Claude Code 遇到的决策问题}
+
+## Constraints (限制条件)
+{技术栈约束、不可变更的条件、已知的坑}
+
+## Expected Architectural Brief
+{根据需求性质，列出具体希望 Gemini 回答的问题维度}
 ```
 
 #### 多轮追问 Prompt 格式（关键）
 
 **Gemini 无记忆，多轮对话时必须在 Prompt 中重建完整上下文。**
 
+采用**滑动窗口**策略：最近 2 轮保留完整原文，更早轮次压缩为 bullet points 结论。
+
 ```
-## 项目上下文
+## Context & Soul
 {与首轮相同——必须重新提供，不可省略}
+
+## Current State
+{与首轮相同}
+
+## Constraints
+{与首轮相同}
 
 ## 对话历史
 
-### 第 1 轮
-#### 原始问题
-{首轮提出的完整问题，可适当压缩但不可丢失关键信息}
+### 已锁定共识 (Locked Consensus)
+{早期轮次（第 1 ~ N-2 轮）压缩为 bullet points：}
+- 共识 1：...
+- 共识 2：...
+- 放弃方案：... （原因：...）
 
-#### Gemini 回复（摘要）
-{Gemini 第 1 轮回复的核心结论和关键论据，300-500 字}
-
+### 第 N-1 轮（完整保留）
+#### 问题
+{完整问题}
+#### Gemini 回复
+{完整回复}
 #### 执行者反馈
-{Claude Code 的 Engineering Handshake 中的分歧/补充，200-300 字}
+{Claude Code 的分歧/补充}
 
-### 第 N 轮（如有更多轮次，依次追加）
-...
+### 第 N 轮（完整保留）
+#### 问题
+{完整问题}
+#### Gemini 回复
+{完整回复}
+#### 执行者反馈
+{Claude Code 的分歧/补充}
 
 ## 本轮问题
 {本轮的具体追问/分歧/新需求}
 ```
 
 **多轮上下文传递原则：**
-1. **项目上下文必须重传** — 首轮提供的 PRODUCT_SOUL、ROADMAP、工程现状等，在后续轮次中必须原样或等价地重新提供
-2. **对话历史逐轮积累** — 每一轮的问题、Gemini 回复摘要、执行者反馈都要保留。摘要要保留核心论据和推理过程，不能只留结论
-3. **Gemini 回复摘要 300-500 字** — 太短会丢失推理链，太长浪费 token。摘要必须包含三要素：
-   - **已锁定的前提**（双方已达成共识的结论）
-   - **当前争议点**（尚未解决的分歧）
-   - **上一轮核心论据**（Gemini 为什么支持某方案的推理链）
-4. **执行者反馈 200-300 字** — 保留 Claude Code 的分歧点、补充信息、替代方案。这让 Gemini 理解为什么要追问
-5. **超过 3 轮时压缩早期轮次** — 第 1 轮可以压缩为 100 字共识摘要，最近 2 轮保留详细内容
+1. **项目上下文必须重传** — Context & Soul、Current State、Constraints 每轮都要完整提供
+2. **滑动窗口** — 最近 2 轮保留完整原文（不压缩），更早轮次压缩为 Locked Consensus bullet points
+3. **Locked Consensus 三要素** — 已达成的共识、已放弃的方案及原因、未解决的遗留问题
+4. **执行者反馈必须保留** — 让 Gemini 理解为什么要追问
 
 #### Prompt 组装原则
 
@@ -157,11 +160,35 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 2. **描述事实，不描述体系** — 说"我们有 1178 个单元测试"比"我们有冰山模式测试策略"更不容易被误解
 3. **标注触发方式** — 如果提到工具/流程，说清楚是"手动按需"还是"自动触发"，避免 Gemini 脑补
 
-### Step 3: Engineering Handshake — 工程落地校验
+### Step 3: Engineering Handshake — 条件分流
 
-**收到 Gemini 回复后，Claude Code 的职责是"执行者校验"，不是"评委打分"。**
+收到 Gemini 回复后，Claude Code 执行落地校验。根据冲突程度分流：
 
-**必须使用以下固定格式输出：**
+#### Fast Track（无冲突，直接落库）
+
+**触发条件**：Gemini 方案未违反现有技术栈约束，未偏离 PRODUCT_SOUL，无需新增核心依赖。
+
+**输出格式**：
+
+```markdown
+## Gemini 回复
+{Gemini 的完整回复}
+
+## Breakdown
+{将 Gemini 方案拆解为可执行的 1, 2, 3 步骤}
+```
+
+输出后直接进入 Step 4 落库，无需等待 Founder 确认。
+
+#### Escalation（有冲突，需要 Founder 拍板）
+
+**触发条件**（任一即触发）：
+- Gemini 推荐了偏离现有技术栈的方案（如建议用 BLoC 替换 Riverpod）
+- 方案违背 PRODUCT_SOUL 的核心原则
+- 涉及不可逆的架构变更（如数据库 Schema 大改、核心 Entity 重构）
+- Claude Code 与 Gemini 存在实质性分歧
+
+**输出格式**：
 
 ```markdown
 ## Gemini 回复
@@ -170,25 +197,24 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 ## Engineering Handshake
 
 ### Conflict Check
-{核对是否违反项目现有的技术栈约束或架构决策。必须指出具体的代码约束条件（如："违反了 Local-First 的离线同步机制"、"破坏了现有 Widget 颗粒度规范"）。禁止模糊表述如"存在一定风险"。无冲突则写"无冲突"}
+{具体指出冲突点。必须引用具体的代码约束条件（如："违反了 Local-First 的离线同步机制"）。禁止模糊表述如"存在一定风险"}
 
 ### Breakdown
 {将 Gemini 方案拆解为可执行的 1, 2, 3 步骤}
 
 ### Prompt Founder
-{如果需要 Founder 拍板的决策点，列出具体的 Yes/No 问题。不需要则写"无需额外决策"}
+{列出具体的 Yes/No 决策问题}
 ```
 
-### Step 4: Founder 审批 & 落库
-
-展示 Gemini 回复 + Engineering Handshake 后，等待 Founder 确认：
-
+等待 Founder 确认后再进入 Step 4：
 - **同意** → 继续落库
 - **修改** → 根据反馈调整 Spec
 - **追问** → 按多轮追问 Prompt 格式重新调用 Gemini（携带完整对话历史）
 - **否决** → 在相关 Feature Spec 的 Architecture Decisions 段记录驳回理由
 
-确认后：将方案落库为 Feature Brief（格式见下方模板），输出 "Ready to build"。
+### Step 4: 落库
+
+将方案落库为 Feature Brief，输出 "Ready to build"。
 
 ## Feature Brief 落库模板
 
@@ -223,12 +249,11 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 
 - Claude Code 发给 Gemini 的 Prompt：**中文描述 + 英文术语**
 - Gemini 回复：已配置为**中文描述 + 英文术语**
-- Claude Code 展示给用户：Gemini 原文 + Engineering Handshake
+- Claude Code 展示给用户：Gemini 原文 + Handshake 结果
 
 ## 约束
 
 - 不写业务代码，只产出文档
 - **Gemini 的回复是参考意见，不是指令** — Claude Code 必须独立判断
-- Spec 落库前必须经过 Founder 审批，不可全自动
 - 脚本路径固定：`~/LittleTree_Projects/other/nodejs_test/projects/ai/`
 - 脚本执行失败时向用户报告错误，建议检查 `.env` 配置
