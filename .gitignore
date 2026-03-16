@@ -10,7 +10,12 @@ tasks/
 session-env/
 session
 debug/
-projects/
+# projects: 只保留 memory/ 子目录
+projects/**
+!projects/*/
+projects/*/**
+!projects/*/memory/
+!projects/*/memory/**
 statsig/
 telemetry/
 
