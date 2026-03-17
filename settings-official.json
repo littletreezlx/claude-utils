@@ -16,7 +16,7 @@
       }
     ]
   },
-"CLAUDE_CODE_AUTO_COMPACT_WINDOW":400000,
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
   "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true,
   "enabledPlugins": {
