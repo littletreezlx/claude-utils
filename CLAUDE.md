@@ -73,6 +73,7 @@
 | 测试失败需要修复 | `/test-run` | 自动诊断修复，而非手动逐个排查 |
 | 用户说"项目状态不好"或开始陌生项目 | `/codebase-align` | 快速诊断对齐 |
 | 遇到产品方向/架构/UI 设计决策需要外部意见 | `feat-discuss-local-gemini` skill | 自动调用 Gemini API 咨询 |
+| AI 一次性生成大量测试（>20个），或用户质疑测试质量 | `test-verify` skill | 红队对抗验证，确保测试真的有效 |
 **不自动触发的**（需用户明确要求才通过 Skill 调用）：
 - `/comprehensive-health-check`、`/refactor-project`、`/test-plan`（重型 DAG，耗时长）
 - `/doc-update-context`（深度审查，可能大量改动）
@@ -89,6 +90,14 @@ AI 开发: Claude 写测试快 → 测试成本≈0 → 多写测试
 测试 = 质量保证 + 可执行的需求文档
 测试防止 AI "创造性破坏"（改 A 不破坏 B）
 ```
+
+### AI 测试陷阱（铁律）
+
+AI 同时写代码和测试 = 自己出题自己答。以下陷阱必须警惕：
+- **断言当前行为而非预期行为**：测试可能在"验证 bug 的存在"而非预期行为
+- **形同虚设的断言**：`expect(result).toBeDefined()` 永远通过，不验证具体值
+- **过度 Mock 掩盖真实问题**：Mock 返回值恰好让测试通过，真实环境却会失败
+- **防御手段**：人类指定测试用例（What），AI 实现（How）；关键模块跑 `/test-verify`
 
 ### 精准测试（节省 Token）
 

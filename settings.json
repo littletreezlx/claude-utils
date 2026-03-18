@@ -20,7 +20,7 @@
     "superpowers@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
-  "effortLevel": "high"
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
 }
