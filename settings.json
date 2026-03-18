@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -6,21 +10,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-tool-call.sh"
+            "command": "/Users/zhanglingxiao/.claude/hooks/pre-tool-call.sh"
           }
         ]
       }
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
-  },
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
-  },
-  "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true,
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
+  }
 }
