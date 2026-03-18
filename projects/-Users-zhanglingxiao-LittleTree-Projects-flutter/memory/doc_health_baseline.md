@@ -1,21 +1,21 @@
 ---
 name: doc_health_baseline
-description: 2026-03-18 文档健康基线，329 条失效路径需分批修复
+description: 2026-03-18 文档健康全绿，329 条失效路径已全部修复
 type: project
 ---
 
-## 文档腐烂基线（2026-03-18）
+## 文档健康状态（2026-03-18 修复后）
 
-运行 `./scripts/doc-health.sh` 发现 329 条 FEATURE_CODE_MAP.md 失效路径。
+原 329 条 FEATURE_CODE_MAP.md 失效路径已全部修复。当前状态：
 
-| 项目 | 失效/总数 | 严重程度 |
-|------|----------|---------|
-| littletree_ai | 119/175 | 🔴 严重（68% 腐烂） |
-| lt_music | 88/130 | 🔴 严重（68% 腐烂） |
-| flametree_rss_reader | 84/107 | 🔴 严重（79% 腐烂） |
-| flametree_pick | 38/74 | 🟡 中等（51% 腐烂） |
-| littletree_x | 0/48 | 🟢 健康 |
-| flametree_coffee | — | ⬜ 无文档 |
+| 项目 | 有效路径数 | 状态 |
+|------|----------|------|
+| littletree_ai | 354 | 🟢 健康 |
+| flametree_rss_reader | 174 | 🟢 健康 |
+| lt_music | 163 | 🟢 健康 |
+| flametree_pick | 78 | 🟢 健康 |
+| littletree_x | 48 | 🟢 健康 |
+| flametree_coffee | — | ⬜ 无文档体系 |
 
-**Why:** 项目经历大规模重构（flutter_common v2→v3、目录结构调整），文档未同步更新。
-**How to apply:** 日常开发中遇到某项目时，顺手用 `/doc-health.sh {project}` 检查并修复该项目的失效路径。不要一次性全部修复（工作量太大），优先修复当前活跃开发的项目。
+**Why:** 历史腐烂源于 flutter_common v2→v3 重构后目录结构大变但文档未同步。主要修复方式是将短路径补全为项目根目录相对路径。
+**How to apply:** 日常开发中代码文件新增/删除/重命名后，用 `./scripts/doc-health.sh {project}` 检查是否引入新的路径失效。保持全绿状态。
