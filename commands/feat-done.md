@@ -21,6 +21,13 @@ description: 任务收尾：文档同步 -> Git 提交 -> 生成验收报告
 - **文档保鲜提醒**：如果本次改动涉及交互行为变更，检查 `PRODUCT_BEHAVIOR.md` 是否需要同步；涉及架构变更，检查 `ARCHITECTURE.md`
 - **动作**：如果代码实现与文档不符，**立即更新文档**
 
+### Step 1.5: 静态分析 + 架构边界检查
+
+- 运行 `dart analyze`（或项目对应的静态分析工具），AI 可理解的报错直接修复
+- 如果项目有 `../scripts/arch-check.sh`，运行架构边界检查：`../scripts/arch-check.sh .`
+  - 通过 → 继续
+  - 有违反 → 按报错提示修复后重新检查
+
 ### Step 2: Git 提交
 
 确认测试通过后，执行 `/git-commit` 完成提交。

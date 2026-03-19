@@ -1,23 +1,27 @@
 ---
 name: feat-discuss-local-gemini
 description: >
-  This skill should be used when the user wants to discuss a new feature with
-  Gemini, when the user says "discuss with Gemini", "ask Gemini", "consult Gemini",
-  "跟 Gemini 聊聊", "问问 Gemini", "找 Gemini 讨论", or when a feature discussion
-  needs product/design input from the Gemini co-founder. Also use PROACTIVELY
+  This skill should be used when the user wants to discuss with Gemini on any topic:
+  features, product direction, design, methodology, engineering philosophy, AI collaboration
+  paradigms, or strategic thinking. Trigger when the user says "discuss with Gemini",
+  "ask Gemini", "consult Gemini", "跟 Gemini 聊聊", "问问 Gemini", "找 Gemini 讨论",
+  or when a discussion needs the Gemini co-founder's perspective. Also use PROACTIVELY
   when Claude Code encounters product direction decisions, architectural trade-offs,
-  or UI/UX design choices that would benefit from the Gemini co-founder's perspective
-  — do not guess on product philosophy or design aesthetics, consult Gemini instead.
-  Automatically calls local Gemini API, receives response, and synthesizes into
-  actionable spec documents.
-version: 0.5.0
+  UI/UX design choices, or methodology questions that would benefit from external input.
+  Supports three roles: product (features/architecture), design (UI/UX), think (methodology/philosophy).
+version: 0.6.0
 ---
 
-# 与 Gemini 自动化协作 — 产品 & 设计咨询
+# 与 Gemini 自动化协作
 
 ## 目的
 
-与 Gemini（产品合伙人 / 设计架构师）进行自动化协作。Claude Code 自动收集项目上下文、调用 Gemini API、接收回复、校验后落库为 Spec 文档。
+与 Gemini 进行自动化协作。支持三种角色：
+- **product** — 产品方向、架构推演、需求拷问
+- **design** — UI/UX 决策、视觉规范、像素级解构
+- **think** — 方法论、工程哲学、AI 协作范式、架构策略
+
+Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后处理（落库或直接展示）。
 
 **模式定位**：本技能是 Local API 自动模式（主力模式）。Web 手动模式（`/feat-discuss-web-gemini`）仅在用户明确要求、或需要多轮视觉反馈的重度脑暴时使用。
 
@@ -26,11 +30,11 @@ version: 0.5.0
 ## 触发条件
 
 当以下信号出现时启动：
-1. 用户想讨论新功能的产品方向或架构
-2. 用户想咨询 UI/UX 设计建议
-3. 用户明确提到"Gemini"、"产品讨论"、"设计讨论"
-4. 需要产品哲学或设计架构层面的外部意见
-5. **Claude Code 自主判断**（硬性触发红线）：
+1. 用户想讨论新功能的产品方向或架构 → `product`
+2. 用户想咨询 UI/UX 设计建议 → `design`
+3. 用户想讨论方法论、工程哲学、AI 协作范式、开发策略 → `think`
+4. 用户明确提到"Gemini"、"产品讨论"、"设计讨论"、"跟 Gemini 聊聊"
+5. **Claude Code 自主判断**（硬性触发红线 → `product` 或 `design`）：
    - **架构级依赖**：引入涉及核心架构的依赖（路由、状态管理、网络层、本地存储、UI 组件库）→ 必须咨询
    - **数据层变更**：涉及 Drift/SQLite 表结构变更、Schema 迁移、核心 Entity 修改 → 必须咨询
    - **状态复杂度升级**：Provider 间深层依赖、跨组件通信、状态共享逻辑复杂化 → 必须咨询
@@ -43,7 +47,6 @@ version: 0.5.0
 - 纯代码实现问题（Claude Code 自己能解决）
 - 轻量级工具依赖（如 `path_provider`、`url_launcher`、`share_plus`）
 - 用户说"提交到 Gemini Web"（→ 用 `/feat-discuss-web-gemini`）
-- 没有产品影响的纯工程决策
 
 ## 执行流程
 
@@ -52,30 +55,35 @@ version: 0.5.0
 **角色判断**（根据需求自动选择）：
 - `product` — 产品逻辑、架构推演、需求拷问（左脑：骨架与逻辑）
 - `design` — UI/UX 决策、视觉规范、像素级解构（右脑：血肉与感官）
+- `think` — 方法论、工程哲学、AI 协作范式、架构策略、跨项目问题（全脑：元认知）
 
 **上下文收集 — 动态组装策略**：
 
-**Global 常驻（每次必带）**：
-- `docs/PRODUCT_SOUL.md` — 优先读取 `## TL;DR` 摘要段（如有），避免全文塞入浪费 token。若无摘要段则传全文。
+**按角色分流**：
 
-**按需上下文（根据角色和话题动态选择）**：
+| 角色 | Global 常驻 | 按需上下文 | 不携带 |
+|------|------------|-----------|--------|
+| `product` | `PRODUCT_SOUL.md` TL;DR | `ROADMAP.md`（方向）/ `ARCHITECTURE.md`（架构） | — |
+| `design` | `PRODUCT_SOUL.md` TL;DR | `UI_SHOWCASE.md`（大纲）/ `specs/*.md`（相关页面） | `ARCHITECTURE`（设计不需要技术细节） |
+| `think` | **无强制**（不一定在具体项目中） | 按话题灵活选择：Claude Code 的分析结论、相关文档片段、代码统计数据 | `PRODUCT_SOUL`（除非话题涉及产品哲学） |
 
-| 角色 / 话题 | 额外携带 | 不携带 |
-|-------------|---------|--------|
-| `product` — 产品方向、需求讨论 | `docs/ROADMAP.md`（当前 Epic 节点即可） | `FEATURE_CODE_MAP`（避免被现有代码结构限制想象力） |
-| `product` — 架构 trade-off | `docs/ARCHITECTURE.md`、相关 Feature Spec 中的 Architecture Decisions 段 | — |
-| `design` — UI/UX 设计 | `docs/ui/UI_SHOWCASE.md`（大纲即可，非全量）、相关页面的 `docs/ui/specs/*.md`。Prompt 末尾追加："请为本次设计指出一个 Signature Moment（让用户记住的一个点）" | `ARCHITECTURE`（设计不需要技术细节） |
-| 涉及具体功能模块 | `docs/FEATURE_CODE_MAP.md` 中相关段落 | 全文 |
+**`think` 角色的上下文特殊规则**：
+- 不要求在项目目录中——可以在根目录讨论跨项目问题
+- 上下文以 **Claude Code 的分析和思考** 为主，而非项目文档
+- 携带具体数据和事实（"7 个项目，152 个测试"），而非体系名称（"冰山测试策略"）
+- 如果讨论涉及特定项目，按需读取该项目的相关文档
 
-**按需附加**（复杂问题时）：
-- 核心文件的 Git Diff 或 Provider 结构快照
-- 相关 Feature Spec 中的历史架构决策
+**通用规则**：
+- `product`/`design` 场景下：`docs/PRODUCT_SOUL.md` 优先读取 `## TL;DR` 摘要段（如有）
+- 涉及具体功能模块时：附带 `FEATURE_CODE_MAP.md` 中相关段落（非全文）
+- 复杂问题时可附加：Git Diff、Provider 结构快照、历史架构决策
 
 **不携带**：`CLAUDE.md`（工程操作指南，Gemini 不需要）。
 
 **硬性约束**：
 1. 所有文档内容必须通过 Read tool 实际读取，禁止凭记忆编造
-2. 不在项目目录中时（无法读取 `docs/`），必须告知用户缺少上下文并询问是否继续
+2. `product`/`design` 角色不在项目目录中时（无法读取 `docs/`），必须告知用户缺少上下文
+3. `think` 角色可在任意目录工作，上下文由 Claude Code 在 Prompt 中直接提供
 
 ### Step 2: 组装 Prompt 并调用 Gemini
 
@@ -160,9 +168,23 @@ node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 2. **描述事实，不描述体系** — 说"我们有 1178 个单元测试"比"我们有冰山模式测试策略"更不容易被误解
 3. **标注触发方式** — 如果提到工具/流程，说清楚是"手动按需"还是"自动触发"，避免 Gemini 脑补
 
-### Step 3: Engineering Handshake — 条件分流
+### Step 3: 处理 Gemini 回复 — 按角色分流
 
-收到 Gemini 回复后，Claude Code 执行落地校验。根据冲突程度分流：
+收到 Gemini 回复后，根据角色采取不同处理方式：
+
+#### `think` 角色 — 直接展示 + 可选落库
+
+`think` 角色的输出是分析和策略建议，不需要 Engineering Handshake。
+
+1. 展示 Gemini 完整回复
+2. Claude Code 补充自己的判断（同意/分歧/补充）
+3. 如果讨论产出了可执行的策略或决策 → 落库到相关文档（ADR / CLAUDE.md / AI_MAINTENANCE_GUIDE 等）
+4. 如果只是探讨性质 → 不强制落库，展示给用户即可
+5. 如需追问 → 按多轮追问格式重新调用
+
+#### `product` / `design` 角色 — Engineering Handshake
+
+对于功能/设计讨论，执行标准的落地校验。根据冲突程度分流：
 
 #### Fast Track（无冲突，直接落库）
 
