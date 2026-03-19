@@ -1,0 +1,1 @@
+- [project_game_mvp.md](project_game_mvp.md) — Barracks Clash MVP 项目上下文与架构决策
