@@ -37,6 +37,10 @@ version: 0.1.0
 - UI 风格改动需更新设计系统文档（如 `UI_SHOWCASE.md`）
 - **动作**：代码实现与文档不符时，**立即更新文档**
 
+### Step 1.5: 项目级交付检查（Project-specific Checks）
+
+检查当前项目的 CLAUDE.md 是否定义了交付前必须执行的工程约束检查（如静态分析、架构边界检查等），如有则执行。任一检查失败则修复后再提交。
+
 ### Step 2: Git 提交
 
 确认测试通过后，触发 git-workflow skill 执行提交。
