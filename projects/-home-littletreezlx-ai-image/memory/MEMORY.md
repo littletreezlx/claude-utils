@@ -174,5 +174,5 @@ source venv/bin/activate && python -c "from core.extractors.prompt import WD14Ex
 ## Ollama Docker 配置 (2026-03-13)
 - [project_ollama_docker.md](project_ollama_docker.md) — Docker volume 选择、dolphin-nemo 模型、WSL2 bind mount 陷阱
 
-# currentDate
-Today's date is 2026-03-13.
+## 项目拆分 (2026-03-20)
+- [project_split_2026_03_20.md](project_split_2026_03_20.md) — ai-image 重命名为 local-images, 新建 ai-images (SFW SDXL)
