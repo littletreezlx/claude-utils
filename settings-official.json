@@ -21,5 +21,6 @@
   "skipDangerousModePermissionPrompt": true,
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
-  }
+  },
+  "effortLevel": "high"
 }
