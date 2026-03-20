@@ -16,14 +16,18 @@ version: 0.6.0
 
 ## 目的
 
-与 Gemini 进行自动化协作。支持三种角色：
-- **product** — 产品方向、架构推演、需求拷问
-- **design** — UI/UX 决策、视觉规范、像素级解构
-- **think** — 方法论、工程哲学、AI 协作范式、架构策略
+与 Gemini 进行自动化协作。支持五种角色：
+- **product** — 产品方向、架构推演、需求拷问（FlameTree 生态）
+- **design** — UI/UX 决策、视觉规范、像素级解构（FlameTree 生态）
+- **game-product** — 游戏设计方向、核心循环、养成系统（Game 项目）
+- **game-design** — 游戏视觉、打击感、动效、音效方向（Game 项目）
+- **think** — 方法论、工程哲学、AI 协作范式、架构策略（通用）
 
 Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后处理（落库或直接展示）。
 
-**模式定位**：本技能是 Local API 自动模式（主力模式）。Web 手动模式（`/feat-discuss-web-gemini`）仅在用户明确要求、或需要多轮视觉反馈的重度脑暴时使用。
+**模式定位**：本技能是 Local API 自动模式（主力模式）。Web 手动模式分为两个命令：
+- `/web-think` — 通用自包含 Prompt（任意话题）
+- `/web-gem-project` — 会话增量 Prompt（项目已有 Gem，通过 `~/dev/gem_dev_solo/` 判断）
 
 **核心铁律：Gemini 是无状态的。每次 API 调用都是全新对话，所有对话历史和上下文必须由 Claude Code 在 Prompt 中显式提供。对话历史的完整性是 Claude Code 的责任。**
 
@@ -52,10 +56,21 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 
 ### Step 1: 选择角色 & 收集上下文
 
-**角色判断**（根据需求自动选择）：
-- `product` — 产品逻辑、架构推演、需求拷问（左脑：骨架与逻辑）
-- `design` — UI/UX 决策、视觉规范、像素级解构（右脑：血肉与感官）
-- `think` — 方法论、工程哲学、AI 协作范式、架构策略、跨项目问题（全脑：元认知）
+**角色判断**（根据需求和项目类型自动选择）：
+
+**项目类型检测**：
+- 当前目录在 `~/LittleTree_Projects/game-mvp/` 下 → Game 项目
+- 当前目录在 `~/LittleTree_Projects/flutter/` 下 → FlameTree 生态
+- 其他位置 → 根据话题判断
+
+**角色映射**：
+- `product` — 产品逻辑、架构推演、需求拷问（FlameTree 生态：左脑）
+- `design` — UI/UX 决策、视觉规范、像素级解构（FlameTree 生态：右脑）
+- `game-product` — 游戏设计方向、核心循环、养成系统（Game 项目：左脑）
+- `game-design` — 游戏视觉、打击感、动效、音效方向（Game 项目：右脑）
+- `think` — 方法论、工程哲学、AI 协作范式、架构策略（通用：全脑）
+
+**自动路由**：Game 项目中讨论产品/设计问题时，自动使用 `game-product` / `game-design` 而非 `product` / `design`。
 
 **上下文收集 — 动态组装策略**：
 
@@ -65,6 +80,8 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 |------|------------|-----------|--------|
 | `product` | `PRODUCT_SOUL.md` TL;DR | `ROADMAP.md`（方向）/ `ARCHITECTURE.md`（架构） | — |
 | `design` | `PRODUCT_SOUL.md` TL;DR | `UI_SHOWCASE.md`（大纲）/ `specs/*.md`（相关页面） | `ARCHITECTURE`（设计不需要技术细节） |
+| `game-product` | `GAME_DESIGN.md` 核心玩法段 | `ROADMAP.md` / `ARCHITECTURE.md` | `PRODUCT_SOUL`（非 FlameTree 项目） |
+| `game-design` | `GAME_DESIGN.md` 情感目标段 | `ROADMAP.md`（视觉相关段）/ 当前美术资源状态 | `ARCHITECTURE`（游戏设计不需要代码细节） |
 | `think` | **无强制**（不一定在具体项目中） | 按话题灵活选择：Claude Code 的分析结论、相关文档片段、代码统计数据 | `PRODUCT_SOUL`（除非话题涉及产品哲学） |
 
 **`think` 角色的上下文特殊规则**：
@@ -89,8 +106,13 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 
 通过本地脚本调用 Gemini API：
 ```bash
+# FlameTree 生态（product/design）+ 通用（think）
 node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
+
+# Game 项目（game-product/game-design）
+node ~/LittleTree_Projects/other/nodejs_test/projects/ai/game-{role}.mjs "<prompt>"
 ```
+Game 角色脚本有独立的底座 prompt（不使用 FlameTree 的 baseSystemPrompt），避免哲学交叉污染。
 
 #### 首轮 Prompt 格式
 
