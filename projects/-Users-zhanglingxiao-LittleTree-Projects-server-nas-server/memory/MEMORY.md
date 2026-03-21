@@ -7,5 +7,8 @@
 - [文档元数据 sed bug](feedback_doc_metadata_hook.md) — sed 日期正则必须匹配 YYYY-MM-DD 全格式
 - [记忆纪律](feedback_memory_discipline.md) — 禁止存可从代码/文档推导的信息（架构、文件路径等）
 
+## 外部服务与参考
+- [Gotify 通知中心](reference_gotify.md) — 自建 Gotify 推送通知，NAS Server 关键告警
+
 ## 项目状态与风险
 - [Follow 跨服务同步风险](project_follow_sync_risks.md) — 5 个已知的三端数据模型不一致风险点
