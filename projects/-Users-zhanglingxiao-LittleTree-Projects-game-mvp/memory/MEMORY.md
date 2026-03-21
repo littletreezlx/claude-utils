@@ -1,2 +1,3 @@
 - [project_game_mvp.md](project_game_mvp.md) — Barracks Clash MVP 项目上下文与架构决策
 - [reference_ai_image_api.md](reference_ai_image_api.md) — 内网 AI 图片生成服务（Windows, 192.168.0.121:5001）
+- [project_asset_pipeline.md](project_asset_pipeline.md) — AI 资产管线架构决策（manifest/自更新/质量门控）
