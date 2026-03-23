@@ -1,8 +1,4 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -16,11 +12,16 @@
       }
     ]
   },
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
-  "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
   },
-  "effortLevel": "high"
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
+  "model": "opus"
 }
