@@ -37,6 +37,7 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `screen` | 截屏（Flutter 模拟器/adb/网页），为 UI 工作流提供视觉上下文 | `/screen` (已迁移) |
 | `skill-creator` | 创建新 Skill、改进现有 Skill、提炼工作流为 Skill | — (元技能，无对应 Command) |
 | `prompt-craft` | 编写/审查/优化项目中的 AI-facing prompt（system prompt、API 调用指令） | — (自动触发) |
+| `update-from-stitch` | 从 Stitch 拉取设计稿到本地，对比差异并更新代码 | `/update-from-stitch` |
 
 ---
 
