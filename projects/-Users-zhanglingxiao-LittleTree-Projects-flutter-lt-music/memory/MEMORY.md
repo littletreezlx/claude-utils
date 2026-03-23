@@ -8,10 +8,12 @@
 
 - **设计哲学**: Warm Essentialism (温润的精要主义)
 - **视觉隐喻**: 白釉陶瓷底板与漫射光 (Ceramic & Diffused Light)
-- **核心色彩**: 背景 Warm Ivory #FBF9F6, 强调色 Warm Amber #D86B45 (2026-03-21 从 #E26A2C 更新), 文字主 #2C2A28, 文字副 #8A847F
+- **核心色彩**: 背景 Warm Ivory #FCFBF9, 强调色 Warm Amber #D97757 (2026-03-22 终版, 历史: #E26A2C → #D86B45 → #D97757), 文字主 #1C1917, 文字副 #78716C, Dark 背景 #181615, Dark 文字 #F5F5F4
+- **签名时刻**: Glowing Deck — 播放器条提取封面主色做漫射光背景（ColorScheme.fromImageProvider, 饱和度钳制 0.4）
+- **交互系统**: ScaleTapWrapper(scale 0.98 + opacity 0.85), NoSplash 全局禁涟漪, FadeThrough 页面过渡 300ms
 - **阴影系统**: 禁止纯黑阴影，统一使用 tinted brown #0C3E2723
 - **边框**: 方向性微光边框 (Glaze Border) — 顶/左亮，底/右暗
-- **交互**: 禁用 InkWell 默认涟漪，改用 scale 变换 + opacity 反馈
+- **交互**: ScaleTapWrapper 组件统一处理（lib/core/widgets/scale_tap_wrapper.dart）
 
 ## 记忆索引
 
