@@ -38,11 +38,13 @@ description: 评审 AI 生成工具（Stitch/v0）的 UI 设计，输出迭代 P
 
 ### Phase 1: 视觉诊断与哲学纠偏 (Visual Audit)
 
-**不描述画面有什么，分析画面做错了什么。**
+**不描述画面有什么，分析画面做错了什么。按四根设计支柱逐一审视，而非对照当前 spec 找偏差。**
 
-- **核心偏差**：一针见血指出生成图在哪一点上背离了 FlameTree 哲学（例："视觉噪音过大"、"核心阅读区被边缘化"、"质感过于 SaaS 化而非暖陶质感"）
+- **四柱审视**：这个设计在 Typography First / Warm Ceramic / Less but Better / Tactile Precision 四个维度上各做到了什么程度？哪里偏了？
+- **产品灵魂审视**：设计传达的是什么产品定位？与产品的核心身份是否冲突？（例：个人阅读室 vs 编辑策展平台）
 - **元素审判**：哪些元素多余（必须删减/弱化），哪些元素缺失（需要补足）
 - **反 AI 味检测**：对照反面清单，标记所有 AI 默认审美的痕迹
+- **值得保留的**：AI 工具做对了什么？哪些创意突破值得保留甚至反向更新我们的设计体系？
 
 ### Phase 2: 重塑策略 (Redesign Strategy)
 
@@ -58,10 +60,12 @@ description: 评审 AI 生成工具（Stitch/v0）的 UI 设计，输出迭代 P
 
 输出要求：
 - **语言**：必须**英文**（UI 生成工具对英文指令理解度最高）
-- **风格**：极度具体，少用抽象形容词，多用布局、尺寸、排版相关的明确术语
+- **描述意图，不硬编码数值**：严禁在 prompt 中出现当前项目的具体 Hex 色值（如 #FFF8F3）、具体字体名（如 Manrope）、具体 px 数值。应描述视觉意图（如 "warm cream background, like aged paper under a desk lamp"、"geometric sans-serif with warmth"、"generous reading margins"）。把具体实现的发明权留给 AI 工具
+- **用感官隐喻驱动**：「静谧书房」「无酸纸与暖台灯」「施釉陶艺」这类隐喻比任何色号都更能引导 AI 工具找到对的方向
+- **负向约束比正向引导更重要**：明确说 NEVER/REMOVE 什么，比说"应该怎样"更有效
 - **格式**：单个代码块，方便直接复制
 
-提示词结构：`[Global Vibe & Constraints] + [Layout Adjustments] + [Typography & Color Specifics] + [Elements to REMOVE]`
+提示词结构：`[Global Vibe & Sensory Metaphors] + [Layout Adjustments] + [Negative Constraints: NEVER/REMOVE] + [Elements to keep]`
 
 ## 约束
 
@@ -70,3 +74,10 @@ description: 评审 AI 生成工具（Stitch/v0）的 UI 设计，输出迭代 P
 - **尖锐批评**：如果 AI 生成图严重偏离（如喧宾夺主的大插画破坏沉浸阅读），直接指出
 - **Phase 3 必须英文**：这是铁律，无论对话语言是什么
 - **不做像素级丈量**：用定性描述 + 方向性建议
+- **严禁 spec-checking**：不要用当前项目的具体色值、字体名、间距数值去"纠正" AI 生成的设计。Phase 1 的评判标准是四根设计支柱和产品灵魂，不是 UI_SHOWCASE.md 里的具体参数。AI 工具选了衬线体？先评估它是否服务于 Typography First，而不是"规范写的是 Manrope"
+- **Phase 3 禁止硬编码**：迭代 prompt 中严禁出现当前项目的 Hex 色值、字体名、px 数值。用感官隐喻和视觉意图描述代替
+
+## Gotchas
+
+- Claude 最容易犯的错：读了 UI_SHOWCASE.md 后把它当成合规标准，Phase 3 变成"请按照我们的 spec 重做"。这完全违反了 /ui-vs 的目的 — 我们要的是激发 AI 工具的创意，不是让它复制我们的现有实现
+- 如果 AI 生成的设计在某个方面比现有设计系统更好，应该明确说"这个方向值得保留，建议反向更新我们的设计体系"
