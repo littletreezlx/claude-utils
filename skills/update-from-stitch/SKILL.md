@@ -51,8 +51,15 @@ version: 0.2.0
 1. `mcp__stitch__get_project` 获取项目信息
 2. `mcp__stitch__list_screens` 获取所有 screen
 3. **并行** `mcp__stitch__get_screen` 获取每个 screen 的 HTML + 截图 URL
-4. 将 HTML 写入 `stitch/screens/{screen_name}.html`（覆盖）
-5. 通过 WebFetch 下载截图保存到 `stitch/screens/{screen_name}.png`（视觉锚点，供后续 ui-vision-check 对比）
+4. 如果 `htmlCode` 非空，将 HTML 写入 `stitch/screens/{screen_name}.html`（覆盖）
+5. 通过 `curl -sL` 下载截图到临时文件，然后**必须验证并转换格式**：
+   ```bash
+   # Google CDN 返回 JPEG 但无扩展名，下载后可能是 JPEG 伪装 PNG
+   curl -sL -o /tmp/screen.tmp "https://lh3.googleusercontent.com/..."
+   # 用 sips 转为真正的 PNG（macOS）
+   sips -s format png /tmp/screen.tmp --out stitch/screens/{screen_name}.png
+   ```
+   或者批量处理：先全部 curl 下载为 `.png`，再统一 `sips -s format png` 转换
 6. 更新 `.stitch.json` 的 `lastSync`
 
 **变更检测**：
@@ -101,9 +108,12 @@ git diff --name-only stitch/screens/
 
 - **get_screen 需要三个参数**：`name`（完整资源路径 `projects/{pid}/screens/{sid}`）、`projectId`、`screenId`，三个都要传
 - **HTML 可能很大**：单个 screen 的 HTML 可能超过 1000 行，写入文件时不要在上下文中全量打印，用 Write 工具直接写
+- **htmlCode 可能为空**：Stitch 不一定为每个 screen 生成 HTML（`htmlCode: {}` 为空对象）。此时只有截图可用，跳过 HTML 写入，仅保存截图作为视觉参考
 - **并行拉取**：screens 之间无依赖，务必并行 get_screen 提高效率
-- **设计稿 ≠ 代码**：Stitch 产出的是 web HTML/CSS，如果本地项目是 Flutter/Native，需要翻译设计意图（色值、字重、间距比例）而非照搬 CSS 属性
+- **设计稿 ≠ 代码**：Stitch 产出的是 web HTML/CSS，如果本地项目是 Flutter/Native/Godot，需要翻译设计意图（色值、字重、间距比例）而非照搬 CSS 属性
 - **伪 diff 风险**：如果实践中发现 AI 生成的 HTML 结构不稳定（同样视觉效果但 HTML 不同，导致 git diff 误报），后续可引入 HTML 规范化预处理步骤
+- **⚠️ 截图是 JPEG 伪装成 PNG**：Google CDN（`lh3.googleusercontent.com`）返回的截图 URL 虽然没有扩展名，但实际内容是 **JPEG 格式**。用 curl 下载并保存为 `.png` 后，文件头是 JFIF 而非 PNG signature。Godot 等引擎按扩展名判断格式，会导入失败（`.import` 文件出现 `valid=false`）。**修复方法**：下载后必须用 `sips -s format png input.jpg --out output.png`（macOS）或 `convert`（ImageMagick）转为真正的 PNG，或者直接保存为 `.jpg` 扩展名
+- **截图分辨率较低**：Stitch 截图默认约 512×286（非全分辨率），作为视觉参考足够，但不适合直接用作游戏/应用的高清背景素材。如需高清版本，需用 AI 图片生成管线重新生成
 
 ## 约束
 
