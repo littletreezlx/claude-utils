@@ -1,0 +1,12 @@
+# Memory Index
+
+## Feedback (工作方式指导)
+- [feedback_prompt_engineering.md](feedback_prompt_engineering.md) — 提示词过载教训：少即是多，控制在 20 词以内
+- [feedback_lora_stacking.md](feedback_lora_stacking.md) — LoRA 堆叠经验：总权重 ≤ 1.4，注意风格系统自带 LoRA
+- [feedback_v3_style_pitfalls.md](feedback_v3_style_pitfalls.md) — V3 从 MiaoMiao 补偿型重写为 Perfect Doll 引导型，底模选择与标签策略
+- [feedback_quick_py_features.md](feedback_quick_py_features.md) — quick.py 新增 resolution 和 basemodel 字段
+- [feedback_ai_maintenance_strategy.md](feedback_ai_maintenance_strategy.md) — AI 维护策略：ROI 评估框架 + 过度工程化警告 (Gemini 共识)
+- [feedback_v3_dark_mood_composition.md](feedback_v3_dark_mood_composition.md) — V3 暗调质感方法 + cowboy shot 构图 + 姿势轻重技巧
+
+## Project (项目状态)
+- [project_model_comparison.md](project_model_comparison.md) — 底模对比实验：MiaoMiao > Nova Anime3D > IlluQuaint > Flux
