@@ -3,3 +3,4 @@
 - [project_asset_pipeline.md](project_asset_pipeline.md) — AI 资产管线架构决策（manifest/自更新/质量门控）
 - [project_art_style.md](project_art_style.md) — 美术风格方向：Chibi Q版 + 扁平色块，非写实非像素
 - [feedback_ai_maintainability.md](feedback_ai_maintainability.md) — AI 维护约定：BattleConfig 参数隔离、Humble Object、signal_map、类型标注
+- [user_remote_workflow.md](user_remote_workflow.md) — 用户从 Linux 远程开发时只提需求，Claude 全权负责实现+测试+提交
