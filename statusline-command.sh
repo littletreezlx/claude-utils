@@ -2,6 +2,9 @@
 # Claude Code statusLine - 简洁版
 # 格式: [green]project_dir[reset][magenta]  branch[reset][dim] · Model · ctx 85%[reset]
 
+# === 配置 ===
+RATE_INFO_PADDING=60  # rate_info 左侧空格数，调大则更靠右
+
 input=$(cat)
 
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
@@ -32,17 +35,37 @@ if [ -n "$remaining" ] && [ "$remaining" != "null" ]; then
   context_info="$used%"
 fi
 
-# Compose: [bold green]dir[reset][magenta] branch[reset][dim] · Model · [reset][bold green]ctx%[reset]
+# 5-hour rate limit info: "0% 2pm" (Asia/Shanghai)
+rate_info=""
+five_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+five_resets=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
+if [ -n "$five_pct" ] && [ -n "$five_resets" ]; then
+  pct_int=$(printf '%.0f' "$five_pct")
+  reset_time=$(LC_TIME=C TZ="Asia/Shanghai" date -r "$five_resets" +%I%p 2>/dev/null | sed 's/^0//' | tr '[:upper:]' '[:lower:]')
+  rate_info="${pct_int}% ${reset_time}"
+fi
+
+# Compose: [bold green]dir[reset][magenta] branch[reset][dim] · Model · [reset][bold green]ctx%[reset][dim] · rate[reset]
+base_part=""
 if [ -n "$model_short" ] && [ -n "$context_info" ]; then
-  printf "\033[1;32m%s\033[0m\033[35m%s\033[0m\033[2m · %s · ctx \033[0m\033[1;32m%s\033[0m" \
-    "$dir_name" "$git_branch" "$model_short" "$context_info"
+  base_part=$(printf "\033[1;32m%s\033[0m\033[35m%s\033[0m\033[2m · %s · ctx \033[0m\033[1;32m%s\033[0m" \
+    "$dir_name" "$git_branch" "$model_short" "$context_info")
 elif [ -n "$model_short" ]; then
-  printf "\033[1;32m%s\033[0m\033[35m%s\033[0m\033[2m · %s\033[0m" \
-    "$dir_name" "$git_branch" "$model_short"
+  base_part=$(printf "\033[1;32m%s\033[0m\033[35m%s\033[0m\033[2m · %s\033[0m" \
+    "$dir_name" "$git_branch" "$model_short")
 elif [ -n "$context_info" ]; then
-  printf "\033[1;32m%s\033[0m\033[35m%s\033[0m\033[2m · ctx \033[0m\033[1;32m%s\033[0m" \
-    "$dir_name" "$git_branch" "$context_info"
+  base_part=$(printf "\033[1;32m%s\033[0m\033[35m%s\033[0m\033[2m · ctx \033[0m\033[1;32m%s\033[0m" \
+    "$dir_name" "$git_branch" "$context_info")
 else
-  printf "\033[1;32m%s\033[0m\033[35m%s\033[0m" \
-    "$dir_name" "$git_branch"
+  base_part=$(printf "\033[1;32m%s\033[0m\033[35m%s\033[0m" \
+    "$dir_name" "$git_branch")
+fi
+
+if [ -n "$rate_info" ]; then
+  # Fixed padding (adjust RATE_INFO_PADDING at top of file)
+  padding=$(printf '%*s' "$RATE_INFO_PADDING" '')
+
+  printf "%s\033[2m%s%s\033[0m" "$base_part" "$padding" "$rate_info"
+else
+  printf "%s" "$base_part"
 fi
