@@ -3,7 +3,7 @@
 # 格式: [green]project_dir[reset][magenta]  branch[reset][dim] · Model · ctx 85%[reset]
 
 # === 配置 ===
-RATE_INFO_PADDING=60  # rate_info 左侧空格数，调大则更靠右
+RATE_INFO_PADDING=50  # rate_info 左侧空格数，调大则更靠右
 
 input=$(cat)
 
