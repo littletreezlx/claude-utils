@@ -10,6 +10,8 @@ tasks/
 session-env/
 session
 debug/
+image-cache/
+
 # projects: 只保留 memory/ 子目录
 projects/**
 !projects/*/
