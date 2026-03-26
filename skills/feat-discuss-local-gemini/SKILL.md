@@ -106,6 +106,9 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 
 通过本地脚本调用 Gemini API：
 ```bash
+# NVM 懒加载环境下需要先 source nvm.sh
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 # FlameTree 生态（product/design）+ 通用（think）
 node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 
