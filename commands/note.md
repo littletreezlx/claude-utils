@@ -5,7 +5,7 @@ description: 知识库速记 - 将输入内容自动整理到知识库文档
 # 知识库速记
 
 ## 核心目标
-将用户输入的内容（笔记、知识点、想法、摘录等）**零交互**地归档到知识库 `/Users/zhanglingxiao/SynologyDrive/MyForest/`，自动判断新建或追加到已有文档。
+将用户输入的内容（笔记、知识点、想法、摘录等）**零交互**地归档到知识库 `/Users/zhanglingxiao/Library/CloudStorage/SynologyDrive-MyCloud/MyForest/`，自动判断新建或追加到已有文档。
 
 ## 输入格式
 `/note <内容>`
