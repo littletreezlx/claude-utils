@@ -10,5 +10,8 @@
 ## 外部服务与参考
 - [Gotify 通知中心](reference_gotify.md) — 自建 Gotify 推送通知，NAS Server 关键告警
 
+## 用户画像
+- [投资者画像](user_investor_profile.md) — A股/港股散户，哑铃型配置，核心痛点是情绪化操作和信息盲区
+
 ## 项目状态与风险
 - [Follow 跨服务同步风险](project_follow_sync_risks.md) — 5 个已知的三端数据模型不一致风险点

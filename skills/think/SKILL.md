@@ -68,7 +68,7 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 ### Step 2: 调用 Gemini Think
 
 ```bash
-node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs "<prompt>"
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs "<prompt>"
 ```
 
 #### 首轮 Prompt 格式

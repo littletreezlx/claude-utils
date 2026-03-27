@@ -4,3 +4,4 @@
 - [project_art_style.md](project_art_style.md) — 美术风格方向：Chibi Q版 + 扁平色块，非写实非像素
 - [feedback_ai_maintainability.md](feedback_ai_maintainability.md) — AI 维护约定：BattleConfig 参数隔离、Humble Object、signal_map、类型标注
 - [user_remote_workflow.md](user_remote_workflow.md) — 用户从 Linux 远程开发时只提需求，Claude 全权负责实现+测试+提交
+- [feedback_doc_no_volatile_counts.md](feedback_doc_no_volatile_counts.md) — 文档禁止写易变数量（信号数/文件数/测试数），审查时跳过计数差异
