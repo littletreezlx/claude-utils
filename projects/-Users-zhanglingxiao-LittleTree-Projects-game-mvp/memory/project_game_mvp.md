@@ -1,10 +1,10 @@
 ---
 name: game-mvp-project-context
-description: Barracks Clash — Godot 4.6 单机军团自走棋，资产型布阵 + 跨局养成，目标 Steam PC
+description: Barracks Clash — Godot 4.6 单机 Legion TD（梦塔防式布阵+塔防波次防御混合），资产型布阵 + 跨局养成，目标 Steam PC
 type: project
 ---
 
-Godot 4.6 + GDScript 的 2D 独立 PC 游戏（目标 Steam），核心定位"养成驱动的单机军团自走棋" (Progression-driven Single-player Legion TD)。
+Godot 4.6 + GDScript 的 2D 独立 PC 游戏（目标 Steam），核心定位"养成驱动的单机 Legion TD"。品类更准确的描述是"塔防+自走棋混合"（波次防御 + 布阵策略），核心参考是梦塔防（封炎模式），而非纯自走棋（TFT/刀塔霸业那种棋盘 PvP）。
 
 **基准玩法参考：梦塔防（封炎模式）/ Legion TD 2**
 - 2026-03-25 确定：以梦塔防封炎模式为基础玩法对标，后续在此基础上创新迭代
