@@ -17,5 +17,9 @@
 
 - **CI/CD 决策 (2026-03)**：暂不引入 CI/CD。原因：Claude Code 本地闭环成熟，云端 CI 增量价值接近零。触发条件：多设备开发、有协作者、或 flutter_common 跨项目回归成为痛点。
 
+## 新项目
+
+- [project_ai_image_studio.md](project_ai_image_studio.md) — AI Image Studio: 独立文生图 App（2026-03-28 立项），后端直连 ai-image-engine
+
 # currentDate
-Today's date is 2026-03-18.
+Today's date is 2026-03-28.
