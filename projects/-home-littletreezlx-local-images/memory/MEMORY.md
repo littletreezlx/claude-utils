@@ -7,6 +7,8 @@
 - [feedback_quick_py_features.md](feedback_quick_py_features.md) — quick.py 新增 resolution 和 basemodel 字段
 - [feedback_ai_maintenance_strategy.md](feedback_ai_maintenance_strategy.md) — AI 维护策略：ROI 评估框架 + 过度工程化警告 (Gemini 共识)
 - [feedback_v3_dark_mood_composition.md](feedback_v3_dark_mood_composition.md) — V3 暗调质感方法 + cowboy shot 构图 + 姿势轻重技巧
+- [feedback_data_before_opinion.md](feedback_data_before_opinion.md) — 先跑数据再下结论，不要主观臆测。A/B 实验优先于推理
 
 ## Project (项目状态)
 - [project_model_comparison.md](project_model_comparison.md) — 底模对比实验：MiaoMiao > Nova Anime3D > IlluQuaint > Flux
+- [project_pose_experiment.md](project_pose_experiment.md) — 信任 LLM 改革（已完成）：去除 Tier/黑名单/auto-strip/三轴注入等干预，--dice 保留骰子模式
