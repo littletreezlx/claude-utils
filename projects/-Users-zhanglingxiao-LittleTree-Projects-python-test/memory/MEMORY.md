@@ -5,3 +5,4 @@
 
 ## Feedback
 - [不要建议移除 sync 前置钩子](feedback_sync_hooks.md) - 前置钩子是安全需求，不是技术冗余
+- [staff.csv 只增不删](feedback_staff_csv.md) - 某月无记录不代表离职，不要建议移除人员

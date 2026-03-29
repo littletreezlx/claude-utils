@@ -1,7 +1,8 @@
-- [project_game_mvp.md](project_game_mvp.md) — Barracks Clash MVP 项目上下文与架构决策
+- [project_game_mvp.md](project_game_mvp.md) — Barracks Clash GDD V3.0 项目上下文（六大系统+设计决策）
 - [reference_ai_image_api.md](reference_ai_image_api.md) — 内网 AI 图片生成服务（Windows, 192.168.0.121:5001）
 - [project_asset_pipeline.md](project_asset_pipeline.md) — AI 资产管线架构决策（manifest/自更新/质量门控）
 - [project_art_style.md](project_art_style.md) — 美术风格方向：Chibi Q版 + 扁平色块，非写实非像素
 - [feedback_ai_maintainability.md](feedback_ai_maintainability.md) — AI 维护约定：BattleConfig 参数隔离、Humble Object、signal_map、类型标注
 - [user_remote_workflow.md](user_remote_workflow.md) — 用户从 Linux 远程开发时只提需求，Claude 全权负责实现+测试+提交
 - [feedback_doc_no_volatile_counts.md](feedback_doc_no_volatile_counts.md) — 文档禁止写易变数量（信号数/文件数/测试数），审查时跳过计数差异
+- [feedback_ai_self_maintenance.md](feedback_ai_self_maintenance.md) — AI 自主维护基础设施：架构 linter、影响分析、%UniqueName、TestHelpers、GODOT_AI_TRAPS

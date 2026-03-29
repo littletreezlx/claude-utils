@@ -1,10 +1,10 @@
 ---
 name: AI 自主维护能力增强
-description: 2026-03-19 实施的防呆工程三支柱架构，用脚本和测试替代文档约束
+description: 防呆工程双支柱架构（Bootloader + Contract Tests），用脚本和测试替代文档约束
 type: project
 ---
 
-## 防呆工程三支柱（2026-03-19 实施）
+## 防呆工程双支柱（2026-03-19 实施，2026-03-28 精简）
 
 核心哲学：**能编码进约束的就不写文档**。对无状态 AI，可执行的检查永远优于文档描述。
 
@@ -22,9 +22,7 @@ type: project
 - `code_convention_test.dart` — @riverpod 禁令、print 禁令、sealed class、codegen 完整性
 - `helpers/` — file_scanner.dart + import_analyzer.dart
 
-### 支柱三：Context Radar
-- `scripts/get-context.sh <module>` — 按需拉取模块上下文（FILES/VIEWMODEL/IMPORTS/IMPORTED_BY/TESTS/SPEC/RECENT_CHANGES）
-
 ### 已否决方案
+- Context Radar (get-context.sh) — 2026-03-28 评估否决。FEATURE_CODE_MAP + Glob/Grep + impact-radius.sh 已覆盖模块级上下文需求，额外脚本增加维护负担无实质收益
 - AI 失误日志 (FAILURE_LOG.md) — AI 无法从文字学习，失误应转为测试
 - 信任阶梯 (TRUST_PROFILE.md) — 对无状态 AI 无意义

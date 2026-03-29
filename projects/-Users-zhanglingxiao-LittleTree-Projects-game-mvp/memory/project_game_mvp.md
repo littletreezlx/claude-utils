@@ -1,29 +1,36 @@
 ---
 name: game-mvp-project-context
-description: Barracks Clash — Godot 4.6 单机 Legion TD（梦塔防式布阵+塔防波次防御混合），资产型布阵 + 跨局养成，目标 Steam PC
+description: Barracks Clash — GDD V3.0 奇幻商队护卫×自走棋防守×常驻兵团养成，Godot 4.6 目标 Steam PC
 type: project
 ---
 
-Godot 4.6 + GDScript 的 2D 独立 PC 游戏（目标 Steam），核心定位"养成驱动的单机 Legion TD"。品类更准确的描述是"塔防+自走棋混合"（波次防御 + 布阵策略），核心参考是梦塔防（封炎模式），而非纯自走棋（TFT/刀塔霸业那种棋盘 PvP）。
+Godot 4.6 + GDScript 的 2D 独立 PC 游戏（目标 Steam）。
 
-**基准玩法参考：梦塔防（封炎模式）/ Legion TD 2**
-- 2026-03-25 确定：以梦塔防封炎模式为基础玩法对标，后续在此基础上创新迭代
-- 核心特征：部署阶段精心布阵 → 战斗阶段单位自由前进迎敌（Boids 寻路避障）→ 零微操纯观战 → 波次结束满血传送归位
-- 单位战斗行为：自由漫游寻敌（非站桩/非束缚），前排坦克吸引火力，后排 DPS 输出，远程兵射程不够也会前移
-- 已超越 MVP 阶段，追求最终质感，核心机制不妥协
+**GDD V3.0 (2026-03-29 与杰确定)：**
+核心定位从"养成驱动的单机 Legion TD Demo"升级为完整产品——"奇幻商队护卫×自走棋防守×常驻兵团养成"。
 
-**Why:** 2026-03-22 从"消耗型出兵"(Clash Royale 式) Pivot 为"资产型布阵"(梦塔防/Legion TD 式)。原因：原设计灵魂"棋子不是消耗品"与 MVP 实现矛盾，Pivot 后设计灵魂与机制统一。
+**六大核心系统：**
+1. 战斗系统 — 20×40 大网格 Auto-battler，死亡消失/存活保留（滚雪球）
+2. 商团长 — 唯一英雄，不可被攻击，光环+大招（唯一手操），3种统帅预设
+3. 经济系统 — 局内底薪(逐波递增)+赏金，局外灵魂宝石(唯一货币)
+4. 兵团契约 — 稀有度(白蓝紫金)+明牌商店(非盲抽)+碎片升级(Lv1-20)
+5. Mechabellum 动态解锁 — 全图鉴招募面板+单线质变科技(全局生效)
+6. 大地图跑商 — 杀戮尖塔式节点路线，程序化生成
+
+**关键设计决策：**
+- 装甲/伤害克制：3×3矩阵（Unarmored/Heavy/Ethereal × Physical/Pierce/Magic）
+- 波次制(非回合制)：部署暂停→自动交战→结算循环
+- PVP预留但暂不实现：统一引擎+数值归一化(PVP锁Lv1)
+
+**代码现状（Demo V1，作为 V3.0 重构基础）：**
+- Phase 1-5 全部完成，121+ tests 通过
+- 当前路线：Phase 7 核心数据结构重构
+- 文档体系：docs/ (GAME_DESIGN + ARCHITECTURE + ROADMAP + systems/6份子系统文档)
+
+**Why:** 2026-03-29 与杰讨论后确定 V3.0 方向。从 3 关卡 Demo 走向完整产品。
 
 **How to apply:**
-- 玩法类型：资产型布阵（单位永久资产，波次间满血复活归位）
-- 核心循环：部署阶段（网格放兵）→ 战斗阶段（自动对战，单位 2D 自由寻敌）→ 波次结算（复活+发金币）
-- 职责分离：局内=横向扩展（铺场+站位）；局外=纵向养成（铁匠铺升级）
-- 局内无升级，金币仅用于买新兵；升级走营地铁匠铺
-- 网格：4×5 (80px)，Click-to-Place 部署，左半屏
-- 败北条件：敌方突破基地线 (x=50)
-- 波次结算时一次性发放金币（非实时击杀即发）
-- 架构：6 个 Autoload 单例，Level.gd 拆为薄壳+LevelStateMachine(RefCounted 纯逻辑)
-- 视觉参数集中在 Assets/Data/battle_config.tres（BattleConfig Resource），AI 不改 .tres 数值
-- 信号追踪：tools/signal_map.sh 动态生成 EventBus 21 信号→文件映射
-- 测试：GUT 9.6.0，headless CLI，100 tests / 220 asserts（5 个测试文件）
-- Phase 路线：P1✅ P3✅ P4✅ → P2(视觉包装，进行中)
+- 设计文档以 docs/GAME_DESIGN.md (V3.0) 为权威来源
+- 子系统细节查 docs/systems/ 子目录
+- 当前代码架构仍是 Demo V1（4×5网格/全体复活/固定兵种），V3.0 重构从 Phase 7 开始
+- Demo V1 原始设计已归档至 docs/archive/demo-v1/
