@@ -12,7 +12,7 @@ description: Inbox 自动归档 - 扫描 Inbox 目录，将待整理文档智能
 - `/inbox <文件名>` — 只处理指定文件
 
 ## 知识库根目录
-`/Users/zhanglingxiao/Library/CloudStorage/SynologyDrive-MyCloud/MyForest/`
+`~/LittleTree_Projects/MyForest/`
 
 ## 执行流程
 
