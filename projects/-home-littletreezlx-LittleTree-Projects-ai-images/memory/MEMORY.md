@@ -1,0 +1,1 @@
+- [Project Rename](project_rename.md) — ai-images → ai-image-engine with FastAPI HTTP API (2026-03-28)
