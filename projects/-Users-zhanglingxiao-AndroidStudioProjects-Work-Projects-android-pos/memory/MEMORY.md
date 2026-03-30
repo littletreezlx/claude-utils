@@ -1,0 +1,2 @@
+- [飞书项目空间信息](reference_feishu_project.md) — shipd 空间的模板/角色/字段/user_key 速查表
+- [飞书 user_key 踩坑](feedback_feishu_user_key.md) — open_id != user_key，需从已有工作项节点提取
