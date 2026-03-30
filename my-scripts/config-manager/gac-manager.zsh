@@ -5,7 +5,8 @@
 # 环境变量动态加载
 # ============================================
 # 根据 ~/.gaccode_profile 自动设置环境变量
-# 可选值：main/little/official
+# 可选值：main/little/glm/kimi/official
+# 环境变量是 per-shell 的，多个终端窗口可以同时使用不同 provider
 
 if [[ -f ~/.gaccode_profile ]]; then
     GACCODE_PROFILE=$(cat ~/.gaccode_profile)
@@ -17,6 +18,20 @@ if [[ -f ~/.gaccode_profile ]]; then
         little)
             # export ANTHROPIC_BASE_URL=https://gaccode.com/claudecode
             # export ANTHROPIC_API_KEY=sk-ant-oat01-e00903ffb061fd32f5e470d6a2ca9888456eb9273a574ed416031ff60c03f45a
+            ;;
+        glm)
+            export ANTHROPIC_AUTH_TOKEN="07a1fdea55ed458fac3986e7088ab62a.ggB7p37dSDErHD5E"
+            export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
+            export API_TIMEOUT_MS="3000000"
+            export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+            export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
+            export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
+            export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air"
+            ;;
+        kimi)
+            export ANTHROPIC_AUTH_TOKEN="sk-kimi-oTjrCrqQwYLX81Z0zkDHbkEKkbBgTLuak5NM6dhN8IJScgSQQa5iU2iSO0yEjqGq"
+            export ANTHROPIC_BASE_URL="https://api.kimi.com/coding"
+            export ENABLE_TOOL_SEARCH="false"
             ;;
         official)
             # 不设置环境变量，使用官方配置
@@ -190,7 +205,7 @@ cc-glm() {
     # 保存配置类型到文件（新终端会自动加载）
     echo "glm" > ~/.gaccode_profile
 
-    # 更新 Claude Code settings 文件
+    # 更新 Claude Code settings 文件（env 块必须在 settings.json 中才能覆盖 cached session）
     if [[ -f ~/.claude/settings-glm.json ]]; then
         command cp -f ~/.claude/settings-glm.json ~/.claude/settings.json
         echo "✅ 已更新 settings.json 为 GLM 配置"
@@ -199,8 +214,53 @@ cc-glm() {
         return 1
     fi
 
+    # 同时设置 shell 环境变量（双重保险）
+    export ANTHROPIC_AUTH_TOKEN="07a1fdea55ed458fac3986e7088ab62a.ggB7p37dSDErHD5E"
+    export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
+    export API_TIMEOUT_MS="3000000"
+    export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air"
+    unset ANTHROPIC_API_KEY
+    unset ENABLE_TOOL_SEARCH
+
     echo ""
     echo "✅ 已切换到 GLM 配置"
+    echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
+}
+
+# ============================================
+# 切换到 Kimi Claude Code 配置
+# ============================================
+cc-kimi() {
+    echo "🔄 切换到 Kimi Claude Code 配置..."
+
+    # 保存配置类型到文件（新终端会自动加载）
+    echo "kimi" > ~/.gaccode_profile
+
+    # 更新 Claude Code settings 文件（env 块必须在 settings.json 中才能覆盖 cached session）
+    if [[ -f ~/.claude/settings-kimi.json ]]; then
+        command cp -f ~/.claude/settings-kimi.json ~/.claude/settings.json
+        echo "✅ 已更新 settings.json 为 Kimi 配置"
+    else
+        echo "⚠️  settings-kimi.json 文件不存在"
+        return 1
+    fi
+
+    # 同时设置 shell 环境变量（双重保险）
+    export ANTHROPIC_AUTH_TOKEN="sk-kimi-oTjrCrqQwYLX81Z0zkDHbkEKkbBgTLuak5NM6dhN8IJScgSQQa5iU2iSO0yEjqGq"
+    export ANTHROPIC_BASE_URL="https://api.kimi.com/coding"
+    export ENABLE_TOOL_SEARCH="false"
+    unset ANTHROPIC_API_KEY
+    unset API_TIMEOUT_MS
+    unset CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+    unset ANTHROPIC_DEFAULT_OPUS_MODEL
+    unset ANTHROPIC_DEFAULT_SONNET_MODEL
+    unset ANTHROPIC_DEFAULT_HAIKU_MODEL
+
+    echo ""
+    echo "✅ 已切换到 Kimi 配置"
     echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
 }
 
@@ -222,9 +282,16 @@ cc-official() {
         return 1
     fi
 
-    # 在当前 shell 中取消环境变量
+    # 清除所有 provider 环境变量
     unset ANTHROPIC_BASE_URL
     unset ANTHROPIC_API_KEY
+    unset ANTHROPIC_AUTH_TOKEN
+    unset ENABLE_TOOL_SEARCH
+    unset API_TIMEOUT_MS
+    unset CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+    unset ANTHROPIC_DEFAULT_OPUS_MODEL
+    unset ANTHROPIC_DEFAULT_SONNET_MODEL
+    unset ANTHROPIC_DEFAULT_HAIKU_MODEL
 
     # 备份 gaccode 配置文件
     if [[ -f ~/.codex/config ]]; then
@@ -243,7 +310,7 @@ cc-official() {
     echo ""
     echo "✅ 已切换到官方配置"
     echo "   💡 环境变量已清除，请使用官方 API Key 或登录方式"
-    echo "   💡 当前终端立即生效，新终端也会自动使用官方配置"
+    echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
 }
 
 # ============================================
@@ -266,6 +333,9 @@ gac-status() {
                 ;;
             glm)
                 echo "🎯 当前配置: GLM (glm)"
+                ;;
+            kimi)
+                echo "🎯 当前配置: Kimi (kimi)"
                 ;;
             official)
                 echo "🎯 当前配置: 官方 (official)"
@@ -355,5 +425,6 @@ gac-status() {
 alias gacm='cc-gac-main'
 alias gacl='cc-gac-little'
 alias glmg='cc-glm'
+alias kimig='cc-kimi'
 alias gaco='cc-official'
 alias gacs='gac-status'
