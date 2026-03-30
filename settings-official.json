@@ -23,5 +23,4 @@
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
-  "model": "opus"
 }

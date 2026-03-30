@@ -1,4 +1,9 @@
 {
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "sk-kimi-oTjrCrqQwYLX81Z0zkDHbkEKkbBgTLuak5NM6dhN8IJScgSQQa5iU2iSO0yEjqGq",
+    "ANTHROPIC_BASE_URL": "https://api.kimi.com/coding",
+    "ENABLE_TOOL_SEARCH": "false"
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -22,5 +27,5 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
 }
