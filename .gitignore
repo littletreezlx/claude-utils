@@ -99,3 +99,6 @@ history.jsonl
 mcp-needs-auth-cache.json
 .credentials.json
 settings.local.json
+
+# 其他配置足够了
+setting.json
