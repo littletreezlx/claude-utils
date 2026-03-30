@@ -12,3 +12,4 @@
 ## Project (项目状态)
 - [project_model_comparison.md](project_model_comparison.md) — 底模对比实验：MiaoMiao > Nova Anime3D > IlluQuaint > Flux
 - [project_pose_experiment.md](project_pose_experiment.md) — 信任 LLM 改革（已完成）：去除 Tier/黑名单/auto-strip/三轴注入等干预，--dice 保留骰子模式
+- [project_body_lora_split.md](project_body_lora_split.md) — 脸/身材 LoRA 拆分架构：已完成训练端+生成端，Scene YAML V9 body 字段拆分待做
