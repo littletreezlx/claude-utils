@@ -205,6 +205,29 @@ cc-glm() {
 }
 
 # ============================================
+# 切换到 Kimi Claude Code 配置
+# ============================================
+cc-kimi() {
+    echo "🔄 切换到 Kimi Claude Code 配置..."
+
+    # 保存配置类型到文件（新终端会自动加载）
+    echo "kimi" > ~/.gaccode_profile
+
+    # 更新 Claude Code settings 文件
+    if [[ -f ~/.claude/settings-kimi.json ]]; then
+        command cp -f ~/.claude/settings-kimi.json ~/.claude/settings.json
+        echo "✅ 已更新 settings.json 为 Kimi 配置"
+    else
+        echo "⚠️  settings-kimi.json 文件不存在"
+        return 1
+    fi
+
+    echo ""
+    echo "✅ 已切换到 Kimi 配置"
+    echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
+}
+
+# ============================================
 # 切换到官方 Claude Code 配置
 # ============================================
 cc-official() {
@@ -266,6 +289,9 @@ gac-status() {
                 ;;
             glm)
                 echo "🎯 当前配置: GLM (glm)"
+                ;;
+            kimi)
+                echo "🎯 当前配置: Kimi (kimi)"
                 ;;
             official)
                 echo "🎯 当前配置: 官方 (official)"
@@ -355,5 +381,6 @@ gac-status() {
 alias gacm='cc-gac-main'
 alias gacl='cc-gac-little'
 alias glmg='cc-glm'
+alias kimig='cc-kimi'
 alias gaco='cc-official'
 alias gacs='gac-status'
