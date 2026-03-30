@@ -1,4 +1,14 @@
 {
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "sk-kimi-oTjrCrqQwYLX81Z0zkDHbkEKkbBgTLuak5NM6dhN8IJScgSQQa5iU2iSO0yEjqGq",
+    "ANTHROPIC_BASE_URL": "https://api.kimi.com/coding",
+    "ENABLE_TOOL_SEARCH": "false",
+    "ANTHROPIC_MODEL": "kimi-k2.5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "kimi-k2.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k2.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2.5",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "kimi-k2.5"
+  },
   "hooks": {
     "PreToolUse": [
       {
