@@ -15,3 +15,4 @@
 
 ## 项目状态与风险
 - [Follow 跨服务同步风险](project_follow_sync_risks.md) — 5 个已知的三端数据模型不一致风险点
+- [Follow 系统定位边界](project_follow_scope.md) — Follow 只处理难订阅平台，通用 RSS/博客走 Miniflux

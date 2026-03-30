@@ -205,7 +205,16 @@ cc-glm() {
     # 保存配置类型到文件（新终端会自动加载）
     echo "glm" > ~/.gaccode_profile
 
-    # 在当前 shell 中设置环境变量（per-terminal 隔离）
+    # 更新 Claude Code settings 文件（env 块必须在 settings.json 中才能覆盖 cached session）
+    if [[ -f ~/.claude/settings-glm.json ]]; then
+        command cp -f ~/.claude/settings-glm.json ~/.claude/settings.json
+        echo "✅ 已更新 settings.json 为 GLM 配置"
+    else
+        echo "⚠️  settings-glm.json 文件不存在"
+        return 1
+    fi
+
+    # 同时设置 shell 环境变量（双重保险）
     export ANTHROPIC_AUTH_TOKEN="07a1fdea55ed458fac3986e7088ab62a.ggB7p37dSDErHD5E"
     export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
     export API_TIMEOUT_MS="3000000"
@@ -213,15 +222,12 @@ cc-glm() {
     export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5"
     export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5"
     export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air"
-
-    # 清理其他 provider 的环境变量
     unset ANTHROPIC_API_KEY
     unset ENABLE_TOOL_SEARCH
 
     echo ""
     echo "✅ 已切换到 GLM 配置"
     echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
-    echo "   💡 其他终端窗口不受影响"
 }
 
 # ============================================
@@ -233,12 +239,19 @@ cc-kimi() {
     # 保存配置类型到文件（新终端会自动加载）
     echo "kimi" > ~/.gaccode_profile
 
-    # 在当前 shell 中设置环境变量（per-terminal 隔离）
+    # 更新 Claude Code settings 文件（env 块必须在 settings.json 中才能覆盖 cached session）
+    if [[ -f ~/.claude/settings-kimi.json ]]; then
+        command cp -f ~/.claude/settings-kimi.json ~/.claude/settings.json
+        echo "✅ 已更新 settings.json 为 Kimi 配置"
+    else
+        echo "⚠️  settings-kimi.json 文件不存在"
+        return 1
+    fi
+
+    # 同时设置 shell 环境变量（双重保险）
     export ANTHROPIC_AUTH_TOKEN="sk-kimi-oTjrCrqQwYLX81Z0zkDHbkEKkbBgTLuak5NM6dhN8IJScgSQQa5iU2iSO0yEjqGq"
     export ANTHROPIC_BASE_URL="https://api.kimi.com/coding"
     export ENABLE_TOOL_SEARCH="false"
-
-    # 清理其他 provider 的环境变量
     unset ANTHROPIC_API_KEY
     unset API_TIMEOUT_MS
     unset CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
@@ -249,7 +262,6 @@ cc-kimi() {
     echo ""
     echo "✅ 已切换到 Kimi 配置"
     echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
-    echo "   💡 其他终端窗口不受影响"
 }
 
 # ============================================
@@ -260,6 +272,15 @@ cc-official() {
 
     # 保存配置类型到文件（新终端会自动加载）
     echo "official" > ~/.gaccode_profile
+
+    # 更新 Claude Code settings 文件
+    if [[ -f ~/.claude/settings-official.json ]]; then
+        command cp -f ~/.claude/settings-official.json ~/.claude/settings.json
+        echo "✅ 已更新 settings.json 为官方配置"
+    else
+        echo "⚠️  settings-official.json 文件不存在"
+        return 1
+    fi
 
     # 清除所有 provider 环境变量
     unset ANTHROPIC_BASE_URL
@@ -289,8 +310,7 @@ cc-official() {
     echo ""
     echo "✅ 已切换到官方配置"
     echo "   💡 环境变量已清除，请使用官方 API Key 或登录方式"
-    echo "   💡 当前终端立即生效，新终端也会自动使用官方配置"
-    echo "   💡 其他终端窗口不受影响"
+    echo "   💡 当前终端立即生效，新终端也会自动加载此配置"
 }
 
 # ============================================
