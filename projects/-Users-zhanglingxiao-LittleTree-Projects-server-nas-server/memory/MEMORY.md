@@ -9,6 +9,7 @@
 
 ## 外部服务与参考
 - [Gotify 通知中心](reference_gotify.md) — 自建 Gotify 推送通知，NAS Server 关键告警
+- [日志系统设计原则](reference_logging_design_principles.md) — 多服务统一 schema、AI 排查入口、降噪策略
 
 ## 用户画像
 - [投资者画像](user_investor_profile.md) — A股/港股散户，哑铃型配置，核心痛点是情绪化操作和信息盲区
