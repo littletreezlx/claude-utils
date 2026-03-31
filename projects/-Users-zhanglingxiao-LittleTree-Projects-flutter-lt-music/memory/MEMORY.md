@@ -21,3 +21,4 @@
 - [project_high_risk_modules.md](project_high_risk_modules.md) — 高风险模块清单（ServiceLocator/AudioService/离线下载）
 - [project_audio_pitfalls.md](project_audio_pitfalls.md) — 音频平台踩坑记录（iOS后台/macOS证书/进度延迟）
 - [feedback_session_discipline.md](feedback_session_discipline.md) — 会话纪律（结束时保存/开始时检查 TODO）
+- [doc-review-counts-policy.md](doc-review-counts-policy.md) — 文档审查时易变计数不关注原则（测试数等）
