@@ -181,6 +181,8 @@ jest / pytest / flutter test
 - 按功能模块分组（非文件类型）
 - 相关文件就近放置（代码-测试-文档在一起）
 - 适当分层：Service → Repository → Controller
+- **目录自描述**：超过 3 个文件的目录配 README，列明每个文件用途；总 README 只做导航索引
+- **临时产物隔离**：临时/实验文件放 `_scratch/` 目录，头部强制 `# Purpose:` + `# Created:`，定期清理
 
 ### 自定义 Linter 规范
 
