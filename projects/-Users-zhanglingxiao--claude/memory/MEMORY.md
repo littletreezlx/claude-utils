@@ -7,6 +7,7 @@
 
 ## Reference
 - [reference_skills_taxonomy.md](reference_skills_taxonomy.md) — Anthropic 内部 Skills 9 类分类体系，规划新 Skill 时用作自检清单
+- [reference_agents_source.md](reference_agents_source.md) — ~/.claude/agents/ 来源于 wshobson/agents，提取+去重方式维护
 
 ## User
 - [user_project_screenshots.md](user_project_screenshots.md) — 所有项目截图统一放在项目根目录 screenshots/ 下，UI 工作流直接读取无需询问
