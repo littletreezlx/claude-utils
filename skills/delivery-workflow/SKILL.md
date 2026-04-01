@@ -35,6 +35,7 @@ version: 0.1.0
 - 对比项目文档体系中对应的文档（功能文档、UI 规范等）
 - 较大改动需更新功能索引（如 `FEATURE_CODE_MAP.md`）和路线图（如 `ROADMAP.md`）
 - UI 风格改动需更新设计系统文档（如 `UI_SHOWCASE.md`）
+- **User Stories 影响检查**：如果项目有 `docs/user-stories/`，检查本次变更是否影响现有故事中的 curl 端点或预期行为。端点改名/删除/返回值变更 → 标记需更新的故事文件
 - **动作**：代码实现与文档不符时，**立即更新文档**
 
 ### Step 1.5: 项目级交付检查（Project-specific Checks）
