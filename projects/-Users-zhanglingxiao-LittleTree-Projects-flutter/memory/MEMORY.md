@@ -4,6 +4,7 @@
 
 - [user_preferences.md](user_preferences.md) — 用户角色、技术偏好、决策风格
 - [feedback_autonomous_verification.md](feedback_autonomous_verification.md) — 运行时验证是默认行为，不要问用户去手动测试
+- [feedback_screenshot_platform.md](feedback_screenshot_platform.md) — 截图时不要自作主张选平台，macOS 应用优先于后台模拟器
 
 ## 项目状态
 
