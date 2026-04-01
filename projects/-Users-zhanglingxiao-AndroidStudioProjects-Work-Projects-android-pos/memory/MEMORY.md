@@ -1,2 +1,4 @@
 - [飞书项目空间信息](reference_feishu_project.md) — shipd 空间的模板/角色/字段/user_key 速查表
 - [飞书 user_key 踩坑](feedback_feishu_user_key.md) — open_id != user_key，需从已有工作项节点提取
+- [竞品项目路径与文档策略](reference_competitor_projects.md) — 客如云/美团/趣买路径、文档完善度、补全策略
+- [竞品调研默认用 subagent](feedback_competitor_subagent.md) — 避免污染主上下文，token 消耗隔离
