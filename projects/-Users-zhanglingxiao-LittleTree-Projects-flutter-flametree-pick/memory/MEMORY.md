@@ -1,0 +1,1 @@
+- [Debug State Server](project_debug_state_server.md) — localhost:8788 HTTP server for programmatic app state R/W

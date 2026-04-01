@@ -53,8 +53,10 @@
 ### 核心闭环
 
 ```
-读测试 → 改代码 → 写/更新测试 → 运行测试 → 失败？看日志修复重测 → ✅ 通过 → 交付检查 → 提交
+读测试 → 改代码 → 写/更新测试 → 运行测试 → 失败？看日志修复重测 → ✅ 通过 → 运行时验证（如可用）→ 交付检查 → 提交
 ```
+
+**运行时验证**（移动端/GUI 项目）：如果项目有 Debug State Server（`lib/dev_tools/debug_server.dart`），测试通过后还应启动 App 并通过 HTTP 接口验证真实运行行为。这不是可选步骤——改了业务逻辑就 curl 验证，改了 UI 就截图确认。详见项目级 CLAUDE.md。
 
 ### 交付检查（测试通过后自动执行）
 
@@ -74,6 +76,7 @@
 | 用户说"项目状态不好"或开始陌生项目 | `/codebase-align` | 快速诊断对齐 |
 | 遇到产品方向/架构/UI 设计决策需要外部意见 | `feat-discuss-local-gemini` skill | 自动调用 Gemini API 咨询 |
 | AI 一次性生成大量测试（>20个），或用户质疑测试质量 | `test-verify` skill | 红队对抗验证，确保测试真的有效 |
+| 改完业务逻辑/UI，项目有 Debug State Server | curl + 截图自主验证 | 不等用户手动测试，自己验证完再交付 |
 **不自动触发的**（需用户明确要求才通过 Skill 调用）：
 - `/comprehensive-health-check`、`/refactor-project`、`/test-plan`（重型 DAG，耗时长）
 - `/doc-update-context`（深度审查，可能大量改动）
