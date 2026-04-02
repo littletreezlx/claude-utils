@@ -1,1 +1,1 @@
-- [WSL2 端口转发配置](reference_wsl2_port_forwarding.md) — Mac 访问引擎需 Windows netsh portproxy 转发
+- [WSL2 Caddy 反向代理架构](reference_wsl2_port_forwarding.md) — 内部 8101 + Caddy 对外 8100，含 netsh portproxy 冲突排查经验
