@@ -10,9 +10,9 @@ type: project
 
 | 项目 | 有效路径数 | 状态 |
 |------|----------|------|
-| littletree_ai | 354 | 🟢 健康 |
+| flametree_ai | 354 | 🟢 健康 |
 | flametree_rss_reader | 174 | 🟢 健康 |
-| lt_music | 163 | 🟢 健康 |
+| flametree_music | 163 | 🟢 健康 |
 | flametree_pick | 78 | 🟢 健康 |
 | littletree_x | 48 | 🟢 健康 |
 | flametree_coffee | — | ⬜ 无文档体系 |

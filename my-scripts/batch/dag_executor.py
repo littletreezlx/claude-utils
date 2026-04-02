@@ -193,6 +193,10 @@ class DAGExecutor:
         if self.use_state and self.state_manager:
             self.state_manager.complete_all(all_success)
 
+        # 成功后清理文件
+        if all_success:
+            self._cleanup()
+
         print(f"\n{'=' * 80}")
         if all_success:
             print(f"✅ 所有任务执行完成")
@@ -369,6 +373,26 @@ class DAGExecutor:
                 if stage_task.task_id == task.task_id and stage_task.description == task.description:
                     return stage.stage_id
         return None
+
+    def _cleanup(self):
+        """清理任务文件和状态文件"""
+        import os
+
+        # 清理状态文件
+        if self.state_manager and os.path.exists(self.state_manager.state_file):
+            try:
+                os.remove(self.state_manager.state_file)
+                print(f"🗑️  已清理状态文件: {self.state_manager.state_file}")
+            except Exception as e:
+                print(f"⚠️  清理状态文件失败: {e}")
+
+        # 清理任务文件
+        if os.path.exists(self.file_path):
+            try:
+                os.remove(self.file_path)
+                print(f"🗑️  已清理任务文件: {self.file_path}")
+            except Exception as e:
+                print(f"⚠️  清理任务文件失败: {e}")
 
 
 if __name__ == "__main__":

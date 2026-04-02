@@ -1,4 +1,24 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(./gradlew compileDebugKotlin:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(./gradlew:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(rg:*)",
+      "Bash(timeout:*)",
+      "Bash(kotlinc:*)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(git log:*)"
+    ],
+    "deny": [],
+    "defaultMode": "dontAsk"
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -22,6 +42,5 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
-  "model": "sonnet"
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
 }

@@ -10,18 +10,18 @@ flutter_common API 使用概况（2026-03-18 扫描）。精确数据运行 `./s
 
 | API | 主要用户 |
 |-----|---------|
-| **LogUtil (Log.d/i/w/e)** | flametree_pick(39), flametree_rss(27), lt_music(10), littletree_x(1) |
-| **Result<T>** | lt_music(24), flametree_pick(8), flametree_coffee(1) |
-| **AdaptiveSize (.aw/.ah/.asp)** | lt_music(24) |
-| **PlatformAdapter** | lt_music(23), flametree_pick(4) |
-| **DesignTokens** | lt_music(17) |
+| **LogUtil (Log.d/i/w/e)** | flametree_pick(39), flametree_rss(27), flametree_music(10), littletree_x(1) |
+| **Result<T>** | flametree_music(24), flametree_pick(8), flametree_coffee(1) |
+| **AdaptiveSize (.aw/.ah/.asp)** | flametree_music(24) |
+| **PlatformAdapter** | flametree_music(23), flametree_pick(4) |
+| **DesignTokens** | flametree_music(17) |
 
 ## 中度使用
 
 | API | 主要用户 |
 |-----|---------|
-| **AppError** | lt_music(5), flametree_pick(1) |
-| **GlobalErrorHandler** | lt_music(5) |
+| **AppError** | flametree_music(5), flametree_pick(1) |
+| **GlobalErrorHandler** | flametree_music(5) |
 | **BaseViewModel** | flametree_pick(4) |
 | **BaseUseCase** | flametree_pick(5) |
 | **SkeletonLoader** | flametree_rss(4) |
@@ -32,13 +32,13 @@ flutter_common API 使用概况（2026-03-18 扫描）。精确数据运行 `./s
 |-----|------|
 | BouncingWidget | flametree_pick(3) |
 | FullscreenImageViewer | flametree_coffee(3) |
-| AppDialog | lt_music(2) |
+| AppDialog | flametree_music(2) |
 | AdaptiveLayout | flametree_rss(2) |
 | HtmlSanitizer | flametree_rss(2) |
 | ShareHelper | flametree_rss(1) |
-| GlassContainer | lt_music(1) |
+| GlassContainer | flametree_music(1) |
 | AppButton | flametree_pick(1) |
-| Debouncer | lt_music(1) |
+| Debouncer | flametree_music(1) |
 
 ## 未被使用（可大胆重构）
 

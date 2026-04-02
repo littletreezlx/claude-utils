@@ -13,11 +13,11 @@ type: project
 - **Why:** 项目历史原因，迁移成本高，保持现状
 - **How to apply:** 在 pick 项目中新增 ViewModel 时，照现有手写风格，不要用 @riverpod 注解
 
-## littletree_ai
+## flametree_ai
 
 - **架构**: 前后端分离，flutter_common 不以 submodule 方式引入（app/ 子目录是 Flutter 客户端）
 - **fleet-status.sh**: common 列会显示 n/a
-- **How to apply:** 修改 flutter_common 后不需要 sync 到 littletree_ai
+- **How to apply:** 修改 flutter_common 后不需要 sync 到 flametree_ai
 
 ## flametree_coffee
 
