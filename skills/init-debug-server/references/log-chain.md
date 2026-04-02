@@ -64,7 +64,7 @@ _addLog('state', 'read $name (${state.length} fields)');
 ### 效果
 
 ```bash
-curl -s localhost:8788/logs?count=5 | python3 -c "
+curl -s "localhost:8788/logs?count=5" | python3 -c "
 import sys, json
 for log in json.load(sys.stdin)['data']['logs']:
     print(f\"  [{log['time'][11:19]}] [{log['level']:6s}] {log['message']}\")
@@ -87,6 +87,7 @@ for log in json.load(sys.stdin)['data']['logs']:
 # start-dev.sh — 支持 AI 后台模式
 
 LOG_FILE="/tmp/flutter_run.log"
+DEBUG_PORT=8788
 SESSION_START=$(date '+%Y-%m-%d %H:%M:%S')
 
 # 追加会话标记
@@ -100,18 +101,22 @@ if [ "${1:-}" = "--background" ]; then
   echo "   日志: $LOG_FILE"
 
   # 等待 Debug Server ready
+  # ⚠️ 每次迭代必须 sleep 1s！否则 60 次瞬间完成报"超时"
   echo -n "   等待..."
   for i in $(seq 1 60); do
-    if curl -s -o /dev/null -w "%{http_code}" localhost:8788/providers 2>/dev/null | grep -q 200; then
-      echo " ✓ Ready"
+    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$DEBUG_PORT/providers" 2>/dev/null | grep -q 200; then
+      echo " ✓ Ready (http://localhost:$DEBUG_PORT)"
       exit 0
     fi
     if ! kill -0 $PID 2>/dev/null; then
       echo " ✗ 进程已退出"
+      tail -20 "$LOG_FILE"
       exit 1
     fi
+    sleep 1
   done
-  echo " ✗ 超时"
+  echo " ✗ 超时（60s）"
+  echo "   flutter run 可能仍在编译，检查日志: tail -f $LOG_FILE"
   exit 1
 else
   # 交互模式
@@ -119,17 +124,20 @@ else
 fi
 ```
 
+**关键改动 vs 旧版**：`sleep 1` 在循环内。没有 sleep 时 60 次 curl 在 1 秒内全部完成，iOS 首次编译需要 45s+，必然"超时"。脚本超时不代表启动失败——flutter run 仍在后台编译。
+
 ## AI 使用方式
 
 ```bash
 # 启动
 ./scripts/start-dev.sh --background
 
-# 改代码后重启
-pkill -f "flutter run"; ./scripts/start-dev.sh --background
+# 改代码后重启（整个 QA 会话最多重启 1 次）
+pkill -9 -f "<app_binary>"; pkill -f "flutter run"
+./scripts/start-dev.sh --background
 
 # 查看操作日志
-curl -s localhost:8788/logs?count=20 | python3 -m json.tool
+curl -s "localhost:8788/logs?count=20" | python3 -m json.tool
 
 # 查看构建日志
 ./scripts/view-dev-log.sh latest

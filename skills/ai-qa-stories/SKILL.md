@@ -8,7 +8,7 @@ description: >
   "regression", "run stories", "qa stories", or after a batch of code changes
   needs holistic verification beyond unit tests. Requires Debug State Server
   running and docs/user-stories/ to exist.
-version: 0.4.0
+version: 0.5.0
 ---
 
 # AI QA Stories — 用户故事自主验证
@@ -45,25 +45,39 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
 
 #### 自动启动流程（Server 未运行时）
 
-**核心原则：启动和加载故事并行，不傻等。**
+**核心原则：启动和加载故事并行，不傻等。整个 QA 会话只启动一次 App。**
 
 ```
+┌─ 0. 先杀残留进程！────────────────────────────────┐
+│ pkill -9 -f "<app_binary>" ; pkill -f "flutter run"│
+│ 确认无残留后再启动                                   │
+└────────────────────────────────────────────────────┘
+          ↓
 ┌─ 后台启动 App（run_in_background）──────────────┐   ┌─ 前台加载故事 ─────────┐
 │ 无参数 → open Simulator + start-dev --background │   │ 并行读取所有 story 文件  │
 │ 有参数 → start-dev --background --device <设备>   │   │ 记录 story 列表          │
 └─────────────────────────────────────────────────┘   └────────────────────────┘
           ↓ 故事加载完后
-    单次检查 Server：curl providers
+    用 tail 检查构建日志，看到 DevTools URL 即就绪
+          ↓
+    curl providers 确认
           ↓
     ✅ 响应 → 继续 Step 2
-    ❌ 未响应 → 用 start-dev.sh 的 run_in_background 等待
-              → 完成通知到达后再次 curl
-              → 仍未响应 → 输出错误，终止
+    ❌ 仍未响应 → 输出错误，终止
 ```
+
+> **⚠️ 关键经验：start-dev.sh 的等待循环可能没有 sleep**，60 次 curl 迭代瞬间完成后脚本报"超时"退出，但 flutter run 仍在后台编译。**脚本超时 ≠ 启动失败**。正确做法是等后台任务完成通知到达，然后 `tail -3` 构建日志看是否有 DevTools URL。
 
 **具体步骤**：
 
-1. **后台启动 App**（`run_in_background: true`）— **必须先判断设备参数**：
+1. **先杀残留进程**（防止多实例堆积）：
+   ```bash
+   # <app_binary> 从 pubspec.yaml name 或 build 产物路径推断
+   pkill -9 -f "<app_binary>" 2>/dev/null
+   pkill -f "flutter run" 2>/dev/null
+   ```
+
+2. **后台启动 App**（`run_in_background: true`）— **必须先判断设备参数**：
 
    | 用户输入 | 启动命令 |
    |---------|---------|
@@ -72,17 +86,17 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
    | `/ai-qa-stories ios` | `open -a Simulator && ./scripts/start-dev.sh --background` |
    | `/ai-qa-stories <其他设备>` | `./scripts/start-dev.sh --background --device <设备>` |
 
-   > **注意**：传了非模拟器设备参数时，**不要** `open -a Simulator`。所有路径统一走 `start-dev.sh`，享受日志管理和 server ready 等待。
+   > **注意**：传了非模拟器设备参数时，**不要** `open -a Simulator`。所有路径统一走 `start-dev.sh`。
    >
-   > **⚠️ iOS 首次编译**：Xcode build 可能需要 45s+，加上 App 启动时间可能超过 `start-dev.sh` 的 60s 超时。超时不代表失败——检查 `/tmp/flutter_run.log` 尾部，如果看到 "Xcode build done" 或 "Syncing files" 说明构建已完成，App 即将就绪。
+   > **⚠️ iOS 首次编译**：Xcode build 可能需要 45s+，可能超过脚本超时。超时不代表失败。
 
-2. **同时（不要等启动完成！）并行加载所有故事文件**（Step 1）
+3. **同时（不要等启动完成！）并行加载所有故事文件**（Step 1）
 
-3. 故事加载完后，检查 Server 是否已就绪：
-   - 就绪 → 继续
-   - 未就绪 → 等待后台启动任务的完成通知（**不要自己写 for 循环轮询**）
-   - 启动任务完成后再 curl 一次
-   - 仍然不行 → 输出诊断信息（查看日志 `./scripts/view-dev-log.sh latest`），终止
+4. 故事加载完后，检查 Server 是否已就绪：
+   - 先等后台启动任务的完成通知（**不要自己写 for 循环轮询**）
+   - 通知到达后 `tail -3` 构建日志，看是否有 `Dart VM Service` 或 `DevTools` URL
+   - 有 → `curl providers` 确认 → 继续
+   - 无 → 输出诊断信息（`./scripts/view-dev-log.sh latest`），终止
 
 **禁止行为**：
 - ❌ 写 `for i in 1 2 3 ...` 的 curl 轮询循环
@@ -90,6 +104,7 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
 - ❌ 反复 `tail /tmp/flutter_run.log` 查看编译进度
 - ❌ 在 shell 命令中使用 `sleep`（会被 hook 拦截）
 - ❌ 启动完成前就开始 curl 验证
+- ❌ **重复调用 start-dev.sh**（每次调用都会启动新 App 实例！整个 QA 会话只启动一次）
 
 ### Step 1: 加载故事 + providers 对账
 
@@ -209,10 +224,44 @@ curl -s localhost:$PORT/state/sync     # → 记录: sync status
    - **方法存在但未注册** → 直接在 registry 中注册
    - **方法不存在（功能未实现）** → 标记为"功能缺失"，不要凭空创造
 4. **批量注册端点** — 按现有模式一次性补齐
-5. **安全重启 App**（见下方）
+5. **安全重启 App**（见下方）— **攒齐所有改动，只重启一次**
 6. **第二轮验证** — 只重跑 Step 3 中标记为 pending 的故事/步骤
 
 > **守卫**：如果待补端点 > 15 个，说明 Debug Server 覆盖率严重不足，先告知用户再批量补（避免一次性改动过大）。
+
+#### ⚠️ Riverpod autoDispose 陷阱（补端点时必读）
+
+**问题**：Riverpod 3 的 `@riverpod` 注解默认启用 autoDispose。从 Debug Server 调用 ViewModel 方法时，Provider 的 `ref` 在异步操作期间被回收，导致 `Cannot use Ref after disposed` 错误。
+
+**根本原因**：Debug Server 通过 `ProviderContainer.read()` 访问 Provider，不像 Widget 的 `ref.watch()` 能保持 Provider 存活。即使用 `container.listen()` 也无法彻底解决——因为 ViewModel 内部使用 `ref` 访问其他 Provider，而内部 `ref` 会在 async gap 期间失效。
+
+**更隐蔽的坑**：Debug Server 的 `_handleExecuteAction` 在 action 执行后会自动回读 Provider state（`readState(providerName, container)`），这也会触发 autoDispose 错误。**必须用 try-catch 包裹此回读。**
+
+**正确做法：Action handler 绕过 ViewModel，直接用 Repository/Service 层**：
+
+```dart
+// ❌ 错误 — ViewModel 的 ref 会在 await 后失效
+await c.read(searchViewModelProvider.notifier).searchImmediate(query);
+
+// ❌ 不够 — c.listen 只保活 Provider 本身，内部 ref 仍可能失效
+final sub = c.listen(searchViewModelProvider, (_, __) {});
+await c.read(searchViewModelProvider.notifier).searchImmediate(query);
+sub.close();
+
+// ✅ 正确 — 绕过 ViewModel，用 ServiceLocator 直接访问 Repository
+final result = await services.searchRepository.searchAll(query);
+```
+
+**哪些 Provider 不受影响**（可以直接 c.read()）：
+- `authViewModelProvider` — 通常有 widget 始终 watch 着（全局状态）
+- `playerViewModelProvider` — 被 AudioService 流持续同步，保持存活
+- `homeViewModelProvider` — 首页通常可见
+
+**哪些 Provider 必须绕过**：
+- `searchViewModelProvider` — 只在搜索页活跃
+- `playlistViewModelProvider` — 只在播放列表页活跃
+- `downloadViewModelProvider` — 只在下载页活跃
+- 任何 autoDispose + 页面级的 Provider
 
 ### Step 3.9: 恢复初始状态
 
@@ -226,21 +275,32 @@ curl -s localhost:$PORT/state/sync     # → 记录: sync status
 → 验证 feeds count 与快照一致
 ```
 
-### 安全重启 App
+### 安全重启 App（整个 QA 最多重启 1 次！）
 
-`run_in_background` 模式下没有交互式热重启，必须 kill → 等死 → 重启。**不干净的 kill 会导致新旧进程抢数据库（disk I/O error）**。
+**⚠️ 这是本 skill 最容易犯的错误：反复重启导致多个 App 窗口堆积。**
+
+`run_in_background` 模式下没有交互式热重启，必须 kill → 确认死干净 → 重启。
+
+**铁律**：
+- 整个 QA 会话**最多重启 1 次**（补完端点后）
+- 如果改了代码需要重启，把所有改动攒到一起，一次性重启
+- 每次启动 `start-dev.sh` 都会创建一个新 App 窗口，旧窗口不会自动关闭！
 
 ```bash
-# 1. 先杀 App 进程（不只是 flutter run，要杀实际 App binary）
-pkill -f "flutter run" 2>/dev/null; pkill -f "<app_binary_name>" 2>/dev/null
+# 1. 杀 App 进程（-9 强制杀，同时杀 flutter run 和 App binary）
+pkill -9 -f "<app_binary_name>" 2>/dev/null
+pkill -f "flutter run" 2>/dev/null
 
 # 2. 确认进程已死（单次检查，不轮询）
 pgrep -f "<app_binary_name>" || echo "App stopped"
 
 # 3. 重启（同 Step 0 自动启动流程，用 run_in_background）
+#    start-dev.sh 的超时可能很快到，但 flutter run 仍在后台编译
+#    等 run_in_background 完成通知，然后 tail 日志确认 DevTools URL 出现
 ```
 
 > `<app_binary_name>` 从 `pubspec.yaml` 的项目名或 build 产物路径推断。
+> 例如 lt_music → "FlameTree Music"，flametree_rss_reader → "FlameTree RSS"
 
 ### Step 4: 输出报告
 
@@ -281,18 +341,28 @@ pgrep -f "<app_binary_name>" || echo "App stopped"
 
 ## Gotchas / 踩坑点
 
-1. **不硬编码端口** — 按 Step 0 端口发现协议
-2. **端口冲突** — 同一台机器多个项目可能各自有 Debug Server，检查 /providers 返回的 actions 是否匹配当前项目
-3. **故事按编号顺序执行** — 前序故事可能创建后序需要的数据
-4. **autoDispose 的 State 可能为空** — 断言用 `/data/` 而非 `/state/`
-5. **修复代码后必须安全重启** — 见"安全重启 App"流程。直接 `pkill -f "flutter run"` 不够，必须同时杀 App binary 并确认死干净
-6. **五种问题，五种处理** — 通过 / 代码 bug / 参数不匹配 / 端点缺失 / 外部依赖，各有明确处理路径
-7. **用 /logs 辅助诊断** — `curl -s "localhost:$PORT/logs?count=20"` 看操作历史
-8. **禁止手写轮询循环** — 不要写 `for i in 1 2 3 ... curl` 轮询。用 `run_in_background` 等完成通知
-9. **利用 /providers 预判** — providers 列表可以提前跳过不存在的端点，避免无效 curl
-10. **启动和加载并行** — App 启动是后台任务，前台同时加载故事文件，不要串行等待
-11. **zsh URL 转义** — `curl url?param=value` 在 zsh 中 `?` 会被当 glob 展开，必须用双引号包裹 URL：`curl -s "localhost:$PORT/logs?count=20"`
-12. **iOS 首次编译耗时** — Xcode build 可能需要 45s+，`start-dev.sh` 的 60s 超时可能不够。超时后检查 `/tmp/flutter_run.log` 确认构建状态，构建完成的 App 仍会自行启动
-13. **破坏性操作先快照** — logout、mode 切换、delete 等操作前必须记录原值，验证后恢复。deleteFeed/deleteCategory 不在真实数据上执行，只验证端点存在
-14. **外部服务区分暂时 vs 永久** — 超时/网络错误可重试；404/NOT_FOUND 是永久限制，记录到文档而非反复重试
-15. **先对账再执行** — Step 1.5 的 curl 预校验能提前发现故事文档中的路径/参数名错误，避免执行时逐个排查浪费 token
+### 进程管理（最高优先级）
+1. **绝不重复启动 App** — 每次 `start-dev.sh` 都打开新窗口，旧窗口不会关闭。整个 QA 会话只启动一次，补端点后只重启一次
+2. **杀进程要彻底** — `pkill -f "flutter run"` 不够，必须 `pkill -9 -f "<App名>"` 同时杀。`<App名>` 从 build 产物推断（如 "FlameTree Music"）
+3. **start-dev.sh 超时 ≠ 失败** — 脚本的等待循环可能没 sleep，60 次迭代瞬间完成就报"超时"，但 flutter run 仍在后台编译。正确做法：等 `run_in_background` 完成通知，然后 `tail` 日志看 DevTools URL
+
+### Riverpod 陷阱
+4. **autoDispose Provider 不能从 Debug Server 直接调用** — ViewModel 的 `ref` 在 async gap 中被回收。补端点时 action handler 必须走 Repository/Service 层，不走 ViewModel
+5. **debug_server 的自动状态回读会触雷** — `_handleExecuteAction` 在 action 后自动 `readState(providerName)`，autoDispose 的 provider 会报错。必须用 try-catch 包裹
+6. **autoDispose State 可能为空** — 断言优先用 `/data/`（直读 Repository）而非 `/state/`（读 ViewModel 内存状态）
+
+### 数据与 curl
+7. **randomSongs 每次返回不同集合** — `data/tracks` 底层调 `getRandomSongs()`，trackId 跨调用不稳定。获取 trackId 后立即使用，或从 `state/home` 的 randomSongs（内存缓存，稳定）获取
+8. **JSON 响应含控制字符** — 错误消息含 `\n`，Python `json.loads()` 默认 strict 模式会报错。用 `json.loads(s, strict=False)` 解析
+9. **zsh URL 转义** — `curl url?param=value` 在 zsh 中 `?` 被当 glob，必须双引号包裹
+10. **播放操作间要留间隔** — 快速连续 play/pause/next 会导致音频爆音（audio pop），影响用户体验
+
+### 流程纪律
+11. **不硬编码端口** — 按 Step 0 端口发现协议
+12. **端口冲突** — 同机器多项目可能各自有 Debug Server，检查 /providers 的 actions 是否匹配当前项目
+13. **故事按编号顺序执行** — 前序故事可能创建后序需要的数据
+14. **五种问题，五种处理** — 通过 / 代码 bug / 参数不匹配 / 端点缺失 / 外部依赖
+15. **先对账再执行** — Step 1.5 预校验省大量 token
+16. **用 /logs 辅助诊断** — `curl -s "localhost:$PORT/logs?count=20"`
+17. **破坏性操作先快照** — logout、delete 等操作前记录原值，验证后恢复
+18. **禁止手写轮询循环** — 用 `run_in_background` 等完成通知
