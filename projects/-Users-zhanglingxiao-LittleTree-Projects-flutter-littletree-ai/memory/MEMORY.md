@@ -1,1 +1,2 @@
 - [个人项目不需要通用化](feedback_personal_project.md) — 提示词/配置应针对用户个人场景优化，通用化方案留注释即可
+- [快捷键默认配置方案](project_hotkey_defaults.md) — F3 快速提问, F4 快速整理到知识库, F10 语音听写
