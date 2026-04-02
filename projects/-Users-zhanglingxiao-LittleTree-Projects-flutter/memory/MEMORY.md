@@ -3,6 +3,8 @@
 ## 用户与偏好
 
 - [user_preferences.md](user_preferences.md) — 用户角色、技术偏好、决策风格
+- [feedback_autonomous_verification.md](feedback_autonomous_verification.md) — 运行时验证是默认行为，不要问用户去手动测试
+- [feedback_screenshot_platform.md](feedback_screenshot_platform.md) — 截图时不要自作主张选平台，macOS 应用优先于后台模拟器
 
 ## 项目状态
 
@@ -16,6 +18,10 @@
 ## 架构决策
 
 - **CI/CD 决策 (2026-03)**：暂不引入 CI/CD。原因：Claude Code 本地闭环成熟，云端 CI 增量价值接近零。触发条件：多设备开发、有协作者、或 flutter_common 跨项目回归成为痛点。
+
+## 方法论
+
+- [methodology_autonomous_dev.md](methodology_autonomous_dev.md) — AI 自主开发闭环：Debug State Server + 截图 + 日志（首发 flametree_pick）
 
 ## 新项目
 

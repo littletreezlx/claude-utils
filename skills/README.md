@@ -39,6 +39,10 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `prompt-craft` | 编写/审查/优化项目中的 AI-facing prompt（system prompt、API 调用指令） | — (自动触发) |
 | `ai-cli-design` | 编写/优化 CLI 工具或 Python 脚本时，确保对 AI Agent 友好 | — (自动触发) |
 | `update-from-stitch` | 从 Stitch 拉取设计稿到本地，对比差异并更新代码 | `/update-from-stitch` |
+| `ai-qa-stories` | AI 自主闭环：按 user-stories 文档验证 App（回归测试） | `/ai-qa-stories` |
+| `ai-explore` | AI 自主闭环：启发式探索 App 发现未知问题（自动先跑 stories） | `/ai-explore` |
+| `generate-stories` | 从现有文档生成 user-stories 初稿（需人工审核） | `/generate-stories` |
+| `init-debug-server` | 为 Flutter 项目搭建 Debug State Server 基建 | `/init-debug-server` |
 
 ---
 

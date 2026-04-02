@@ -30,6 +30,7 @@ docs/
 
 ```
 docs/
+├── user-stories/*.md     # 用户故事（用户视角操作序列 + curl 验证步骤）
 ├── features/*.md         # 功能模块详细文档（页面内部逻辑、分支流程）
 ├── ui/*.md               # UI 组件文档、设计规范
 └── **/*.md               # 其他子目录中的 markdown 文档
@@ -75,6 +76,13 @@ docs/
 **ui/UI_SHOWCASE.md** — 设计系统工程参考
 - Design Tokens 实际值、组件参数、截图规范
 - 审查时检查 Token 值和组件描述是否与代码一致
+
+**user-stories/*.md** — 用户故事（User Does What）
+- 用户视角的操作序列（叙事 + 可执行 curl 验证步骤）
+- 每步包含：意图、执行命令、期望状态断言
+- 审查重点：curl 端点是否仍存在、断言是否与当前代码行为一致
+- 格式模板：`docs/USER_STORIES_TEMPLATE.md`
+- 与 BEHAVIOR 的边界：BEHAVIOR 描述系统规则，user-stories 描述用户叙事
 
 **features/*.md** — 功能模块文档
 - 页面内部的详细逻辑、分支流程、状态机
