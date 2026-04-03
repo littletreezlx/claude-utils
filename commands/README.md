@@ -67,7 +67,7 @@
 |------|------|------|
 | `/code-review` | 即时 | 代码审查与提测单生成 |
 | `/refactor` | 即时 | 单文件/类级别重构 |
-| `/refactor-module` | DAG | 模块重构 |
+| `/refactor-module` | DAG | 单模块重构 |
 | `/refactor-project` | DAG | 项目级重构 |
 
 ### 功能开发 & 方案设计
@@ -164,7 +164,7 @@ python batchcc.py todo-task
 | `/todo-huge-task` | 大任务拆分与编排 |
 | `/comprehensive-health-check` | 项目全面体检 |
 | `/refactor-project` | 项目级重构 |
-| `/refactor-module` | 模块重构 |
+| `/refactor-module` | 单模块重构 |
 | `/test-plan` | 测试规划与批量编写 |
 
 > 详细格式参见 DAG_TASK_FORMAT 规范（通过 @templates/workflow/DAG_TASK_FORMAT.md 自动加载到上下文）

@@ -152,9 +152,11 @@ class DAGParser:
         mode = self._extract_param(first_line, 'mode', required=True)
         max_workers = int(self._extract_param(first_line, 'max_workers', default='2'))
 
-        # 验证 mode
-        if mode not in ['serial', 'parallel']:
+        # 验证 mode（兼容 sequential 作为 serial 的别名）
+        if mode not in ['serial', 'parallel', 'sequential']:
             raise ValueError(f"STAGE mode 必须是 'serial' 或 'parallel'，当前: {mode}")
+        if mode == 'sequential':
+            mode = 'serial'  # 别名转换
 
         # 提取 STAGE 描述（参数行和第一个 TASK 之间的内容）
         description = self._extract_stage_description(section)
