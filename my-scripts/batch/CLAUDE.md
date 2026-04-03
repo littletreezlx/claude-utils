@@ -104,7 +104,7 @@ batch/
 
 ## DAG 任务格式
 
-> **权威规范**：`~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md`
+> **权威规范**：`~/.claude/commands/templates/workflow/DAG_FORMAT.md`
 >
 > 本文件不重复格式定义，修改格式请更新上述文件。
 
@@ -115,7 +115,7 @@ batch/
 1. 在对应模块添加功能
 2. 更新类型注解
 3. 添加测试用例
-4. 更新 DAG_TASK_FORMAT.md（如果涉及格式变化）
+4. 更新 DAG_FORMAT.md（如果涉及格式变化）
 
 **禁止**：
 - 不要添加过度设计的参数（如 --from-stage, --no-state）
@@ -137,7 +137,7 @@ state_manager.py 修改 → 影响：dag_executor.py
 
 ### 3. 文档更新
 **单一信息源**：
-- DAG 格式规范 → `~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md`
+- DAG 格式规范 → `~/.claude/commands/templates/workflow/DAG_FORMAT.md`
 - 引擎维护指南 → 本文档（CLAUDE.md）
 - 不要在多处重复定义同一信息
 
@@ -239,5 +239,5 @@ python batchcc.py task-refactor --dry-run
 
 ## 相关文档
 
-- `~/.claude/commands/templates/workflow/DAG_TASK_FORMAT.md` - DAG 格式权威规范
+- `~/.claude/commands/templates/workflow/DAG_FORMAT.md` - DAG 格式权威规范
 - `~/.claude/commands/todo-huge-task.md` - DAG 任务生成命令

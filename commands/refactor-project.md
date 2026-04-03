@@ -16,8 +16,7 @@ python batchcc.py task-refactor-project  # 执行
 ```
 
 > **格式规范**：
-> - @templates/workflow/DAG_COMMAND_GUIDE.md - 统一产出规范（**必须遵循**）
-> - @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式详解
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 > - @templates/workflow/REFACTOR_TASK_TEMPLATE.md - 重构任务模板
 
 ---
@@ -79,6 +78,7 @@ python batchcc.py task-refactor-project  # 执行
 | Stage 2 | 跨模块整合：消除重复轮子、提取共享基础设施 | 串行 |
 | Stage 3 | 全量测试 + 集成验证 | 串行 |
 | Stage 4 | 架构文档、功能映射、ADR | 并行 |
+| Stage 5 | 全局审视 + /todo-write 收尾 | 串行 |
 
 ---
 
@@ -98,7 +98,7 @@ python batchcc.py task-refactor-project  # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_COMMAND_GUIDE.md - **统一产出规范**
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - @templates/workflow/REFACTOR_TASK_TEMPLATE.md - 重构任务模板
 - `/comprehensive-health-check` - 建议先运行健康检查
 - `/refactor-module` - 单模块重构

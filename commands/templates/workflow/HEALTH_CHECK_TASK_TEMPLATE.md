@@ -29,6 +29,26 @@
 ## STAGE ## name="summary" mode="serial"
 # 阶段5：汇总报告 + 自动生成 task-refactor
 @.health-check-tasks/stage-5-summary.md
+
+## STAGE ## name="review" mode="serial"
+
+## TASK ##
+全局审视与收尾
+
+**目标**：纵观所有诊断阶段产出，整体梳理，将剩余工作记录到 TODO.md
+
+**执行步骤**：
+1. 回顾所有阶段的诊断结果
+2. 评估诊断覆盖度：有没有遗漏的模块或维度？
+3. 记录关键发现和背景
+4. 自问：还有什么没检查到？还有什么可以进一步优化？
+5. 调用 /todo-write 写入 TODO.md
+
+**完成标志**：
+- [ ] TODO.md 已通过 /todo-write 更新
+
+文件: TODO.md
+验证: test -f TODO.md
 ```
 
 ## 各阶段 TASK 骨架
@@ -62,6 +82,10 @@
 2. 按优先级汇总 → `docs/health-check/YYYY-MM-DD/SUMMARY.md`
 3. 按问题类型分组，自动生成 `task-refactor`（参考 REFACTOR_TASK_TEMPLATE.md）
 4. 清理 `temp/` 目录
+
+### Stage 6: 收尾审视
+
+按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估覆盖度 → /todo-write 留痕
 
 ## 关键规则
 

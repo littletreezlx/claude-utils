@@ -116,14 +116,14 @@ docs/
 
 ### Phase 2: 生成 DAG 任务文件
 
-> **格式规范**：遵循 @templates/workflow/DAG_TASK_FORMAT.md
+> **格式规范**：@templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 
-将评估结果输出为 DAG 任务文件（`./todo-task`），**全部使用串行 STAGE**，按优先级排序，每个文档一个 TASK：
+将评估结果输出为 DAG 任务文件（`./task-doc-review`），**全部使用串行 STAGE**，按优先级排序，每个文档一个 TASK：
 
 ```markdown
 # docs 深度审查
 
-> **🏠 项目宏观目标**：
+> **项目宏观目标**：
 > 深度审查 docs/ 全部文档，对比实际代码和项目状态，修正过时/错误/遗漏的内容。
 > 文档间有强一致性依赖，必须按优先级串行处理。前序文档的修改结果是后续文档审查的输入。
 
@@ -167,6 +167,12 @@ docs/
 ## TASK ##
 删除 docs/features/old-feature.md（对应功能已移除）
 ...
+
+## STAGE ## name="review" mode="serial"
+
+## TASK ##
+全局审视与收尾
+（按 DAG_FORMAT 收尾模式执行：回顾产出 → 评估完成度 → /todo-write 留痕）
 ```
 
 **每个 TASK 必须包含**：
@@ -178,8 +184,8 @@ docs/
 向用户报告审查计划摘要后，提示执行：
 
 ```bash
-python batchcc.py todo-task --dry-run  # 预览
-python batchcc.py todo-task            # 执行
+python batchcc.py task-doc-review --dry-run  # 预览
+python batchcc.py task-doc-review            # 执行
 ```
 
 ### 单文档审查流程（TASK 执行时）

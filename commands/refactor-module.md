@@ -21,8 +21,7 @@ python batchcc.py task-refactor-module-[模块名]            # 执行
 ---
 
 > **格式规范**：
-> - @templates/workflow/DAG_COMMAND_GUIDE.md - 统一产出规范（**必须遵循**）
-> - @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式详解
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 
 ## 自主执行原则
 
@@ -46,8 +45,9 @@ python batchcc.py task-refactor-module-[模块名]            # 执行
 | Stage 2 | 拆分职责、整理目录结构、优化接口 | serial |
 | Stage 3 | 运行模块测试、验证接口兼容性 | serial |
 | Stage 4 | 更新受影响的架构文档（如有） | serial |
+| Stage 5 | 全局审视 + /todo-write 收尾 | serial |
 
-> TASK 格式遵循上下文中已加载的 DAG_TASK_FORMAT 规范
+> TASK 格式遵循上下文中已加载的 DAG_FORMAT 规范
 
 ---
 
@@ -84,5 +84,5 @@ python batchcc.py task-refactor-module-[模块名]            # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_COMMAND_GUIDE.md - **统一产出规范**
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - `/refactor-project` - 项目级重构（多模块）

@@ -17,8 +17,7 @@ python batchcc.py task-health-check            # 执行
 产出：`docs/health-check/{YYYY-MM-DD}/SUMMARY.md`（诊断报告 + 行动路线）
 
 > **格式规范**：
-> - @templates/workflow/DAG_COMMAND_GUIDE.md - 统一产出规范（**必须遵循**）
-> - @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式详解
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 > - @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查任务模板
 
 ---
@@ -74,6 +73,10 @@ python batchcc.py task-health-check            # 执行
 4. 输出 `docs/health-check/{YYYY-MM-DD}/SUMMARY.md`
 5. 清理 `temp/` 目录
 
+### 第四步：收尾审视（Stage 3 串行）
+
+按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估诊断覆盖度 → /todo-write 留痕
+
 ---
 
 ## 严格禁止
@@ -85,7 +88,7 @@ python batchcc.py task-health-check            # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_COMMAND_GUIDE.md - **统一产出规范**
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查模板
 - `/codebase-align` - 快速对齐
 - `/refactor-project` - 项目级重构

@@ -26,8 +26,7 @@ python batchcc.py task-add-test               # 执行
 ```
 
 > **格式规范**：
-> - @templates/workflow/DAG_COMMAND_GUIDE.md - 统一产出规范（**必须遵循**）
-> - @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式详解
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 > - @templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板（可直接使用）
 
 ---
@@ -92,9 +91,10 @@ task-add-test                          # ← 入口文件（batchcc.py 执行这
 .test-tasks/                           # 任务细节
 ├── stage-1-triage.md                 # 现有测试分类（保留/改写/删除）
 ├── stage-2-cleanup.md                # 清理无效和冗余测试
-├── stage-3-critical-tests.md         # 🔴 关键路径测试（并行）
-├── stage-4-important-tests.md        # 🟡 重要功能测试（并行）
-└── stage-5-verification.md           # 全量运行验证
+├── stage-3-critical-tests.md         # 关键路径测试（并行）
+├── stage-4-important-tests.md        # 重要功能测试（并行）
+├── stage-5-verification.md           # 全量运行验证
+└── stage-6-review.md                 # 全局审视 + /todo-write 收尾
 ```
 
 ---
@@ -107,6 +107,6 @@ task-add-test                          # ← 入口文件（batchcc.py 执行这
 
 ## 相关文档
 
-- @templates/workflow/DAG_COMMAND_GUIDE.md - **统一产出规范**
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - @templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板
 - `/test-run` - 运行测试并修复失败
