@@ -16,7 +16,18 @@ python batchcc.py task-add-test --dry-run     # 预览
 python batchcc.py task-add-test               # 执行
 ```
 
-> **格式规范**：DAG_TASK_FORMAT 已通过 @templates/workflow/DAG_TASK_FORMAT.md 加载到上下文，直接参照即可
+## ⚠️ 重要：入口文件位置
+
+**入口文件 `task-add-test` 必须放在项目根目录**，不是 `.test-tasks/` 目录！
+
+```
+✅ 正确：~/project/task-add-test.md           （根目录）
+❌ 错误：~/project/.test-tasks/task-add-test.md
+```
+
+> **格式规范**：
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> - @templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板（可直接使用）
 
 ---
 
@@ -70,34 +81,32 @@ python batchcc.py task-add-test               # 执行
 
 ### 第五步：生成任务文件
 
-**按优先级排序**（边界测试 → 🔴 → 🟡 → 🟢），包含清理任务：
+**必须生成两个产出**：
+
+1. **入口文件** `task-add-test`（项目根目录）— `batchcc.py` 直接执行
+2. **任务细节目录** `.test-tasks/` — 存放各阶段详细说明
 
 ```
-task-add-test                          # 主任务文件
+task-add-test                          # ← 入口文件（batchcc.py 执行这个）
 .test-tasks/                           # 任务细节
 ├── stage-1-triage.md                 # 现有测试分类（保留/改写/删除）
 ├── stage-2-cleanup.md                # 清理无效和冗余测试
-├── stage-3-critical-tests.md         # 🔴 关键路径测试（并行）
-├── stage-4-important-tests.md        # 🟡 重要功能测试（并行）
-└── stage-5-verification.md           # 全量运行验证
+├── stage-3-critical-tests.md         # 关键路径测试（并行）
+├── stage-4-important-tests.md        # 重要功能测试（并行）
+├── stage-5-verification.md           # 全量运行验证
+└── stage-6-review.md                 # 全局审视 + /todo-write 收尾
 ```
 
 ---
 
 ## 约束
 
-- Mock 数据优先级：复用已有 fixtures > 复用已有 Factory > 创建共享 helper（禁止每个 spec 硬编码大量 JSON）
+- Mock 数据优先级：复用已有 fixtures > 复用已有 Factory > 创建共享 helper
 - 业务逻辑不清晰时添加 `⚠️ 需要人工确认断言逻辑` 标记
 - 自主决策，直接生成任务文件（不询问用户）
 
-## 严格禁止
-
-1. 生成诊断报告代替任务文件
-2. TASK 缺少 `文件:` 或 `验证:` 字段
-3. 添加时间估算
-
 ## 相关文档
 
-- @templates/workflow/DAG_TASK_FORMAT.md - 格式规范
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板
 - `/test-run` - 运行测试并修复失败
-- `/test-audit` - 测试基础设施审计（环境问题用这个）

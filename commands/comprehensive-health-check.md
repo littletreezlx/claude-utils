@@ -16,6 +16,10 @@ python batchcc.py task-health-check            # 执行
 
 产出：`docs/health-check/{YYYY-MM-DD}/SUMMARY.md`（诊断报告 + 行动路线）
 
+> **格式规范**：
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> - @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查任务模板
+
 ---
 
 ## 核心理念
@@ -46,96 +50,45 @@ python batchcc.py task-health-check            # 执行
 ### 第一步：探索与规划
 
 1. 识别技术栈（读取 `package.json` / `pubspec.yaml` 等）
-2. 根据技术栈选择诊断工具（见下表）
+2. 根据技术栈选择诊断工具
 3. 生成 DAG 任务文件
 
-### 第二步：生成任务文件
+### 第二步：数据采集（Stage 1 并行）
 
-> **格式规范**：遵循 @templates/workflow/DAG_TASK_FORMAT.md
-
-```
-task-health-check                    # 主任务文件
-.health-check-tasks/                 # 子任务目录
-├── stage-1-data-collection.md      # 数据采集（并行）
-└── stage-2-summary.md              # 汇总报告（串行）
-```
-
-### Stage 1: 数据采集（并行）
-
-**每个 TASK 运行一类工具，捕获输出写入中间文件 `docs/health-check/temp/`：**
+每个 TASK 运行一类工具，捕获输出写入 `docs/health-check/temp/`：
 
 | TASK | 工具 | 中间文件 | 采集内容 |
 |------|------|---------|---------|
-| 测试运行 | `npm test` / `flutter test` / `pytest` | `temp/test-result.md` | 通过率、失败清单、耗时 |
-| 静态分析 | `dart analyze` / `eslint` / `tsc --noEmit` | `temp/static-analysis.md` | 错误数、警告数、按文件分布 |
-| 依赖安全 | `npm audit` / `pip-audit` | `temp/dependency.md` | 漏洞等级和数量 |
-| 文档路径检查 | Glob 验证 FEATURE_CODE_MAP 路径 | `temp/doc-paths.md` | 失效路径清单 |
-| 文件规模扫描 | 统计超过 600 行的文件 | `temp/file-size.md` | 大文件清单 |
+| 测试运行 | `npm test` / `flutter test` | `temp/test-result.md` | 通过率、失败清单 |
+| 静态分析 | `dart analyze` / `eslint` | `temp/static-analysis.md` | 错误数、警告数 |
+| 依赖安全 | `npm audit` | `temp/dependency.md` | 漏洞等级和数量 |
+| 文档路径检查 | Glob 验证 | `temp/doc-paths.md` | 失效路径清单 |
+| 文件规模扫描 | 统计超 600 行文件 | `temp/file-size.md` | 大文件清单 |
 
-> 根据项目实际技术栈选择工具，不限于此表。没有的工具跳过，不强求。
-
-### Stage 2: 汇总报告（串行）
+### 第三步：汇总报告（Stage 2 串行）
 
 1. 读取 `temp/` 下所有中间文件
 2. 量化各维度健康度（0-100 分）
-3. 生成行动路线（指向具体专项命令）
+3. 生成行动路线
 4. 输出 `docs/health-check/{YYYY-MM-DD}/SUMMARY.md`
 5. 清理 `temp/` 目录
 
----
+### 第四步：收尾审视（Stage 3 串行）
 
-## 报告输出格式
-
-```markdown
-## 项目健康检查报告
-
-**项目**：[名称] | **日期**：[YYYY-MM-DD] | **技术栈**：[xxx]
-
-### 健康评分
-
-| 维度 | 评分 | 数据来源 |
-|------|------|---------|
-| 测试通过率 | X/100 | [通过/总数] |
-| 静态分析 | X/100 | [错误 N 个，警告 N 个] |
-| 依赖安全 | X/100 | [高危 N / 中危 N / 低危 N] |
-| 文档有效性 | X/100 | [失效路径 N 个 / 总路径 N 个] |
-| 代码规模 | X/100 | [超标文件 N 个] |
-
-**综合评分**：X/100
-
-### 问题清单（按优先级）
-
-#### Critical
-- [问题描述] — 数据：[工具输出摘要]
-
-#### High / Medium / Low
-...
-
-### 行动路线
-
-| 优先级 | 问题 | 推荐命令 | 预估范围 |
-|--------|------|---------|---------|
-| 🔴 | 12 个测试失败 | `/test-run` | 先修复，再考虑补齐 |
-| 🔴 | 3 个高危依赖 | 手动处理 | 需评估兼容性 |
-| 🟡 | 静态分析 47 个警告 | `/refactor-project` | 建议批量修复 |
-| 🟡 | 8 个文档路径失效 | `/doc-update-context` | 文档需同步 |
-| 🟢 | 5 个文件超 800 行 | `/refactor` | 按需拆分 |
-```
+按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估诊断覆盖度 → /todo-write 留痕
 
 ---
 
 ## 严格禁止
 
 1. **禁止修复代码** — 只读不写（除了报告文件）
-2. **禁止重复专项命令** — 不做代码质量逐文件审查、不做文档内容深度比对
-3. **禁止主观判断** — 评分必须基于工具输出数据，不基于 AI 阅读印象
+2. **禁止重复专项命令** — 不做代码质量逐文件审查
+3. **禁止主观判断** — 评分必须基于工具输出数据
 4. **禁止中断** — 工具失败 ≠ 任务失败，捕获错误写入报告
-
----
 
 ## 相关文档
 
-- @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式规范
-- @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 检查任务模板
-- `/codebase-align` - 快速对齐（轻量级，发现不一致直接修复）
-- `/refactor-project` - 项目级重构（基于诊断结果执行）
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查模板
+- `/codebase-align` - 快速对齐
+- `/refactor-project` - 项目级重构

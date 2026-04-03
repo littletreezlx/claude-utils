@@ -1,10 +1,14 @@
 ---
-description: 模块重构（DAG）ultrathink
+description: 单模块重构（DAG）ultrathink
 ---
 
-# 模块级重构
+# 单模块重构
 
-> 单个模块内的职责优化和数据流重构，DAG 任务编排 + 断点续传
+> 针对单个模块的"外科手术"，无需启动全项目 DAG
+
+## 核心目标
+
+对指定模块执行聚焦重构：职责优化、边界梳理、目录内聚性整理。
 
 ## 使用方式
 
@@ -16,36 +20,34 @@ python batchcc.py task-refactor-module-[模块名]            # 执行
 
 ---
 
+> **格式规范**：
+> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+
 ## 自主执行原则
 
-> **格式规范**：DAG_TASK_FORMAT 已通过 @templates/workflow/DAG_TASK_FORMAT.md 加载到上下文，直接参照即可，无需搜索文件
->
 > 核心：自主分析 → 自主决策 → 直接执行 → 记录理由（不询问用户）
->
-> 决策失败时：标记 `failed`，说明原因和可选方案
 
 ---
+
+## 分析维度（模块级视角）
+
+**边界内聚**：模块对外暴露的接口是否极简？内部实现是否对外隐藏？
+
+**目录内聚**：模块内文件是否按功能归类？是否存在 10+ 文件平铺在同一目录的情况？业务逻辑、数据模型、UI 组件是否混杂？
+
+**依赖方向**：模块内部是否有环形依赖？数据流方向是否清晰？
 
 ## 阶段编排
 
 | 阶段 | 内容 | 模式 |
 |------|------|------|
 | Stage 1 | 分析模块文件、识别问题、制定重构计划 | serial |
-| Stage 2 | 拆分职责、消除循环依赖、优化接口 | serial |
+| Stage 2 | 拆分职责、整理目录结构、优化接口 | serial |
 | Stage 3 | 运行模块测试、验证接口兼容性 | serial |
 | Stage 4 | 更新受影响的架构文档（如有） | serial |
+| Stage 5 | 全局审视 + /todo-write 收尾 | serial |
 
-**生成文件结构**：
-```
-task-refactor-module-[模块名]               # 主任务文件
-.refactor-tasks/module-[模块名]/            # 阶段详情
-├── stage-1-analysis.md
-├── stage-2-refactor.md
-├── stage-3-test.md
-└── stage-4-documentation.md
-```
-
-> TASK 格式遵循上下文中已加载的 DAG_TASK_FORMAT 规范
+> TASK 格式遵循上下文中已加载的 DAG_FORMAT 规范
 
 ---
 
@@ -56,8 +58,9 @@ task-refactor-module-[模块名]               # 主任务文件
 | 情况 | 决策 |
 |------|------|
 | 职责混乱 | 按职责拆分（方法数量不作为依据）|
+| 目录松散（10+ 平铺文件）| 按功能归类到子目录 |
 | 循环依赖 | 引入抽象层打破循环 |
-| 重复代码 | 提取到工具类（有明确复用场景）|
+| 重复代码 | 提取到模块内工具类（有明确复用场景）|
 
 ### 标记失败
 
@@ -81,5 +84,5 @@ task-refactor-module-[模块名]               # 主任务文件
 
 ## 相关文档
 
-- @templates/workflow/DAG_TASK_FORMAT.md - 格式规范
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - `/refactor-project` - 项目级重构（多模块）

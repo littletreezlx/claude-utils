@@ -14,13 +14,17 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 ```bash
 /todo-huge-task "实现完整的用户管理系统"
 /todo-huge-task $ARGUMENTS
+
+# 产出文件命名为 task-{用户指定名}，如 task-user-system
+python batchcc.py task-user-system --dry-run  # 预览
+python batchcc.py task-user-system            # 执行
 ```
 
 ---
 
 ## 🤖 自主执行原则
 
-> **格式规范**：DAG_TASK_FORMAT 已通过 @templates/workflow/DAG_TASK_FORMAT.md 加载到上下文，直接参照即可，无需搜索文件
+> **格式规范**：@templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 >
 > 核心：自主分析 → 自主决策 → 直接执行 → 记录理由（不询问用户）
 >
@@ -50,6 +54,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 | 前端页面 | 各功能模块的 UI（可用 mock） | **并行** |
 | 集成测试 | 模块间集成、API 联调 | 部分串行 |
 | E2E 测试 | 完整业务流程验证 | **并行** |
+| 收尾 | 全局审视 + /todo-write | 串行 |
 
 ### 3. 任务拆分原则
 
@@ -66,12 +71,14 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 ```markdown
 # [任务简名]
 
-> **🏠 项目宏观目标**：
+> **项目宏观目标**：
 > [这里必须写一段话，描述整个大任务的最终形态]
 > [这段话会被 batchcc 提取并注入给每一个子任务，作为最高优先级的指导原则]
 
 ## STAGE ## name="init" mode="serial"
 ...
+## STAGE ## name="review" mode="serial"
+...（收尾审视，按 DAG_FORMAT 收尾模式）
 ```
 
 ### 5. TASK 格式规范
@@ -80,16 +87,16 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 ## TASK ##
 [任务标题]
 
-**🏠 项目背景**：
+**项目背景**：
 [简述当前任务在宏观目标中的位置]
 
-**🎯 目标**：[要达成什么]
+**目标**：[要达成什么]
 
-**📁 核心文件**：
+**核心文件**：
 - `src/xxx/target.ts` - [修改] 添加 XXX
 - `src/xxx/reference.ts` - [参考]
 
-**✅ 完成标志**：
+**完成标志**：
 - [ ] [可验证的标准]
 
 文件: src/xxx/**/*.ts
@@ -128,21 +135,22 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 ## 执行前输出
 
 ```markdown
-✅ 任务文件已生成: ./todo-task
+✅ 任务文件已生成: ./task-{名称}
 
 📊 执行计划:
 - 总阶段数: [N] / 总任务数: [M]
 - 可并行任务: [Y] ([Y/M]%)
 - 宏观目标: [已提取]
+- 收尾阶段: review（全局审视 + /todo-write）
 
 🚀 下一步:
-python batchcc.py todo-task --dry-run  # 预览
-python batchcc.py todo-task            # 执行
+python batchcc.py task-{名称} --dry-run  # 预览
+python batchcc.py task-{名称}            # 执行
 ```
 
 ---
 
 ## 相关文档
-- @templates/workflow/DAG_TASK_FORMAT.md - DAG 格式规范（已自动加载到上下文）
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - @templates/workflow/DAG_TASK_TEMPLATE.md - 空白模板
 - `/todo-write` - 简单串行任务

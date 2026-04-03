@@ -1,1 +1,4 @@
-/Users/zhanglingxiao/.claude/projects/-Users-zhanglingxiao-AndroidStudioProjects-Work-Projects-android-pos-packages-pos-android/memory/MEMORY.md
+- [飞书项目空间信息](reference_feishu_project.md) — shipd 空间的模板/角色/字段/user_key/业务线速查（POS+TV+KDS 共用）
+- [飞书 user_key 踩坑](feedback_feishu_user_key.md) — open_id != user_key，需从已有工作项节点提取
+- [飞书文档映射](reference_feishu_doc_map.md) — 本地 md 文件到飞书文档的映射关系
+- [技术文档拆分偏好](feedback_techdoc_split.md) — 设计综述不要代码/过度设计，聚焦核心指标

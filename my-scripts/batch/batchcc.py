@@ -501,8 +501,12 @@ def is_dag_format(file_path: str) -> bool:
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
-            # 简单检查：包含 ## STAGE ## 标记
-            return '## STAGE ##' in content
+            # 检查 DAG 格式标记（兼容多种写法）
+            # 标准: ## STAGE ## name="xxx"
+            # 变体: ## STAGE 1 或 ## STAGE: name
+            has_stage = '## STAGE' in content and '##' in content
+            has_task = '## TASK' in content
+            return has_stage and has_task
     except:
         return False
 
@@ -533,10 +537,15 @@ def main():
     else:
         template_file = executor.get_default_template_path()
 
-    # 检查template文件是否存在
+    # 检查template文件是否存在，支持自动补全 .md 后缀
     if not template_file.exists():
-        executor.print_usage_help(template_file)
-        return 1
+        # 尝试加 .md 后缀（很多 command 生成的文件带 .md）
+        template_file_with_md = Path(str(template_file) + '.md')
+        if template_file_with_md.exists():
+            template_file = template_file_with_md
+        else:
+            executor.print_usage_help(template_file)
+            return 1
 
     # 检查是否是 DAG 格式
     if is_dag_format(str(template_file)):
