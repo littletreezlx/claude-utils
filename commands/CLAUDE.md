@@ -58,7 +58,7 @@
 
 代表：`refactor-project`, `test-plan`, `todo-huge-task`
 
-DAG 命令的产出是**任务文件**（非报告），通过 `batchcc.py` 自动化执行。
+DAG 命令的产出是**任务文件**（非报告），通过 `batchcc` 自动化执行。
 编写规范参见 `@templates/workflow/DAG_FORMAT.md`（DAG 统一规范）。
 
 ### 工具型（辅助操作，格式驱动）

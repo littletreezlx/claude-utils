@@ -12,8 +12,7 @@ description: 测试审查与补齐（DAG 编排）ultrathink
 
 ```bash
 /test-plan                                    # 生成测试任务
-python batchcc.py task-add-test --dry-run     # 预览
-python batchcc.py task-add-test               # 执行
+batchcc task-add-test               # 执行
 ```
 
 ## ⚠️ 重要：入口文件位置
@@ -85,11 +84,11 @@ python batchcc.py task-add-test               # 执行
 
 **必须生成两个产出**：
 
-1. **入口文件** `task-add-test`（项目根目录）— `batchcc.py` 直接执行
+1. **入口文件** `task-add-test`（项目根目录）— `batchcc` 直接执行
 2. **任务细节目录** `.test-tasks/` — 存放各阶段详细说明
 
 ```
-task-add-test                          # ← 入口文件（batchcc.py 执行这个）
+task-add-test                          # ← 入口文件（batchcc 执行这个）
 .test-tasks/                           # 任务细节
 ├── stage-1-triage.md                 # 现有测试分类（保留/改写/删除）
 ├── stage-2-cleanup.md                # 清理无效和冗余测试

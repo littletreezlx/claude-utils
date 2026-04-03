@@ -4,6 +4,7 @@
 - [feedback_web_gemini_output.md](feedback_web_gemini_output.md) — web-gemini 命令只输出可复制 Prompt，不要单独输出现状分析
 - [feedback_test_quality_adversarial.md](feedback_test_quality_adversarial.md) — AI 生成的测试需要对抗性验证，用户偏好自动化变异测试方案
 - [feedback_design_docs_mutable.md](feedback_design_docs_mutable.md) — 设计文档是可变参考背景而非合规标尺，所有 UI 工作流都应允许突破现有设计系统
+- [feedback_batchcc_shortcut.md](feedback_batchcc_shortcut.md) — DAG 任务结尾用 `batchcc task-xxx`，不追问不解释
 
 ## Reference
 - [reference_skills_taxonomy.md](reference_skills_taxonomy.md) — Anthropic 内部 Skills 9 类分类体系，规划新 Skill 时用作自检清单

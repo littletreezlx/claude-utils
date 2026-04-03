@@ -10,14 +10,11 @@
 # 1. 生成任务文件（通过 DAG 命令）
 /test-plan                          # 或 /refactor-project, /todo-huge-task 等
 
-# 2. 预览执行计划
-python batchcc.py task-xxx --dry-run
+# 2. 执行（自动断点续传）
+batchcc task-xxx
 
-# 3. 执行（自动断点续传）
-python batchcc.py task-xxx
-
-# 4. 重新开始（清空状态）
-python batchcc.py task-xxx --restart
+# 3. 重新开始（清空状态）
+batchcc task-xxx --restart
 ```
 
 ---
@@ -28,7 +25,7 @@ python batchcc.py task-xxx --restart
 
 | 文件 | 位置 | 说明 |
 |------|------|------|
-| `task-{名称}` | **项目根目录** | batchcc.py 入口文件，**不带** `.md` 后缀 |
+| `task-{名称}` | **项目根目录** | batchcc 入口文件，**不带** `.md` 后缀 |
 | `.{名称}-tasks/*.md` | 项目根目录 | 任务细节文件（复杂任务时使用） |
 
 **入口文件必须在项目根目录**，不是在子目录中。
@@ -205,7 +202,7 @@ Stage 1 [串行] → Stage 2 [并行] → ... → Stage N [收尾]
 
 ## 自主执行原则
 
-DAG 任务设计为**无人值守**执行。batchcc.py 自动注入自主执行指示。
+DAG 任务设计为**无人值守**执行。batchcc 自动注入自主执行指示。
 
 ### ✅ 应该
 1. 自主分析：深入理解任务目标和当前项目状态

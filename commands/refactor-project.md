@@ -11,8 +11,7 @@ description: 项目级重构（DAG 编排）ultrathink
 ```bash
 /comprehensive-health-check              # 可选：先诊断
 /refactor-project                        # 生成重构任务
-python batchcc.py task-refactor-project --dry-run  # 预览
-python batchcc.py task-refactor-project  # 执行
+batchcc task-refactor-project            # 执行
 ```
 
 > **格式规范**：

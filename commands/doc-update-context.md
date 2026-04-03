@@ -97,7 +97,7 @@ docs/
 
 > 文档间有强一致性依赖（BEHAVIOR 改了 → ARCH 可能同步调整），全程串行，不并行。
 
-采用 Phase 1 评估 → Phase 2 生成 DAG 任务文件 → `batchcc.py` 自动连续执行的模式。
+采用 Phase 1 评估 → Phase 2 生成 DAG 任务文件 → `batchcc` 自动连续执行的模式。
 
 ### Phase 1: 快速锚定变更范围
 
@@ -184,8 +184,7 @@ docs/
 向用户报告审查计划摘要后，提示执行：
 
 ```bash
-python batchcc.py task-doc-review --dry-run  # 预览
-python batchcc.py task-doc-review            # 执行
+batchcc task-doc-review            # 执行
 ```
 
 ### 单文档审查流程（TASK 执行时）

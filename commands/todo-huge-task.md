@@ -6,7 +6,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 # 大任务智能拆分与 DAG 编排
 
 ## 核心目标
-将复杂任务智能拆分为 DAG 编排的多阶段执行计划，输出 `batchcc.py` 可执行的任务文件。
+将复杂任务智能拆分为 DAG 编排的多阶段执行计划，输出 `batchcc` 可执行的任务文件。
 
 **关键约束**：任务描述要清晰简洁，目标明确可验证。
 
@@ -16,8 +16,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 /todo-huge-task $ARGUMENTS
 
 # 产出文件命名为 task-{用户指定名}，如 task-user-system
-python batchcc.py task-user-system --dry-run  # 预览
-python batchcc.py task-user-system            # 执行
+batchcc task-user-system            # 执行
 ```
 
 ---
@@ -71,7 +70,7 @@ python batchcc.py task-user-system            # 执行
 
 ### 4. 📂 输出文件结构（必须遵守）
 
-生成的任务文件**必须包含文件头**（用于 `batchcc.py` 提取 Global Goal）：
+生成的任务文件**必须包含文件头**（用于 `batchcc` 提取 Global Goal）：
 
 ```markdown
 # [任务简名]
@@ -149,8 +148,7 @@ python batchcc.py task-user-system            # 执行
 - 收尾阶段: review（全局审视 + /todo-write）
 
 🚀 下一步:
-python batchcc.py task-{名称} --dry-run  # 预览
-python batchcc.py task-{名称}            # 执行
+batchcc task-{名称}            # 执行
 ```
 
 ---

@@ -14,8 +14,7 @@ description: 单模块重构（DAG）ultrathink
 
 ```bash
 /refactor-module "模块名"                                  # 生成任务
-python batchcc.py task-refactor-module-[模块名] --dry-run  # 预览
-python batchcc.py task-refactor-module-[模块名]            # 执行
+batchcc task-refactor-module-[模块名]            # 执行
 ```
 
 ---
