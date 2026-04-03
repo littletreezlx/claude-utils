@@ -19,6 +19,7 @@ description: 文件/类级别重构 ultrathink
 - 复杂条件 → 简化
 - 命名混乱 → 重命名
 - 嵌套过深 (>4层) → 提前返回
+- 文件是否放在了错误的目录下 → 移动到正确位置
 
 ## 重要约束
 - **不要过度设计**: 不要为了"可能的未来"而抽象
@@ -27,5 +28,5 @@ description: 文件/类级别重构 ultrathink
 - **接口稳定**: 不改变公共接口
 
 ## 何时升级
-- 需要调整多个文件协作 → `/refactor-module`（DAG 模式）
-- 需要调整整体项目结构 → `/refactor-project`（DAG 模式）
+- 需要调整单个模块内多文件协作 → `/refactor-module`（单模块 DAG）
+- 需要调整整体项目结构 → `/refactor-project`（项目级 DAG）
