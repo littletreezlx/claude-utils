@@ -7,7 +7,7 @@ description: >
   stories", "写故事", or when a project needs docs/user-stories/ created
   for the first time. Also use when new features have been added and stories
   need updating. Output requires human review before commit.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Generate Stories — 用户故事生成
@@ -35,9 +35,20 @@ version: 0.2.0
 
 如有 Debug Server 运行，`curl localhost:$PORT/providers` 获取实际可用端点。
 
+**降级策略**（标准文档不全时）：
+
+| 缺失文档 | 替代来源 | 故事中标注 |
+|---------|---------|-----------|
+| SOUL | README + CLAUDE.md 推断用户画像 | ⚠️ 用户画像为推断 |
+| BEHAVIOR | 代码结构 + features/ 逆推流程 | ⚠️ 流程为逆向推断 |
+| features/ 为空 | 仅生成骨架故事（步骤留空） | 提示用户先补功能文档 |
+| 全部缺失 | **终止**，建议先运行 `/learn-new-project` | — |
+
+降级来源优先级：`CLAUDE.md` > `FEATURE_CODE_MAP.md` > `PROJECT_STATUS.md` > `README.md`
+
 ### Step 2: 识别核心旅程
 
-从收集的上下文中提取 3-5 条核心用户旅程：
+从收集的上下文中提取核心用户旅程：
 
 | 类型 | 必须覆盖 | 来源 |
 |------|---------|------|
@@ -46,6 +57,22 @@ version: 0.2.0
 | 数据管理 | ✅ | features/（CRUD 相关） |
 | 设置/个性化 | 按需 | features/（settings） |
 | 分享/协作 | 按需 | features/（share/export） |
+
+**数量与裁剪指引**：
+- **首次生成建议 3 条**：首次使用 + 1-2 条日常核心操作。后续按需补充
+- **上限 5 条**：超过 5 条说明粒度太粗，应拆分
+- **每条故事 ≤ 8 步**：超过 8 步的旅程拆为多条（如"首次使用-注册"和"首次使用-引导"）
+- **增量模式**：已有故事时，diff `docs/features/` vs `docs/user-stories/` 识别缺失覆盖，只生成新增故事
+
+### Step 2.5: 增量模式（已有故事时）
+
+如果 `docs/user-stories/` 已有故事文件：
+
+1. **列出现有故事** — 读取所有 `*.md`（排除 README.md），记录已覆盖的功能/旅程
+2. **对比 features/** — 识别 features/ 中有但 user-stories/ 未覆盖的功能
+3. **检查已有故事是否需更新** — 新功能可能改变已有流程（如新增支付方式影响下单故事）
+4. **只生成增量** — 新故事编号接续已有最大编号（如已有 01-03，新增从 04 开始）
+5. **已有故事需更新时** — 标注修改建议但不直接覆盖，交由用户决定
 
 ### Step 3: 生成故事文件
 
@@ -69,6 +96,17 @@ version: 0.2.0
 ## 最后验证
 {日期} — 全部通过 / 部分通过（详见各文件）
 ```
+
+### Step 4.5: 生成后自检
+
+交付前逐条检查，不通过则修复后再交付：
+
+- [ ] 每条故事至少有 1 个可执行的 curl 验证（无 Debug Server 时为 `# TODO` 占位）
+- [ ] 每条故事的「前置依赖」字段已填写（可独立运行 / 依赖 story NN）
+- [ ] curl 中引用的端点在 `/providers` 中存在（或已标注为 `# TODO`）
+- [ ] 已知限制每条有来源标注（BEHAVIOR/ROADMAP/features）
+- [ ] 平台差异段：有差异则填表，无差异则省略（不要写"全平台一致"的空表）
+- [ ] 断言使用弹性表达（"非空"而非"恰好 N 条"）
 
 ### Step 5: 交付审核
 
@@ -99,6 +137,7 @@ version: 0.2.0
 | **故事名称** | {名称} — {副标题} |
 | **用户类型** | {具体到场景的用户描述，如"通勤路上听歌的用户"} |
 | **核心诉求** | {一句话：用户想要什么} |
+| **前置依赖** | {可独立运行 / 依赖 story NN（原因）} |
 | **验收标准** | {关键路径摘要：A → B → C → D} |
 
 ---
@@ -187,10 +226,13 @@ curl -s http://localhost:$PORT/... | jq '...'
 ## 约束
 
 - **生成 ≠ 定稿**：AI 生成的故事是初稿，必须人工审核
-- **不覆盖已有故事**：如果 `docs/user-stories/` 已有文件，只生成新增/缺失的
+- **不覆盖已有故事**：如果 `docs/user-stories/` 已有文件，走 Step 2.5 增量模式
 - **端口动态获取**：从 CLAUDE.md 读取，curl 中用 `$PORT`
+- **无 Debug Server 时**：curl 验证块写为 `# TODO: 补充验证命令（需 Debug Server）`，不要编造端点
+- **区分 Debug Server 端点与真实 API**：Debug Server 端点（localhost）可本地验证；真实外部 API（需网络/API key）标注为外部依赖，不写入 curl 验证
 - **不要照抄状态机**：BEHAVIOR 的状态机是系统视角，故事是用户视角。要翻译成用户操作序列
 - **已知限制必须标注**：从 ROADMAP/BEHAVIOR 中提取的路由未实现（❌）、功能占位（🚧）等信息，写入对应故事的"已知限制"段
+- **模板权威性**：本 skill 的内联模板是 `docs/USER_STORIES_TEMPLATE.md` 的权威来源。项目中已有 USER_STORIES_TEMPLATE.md 时，以本 skill 模板为准并更新项目模板
 
 ## Gotchas / 踩坑点
 
