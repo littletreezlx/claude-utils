@@ -33,7 +33,7 @@ python batchcc.py task-refactor-module-[模块名]            # 执行
 | Stage 1 | 分析模块文件、识别问题、制定重构计划 | serial |
 | Stage 2 | 拆分职责、消除循环依赖、优化接口 | serial |
 | Stage 3 | 运行模块测试、验证接口兼容性 | serial |
-| Stage 4 | 更新 docs/ARCHITECTURE.md、docs/FEATURE_CODE_MAP.md | serial |
+| Stage 4 | 更新受影响的架构文档（如有） | serial |
 
 **生成文件结构**：
 ```
@@ -74,10 +74,10 @@ task-refactor-module-[模块名]               # 主任务文件
 3. **不要过度设计** - 解决现有问题，不为未来设计
 4. **Git 安全** - 重构前确保工作区干净
 
-## 何时升级
+## 何时升降级
 
+- 只需单文件优化 → `/refactor`（无需启动 DAG）
 - 需要调整多模块协作 → `/refactor-project`
-- 只需单文件优化 → `/refactor`
 
 ## 相关文档
 

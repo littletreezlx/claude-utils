@@ -28,10 +28,4 @@ description: 文件/类级别重构 ultrathink
 
 ## 何时升级
 - 需要调整多个文件协作 → `/refactor-module`（DAG 模式）
-- 需要重新设计模块架构 → `/refactor-module`（DAG 模式）
 - 需要调整整体项目结构 → `/refactor-project`（DAG 模式）
-
-## 相关文档
-- **模块级重构**：`@refactor-module.md`（DAG 模式，支持断点续传和状态管理）
-- **项目级重构**：`@refactor-project.md`（DAG 模式，支持并行重构多模块）
-- **任务工作流架构**：`@CLAUDE.md` 的"任务工作流架构"章节
