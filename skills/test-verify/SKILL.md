@@ -7,7 +7,8 @@ description: >
   when the user says "verify tests", "test quality", "测试验资", "红队检查",
   or when large batches of tests (>20) were generated in one session.
   Acts as the "Red Team" — injects business-logic bugs to prove tests can catch them.
-version: 0.1.0
+  Supports three modes: precise (指定文件), incremental (git diff), global (all — 全项目扫描).
+version: 0.2.0
 ---
 
 # Test Verify — 红队对抗验证
@@ -28,6 +29,7 @@ version: 0.1.0
 2. delivery-workflow 交付核心模块时抽样验证
 3. 用户表达验证意图："verify tests"、"测试验资"、"红队检查"、"测试有效吗"
 4. `/test-plan` 补齐测试后，对新生成的关键测试进行验资
+5. `/test-verify all` — 全项目测试质量体检
 
 **不触发**：
 - 日常单文件修改后的测试运行（那是 test-workflow 的职责）
@@ -43,27 +45,70 @@ test-verify  → "测试真有用吗？"（验资 + 证伪）  ← 本工具
 test-workflow → "跑一下看结果" （执行 + 诊断）
 ```
 
+## 运行模式
+
+| 模式 | 调用方式 | 行为 |
+|------|---------|------|
+| **精准模式** | `/test-verify path/to/service.dart` | 仅验证指定文件 |
+| **增量模式** | `/test-verify`（无参数） | 从 `git diff --name-only` 提取本次修改的源文件 |
+| **全局模式** | `/test-verify all` | 扫描全项目，按 Tier 分级，并行 subagent 执行 |
+
 ## 执行流程
 
 ### Step 0: 锁定目标
 
+#### 精准模式 / 增量模式
+
 **输入来源**（按优先级）：
-1. 用户指定路径（`/test-verify path/to/service.dart`）
-2. 未指定时，从 `git diff --name-only` 提取本次会话修改的源文件
+1. 用户指定路径 → 精准模式
+2. 未指定时，从 `git diff --name-only` 提取本次会话修改的源文件 → 增量模式
 3. 目录输入时，扫描目录下所有源文件
 
-**前置检查**：
+这两种模式下，主 Agent 串行处理所有目标文件（与 v0.1 行为一致）。
+
+#### 全局模式（`all`）
+
+当参数为 `all`、`全局`、`全量` 时进入此模式：
+
+1. **扫描项目测试文件**：找到所有 `*_test.dart` / `*.test.ts` / `test_*.py` 等测试文件
+2. **反推源文件**：从测试文件路径推导对应的源文件路径
+3. **Tier 分级**（见下方筛选策略）
+4. **生成目标清单**：在控制台输出扫描结果，等用户确认后执行
+
+```
+📋 全局扫描结果：
+  Tier 1 (强制验证, 3 files):
+    - auth_service.dart → auth_service_test.dart
+    - payment_service.dart → payment_service_test.dart
+    - order_state_machine.dart → order_state_machine_test.dart
+  Tier 2 (抽样验证, 5 files):
+    - user_profile_service.dart → user_profile_service_test.dart
+    - settings_repository.dart → settings_repository_test.dart
+    - ...
+  Tier 3 (跳过, 8 files):
+    - date_utils.dart, color_utils.dart, ...
+
+  预计派发 SubAgent: 3 (Tier 1) + 2 (Tier 2 抽样) = 5
+  确认执行？[Y/n]
+```
+
+5. **并行派发 SubAgent**：每个目标文件分配一个 subagent，在同一工作区并行执行 Step 1-2
+6. **汇总报告**：收集所有 subagent 结果，输出全局报告
+7. **统一修复**：对所有 ESCAPED 变异点，由主 Agent 统一执行 Step 3
+
+#### 前置检查（所有模式通用）
+
 - 目标源文件必须有对应测试文件，无测试则跳过并提示
 - 对应测试当前必须通过（先跑一遍确认绿灯）
 - 工作区必须干净（无未提交修改）
 
-**目标筛选策略**（Token 成本敏感，精准点射）：
+#### 目标筛选策略（Token 成本敏感，精准点射）
 
 | 优先级 | 类型 | 验证强度 | 示例 |
 |--------|------|---------|------|
-| Tier 1 | 安全 / 支付 / 状态机 | 强制全量验证 | auth, payment, order state |
-| Tier 2 | 普通业务 CRUD | 抽样 2-3 个变异点 | user profile, settings |
-| Tier 3 | UI 展示 / 工具函数 | 不验证（跳过） | formatDate, ColorUtils |
+| Tier 1 | 安全 / 支付 / 状态机 | 强制全量验证（3-5 变异点） | auth, payment, order state |
+| Tier 2 | 普通业务 CRUD | 抽样验证（1-2 变异点） | user profile, settings |
+| Tier 3 | UI 展示 / 工具函数 | 跳过 | formatDate, ColorUtils |
 
 **自动推导优先级**：
 - 从 `docs/FEATURE_CODE_MAP.md` 识别核心模块
@@ -122,7 +167,9 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 
 ### Step 4: 输出验证报告
 
-在控制台输出（不生成文件，除非用户要求）：
+在控制台输出（不生成文件，除非用户要求）。
+
+#### 精准/增量模式（单文件报告）
 
 ```markdown
 # Red Team Verification Report
@@ -145,6 +192,46 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 - (无)
 ```
 
+#### 全局模式（汇总报告）
+
+主 Agent 收集所有 subagent 返回的结果，汇总输出：
+
+```markdown
+# Global Red Team Verification Report
+
+## Summary
+
+| Tier | Files | Mutations | Caught | Escaped | Score |
+|------|-------|-----------|--------|---------|-------|
+| Tier 1 | 3 | 12 | 10 | 2 | 83% |
+| Tier 2 | 2 | 4 | 3 | 1 | 75% |
+| **Total** | **5** | **16** | **13** | **3** | **81%** |
+
+## Details by File
+
+### auth_service.dart (Tier 1) — 3/3 CAUGHT ✅
+| M1 | [权限越界] 删除 admin 校验 (L42) | 🟢 CAUGHT |
+| M2 | [状态截断] 注释 token 持久化 (L78) | 🟢 CAUGHT |
+| M3 | [边界穿透] 允许空密码 (L95) | 🟢 CAUGHT |
+
+### payment_service.dart (Tier 1) — 2/4 CAUGHT ⚠️
+| M1 | ... | 🟢 CAUGHT |
+| M2 | ... | 🔴 ESCAPED |
+| ...
+
+## Escaped Mutations (需修复)
+
+| File | Mutation | Fix Status |
+|------|----------|------------|
+| payment_service.dart:L67 | [状态截断] 跳过扣款确认 | ✅ 已修复 |
+| order_service.dart:L112 | [逻辑反转] 反转退款条件 | ⚠️ MANUAL |
+
+## Verdict
+
+全局 Mutation Score: 81% (16 mutations, 13 caught)
+测试盲点已修复: 2/3 | 需人工介入: 1
+```
+
 ## 约束
 
 ### 铁律
@@ -153,13 +240,58 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 - **只变异源文件**：Step 2 中禁止修改测试文件（Step 3 修复盲点时才改测试）
 - **即时还原**：每个变异执行后必须立即还原，不允许累积变异
 - **工作区干净**：开始前 `git status` 确认无未提交更改（有则先提交或 stash）
+- **文件独占**（全局模式）：每个源文件只分配给一个 subagent，不允许两个 agent 同时操作同一文件
 
 ### 资源控制
 
+**精准/增量模式：**
 - 单文件最多 5 个变异点
 - 单次调用最多处理 3 个源文件
 - Tier 3 文件直接跳过，不浪费 Token
 - 修复尝试每个变异点最多 2 次
+
+**全局模式：**
+- Tier 1 文件：全部验证，每文件 3-5 个变异点
+- Tier 2 文件：最多抽样 5 个文件，每文件 1-2 个变异点
+- Tier 3 文件：跳过
+- 并行 subagent 上限：5 个（超出则分批执行）
+- 每个 subagent 只负责变异检测 + 判定，不做修复（修复统一由主 Agent 处理）
+- 修复尝试每个变异点最多 2 次
+
+### 全局模式 SubAgent Prompt 模板
+
+派发 subagent 时，使用以下 prompt 结构：
+
+```
+你是 test-verify 红队验证的 subagent。你的任务是对单个源文件执行变异测试。
+
+**目标文件**: {source_file_path}
+**测试文件**: {test_file_path}
+**Tier**: {tier}
+**变异点数量**: {mutation_count}
+**测试运行命令**: {test_command}
+
+**执行步骤**：
+1. 读取源文件，识别 {mutation_count} 个最致命的业务逻辑变异点
+2. 输出变异清单（先出题）
+3. 逐个执行：注入变异 → 运行测试 → 判定 CAUGHT/ESCAPED → git checkout 还原
+4. 返回结构化结果（JSON 格式）
+
+**铁律**：
+- 只修改源文件，不修改测试文件
+- 每次变异后立即 git checkout -- {source_file_path} 还原
+- 还原后 git diff {source_file_path} 确认干净
+
+**返回格式**：
+{
+  "file": "{source_file_path}",
+  "tier": {tier},
+  "mutations": [
+    {"id": "M1", "type": "权限越界", "line": 42, "desc": "...", "result": "CAUGHT|ESCAPED"}
+  ],
+  "score": "2/3"
+}
+```
 
 ### 与其他工具的关系
 
