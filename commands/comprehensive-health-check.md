@@ -63,7 +63,9 @@ python batchcc.py task-health-check            # 执行
 | 静态分析 | `dart analyze` / `eslint` | `temp/static-analysis.md` | 错误数、警告数 |
 | 依赖安全 | `npm audit` | `temp/dependency.md` | 漏洞等级和数量 |
 | 文档路径检查 | Glob 验证 | `temp/doc-paths.md` | 失效路径清单 |
-| 文件规模扫描 | 统计超 600 行文件 | `temp/file-size.md` | 大文件清单 |
+| 架构不变量检查 | `invariants.sh`（或项目等效脚本） | `temp/invariants.md` | WARNING/VIOLATION 清单及持续轮次 |
+
+> **注意**：不再扫描文件行数——文件大小不是架构问题，不应作为诊断维度。架构不变量（分层违规、依赖方向、接口契约）才是结构性健康指标。
 
 ### 第三步：汇总报告（Stage 2 串行）
 
@@ -85,6 +87,7 @@ python batchcc.py task-health-check            # 执行
 2. **禁止重复专项命令** — 不做代码质量逐文件审查
 3. **禁止主观判断** — 评分必须基于工具输出数据
 4. **禁止中断** — 工具失败 ≠ 任务失败，捕获错误写入报告
+5. **禁止以文件行数作为诊断维度** — 文件大小不是架构健康指标
 
 ## 相关文档
 
