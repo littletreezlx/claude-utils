@@ -23,11 +23,11 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 
 | Skill | 自动触发场景 | 对应 Command |
 |-------|-------------|--------------|
-| `git-workflow` | 代码改完、测试通过、表达"完成"意图 | `/git-commit` |
-| `test-workflow` | 代码修改后需验证、测试失败时 | `/test-run` |
-| `delivery-workflow` | 完整功能开发结束，进入收尾 | `/feat-done` |
-| `consistency-check` | 开始新功能、首次进入项目 | `/codebase-align` |
-| `code-quality` | 提交前质量关卡、准备 merge | `/code-review` |
+| `git-workflow` | 代码改完、测试通过、表达"完成"意图 | feat-done Step 3 调用 |
+| `test-workflow` | 代码修改后需验证、测试失败时 | `/test-run`（thin wrapper） |
+| `consistency-check` | 开始新功能、首次进入项目 | — (自动触发) |
+| `code-quality` | 提交前质量关卡、准备 merge | — (自动触发) |
+| `think` | 方法论/策略/哲学讨论 | — (自动触发) |
 | `feat-discuss-local-gemini` | 讨论新功能、咨询 Gemini 产品/设计意见 | `/feat-discuss-local-gemini` |
 | `ui-vision-check` | UI 视觉验证（单页/全局审计）、用户说"视觉检查"/"UI 审计" | — (纯分析，无对应 Command) |
 | `ui-vision-advance` | 深度审美评审（五维评审+反 AI 味检测+设计简报）、用户说"审美评审"/"design critique" | `/ui-vision-advance` |
@@ -174,7 +174,7 @@ Skill 支持三级加载：
 
 参考当前 skills 目录下的示例：
 - `git-workflow/SKILL.md` — 简洁的自动触发流程
-- `delivery-workflow/SKILL.md` — 多阶段流水线
+- `think/SKILL.md` — 轻量级 Gemini 协作
 - `consistency-check/SKILL.md` — 明确的触发条件列表
 
 ---

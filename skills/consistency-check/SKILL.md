@@ -36,6 +36,11 @@ version: 0.1.0
 - 全通过 → 继续
 - 有失败 → 报告失败数量，建议先触发 test-workflow
 
+### Step 1.5: 架构约束检查
+
+如果项目有 `scripts/quality/invariants.sh`，运行它并检查 WARNING/VIOLATION。
+有 VIOLATION → 直接报告，建议先修复再开始新功能。
+
 ### Step 2: CLAUDE.md 时效性检查
 
 对比 CLAUDE.md 中的规则与实际代码：

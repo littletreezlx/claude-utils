@@ -72,7 +72,7 @@ run_main "$@"
 
 初始化完成后，告知用户：
 - 运行 `/screen` 截图
-- 使用 `ui-showcase-refresh` skill 填充文档内容
+- 使用 `/ui-spec` 逐页填充文档内容
 - 使用 `/ui-spec` 为单个页面生成 Spec
 
 ## 约束

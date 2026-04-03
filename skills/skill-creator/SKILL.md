@@ -147,7 +147,7 @@ description: Provides git commit functionality.
 ### Phase 5: 注册与集成
 
 1. 更新 `skills/README.md` 的技能列表表格
-2. 如果 Skill 需要被其他 Skill 调用（如 delivery-workflow 调用 git-workflow），在对应 Skill 中添加引用
+2. 如果 Skill 需要被其他 Skill 调用（如 feat-done 调用 git-workflow），在对应 Skill 中添加引用
 3. 如果有对应的 Command（`/xxx`），在 README 中标注映射关系
 
 ## 约束

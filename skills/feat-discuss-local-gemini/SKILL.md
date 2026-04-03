@@ -197,15 +197,9 @@ Game 角色脚本有独立的底座 prompt（不使用 FlameTree 的 baseSystemP
 
 收到 Gemini 回复后，根据角色采取不同处理方式：
 
-#### `think` 角色 — 直接展示 + 可选落库
+#### `think` 角色 — 委托给 think skill
 
-`think` 角色的输出是分析和策略建议，不需要 Engineering Handshake。
-
-1. 展示 Gemini 完整回复
-2. Claude Code 补充自己的判断（同意/分歧/补充）
-3. 如果讨论产出了可执行的策略或决策 → 落库到相关文档（ADR / CLAUDE.md / AI_MAINTENANCE_GUIDE 等）
-4. 如果只是探讨性质 → 不强制落库，展示给用户即可
-5. 如需追问 → 按多轮追问格式重新调用
+`think` 角色的完整执行逻辑已独立为 `think` skill。当角色判断为 think 时，直接委托给 think skill 执行，本 skill 不重复定义 think 的流程。
 
 #### `product` / `design` 角色 — Engineering Handshake
 

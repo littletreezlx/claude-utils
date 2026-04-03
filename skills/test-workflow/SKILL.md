@@ -21,7 +21,7 @@ version: 0.1.0
 
 1. 代码已修改，需要验证正确性
 2. 开发过程中遇到测试失败
-3. consistency-check 或 delivery-workflow 请求测试验证
+3. consistency-check 或 feat-done 请求测试验证
 4. 用户表达验证意图："能跑通吗？"、"run tests"、"验证一下"
 
 ## 执行策略

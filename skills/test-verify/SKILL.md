@@ -3,7 +3,7 @@ name: test-verify
 description: >
   Adversarial test quality verification through semantic mutation testing.
   Use when AI has generated tests and their effectiveness needs validation,
-  when delivery-workflow needs to verify core module test quality,
+  when feat-done needs to verify core module test quality,
   when the user says "verify tests", "test quality", "测试验资", "红队检查",
   or when large batches of tests (>20) were generated in one session.
   Acts as the "Red Team" — injects business-logic bugs to prove tests can catch them.
@@ -26,7 +26,7 @@ version: 0.2.0
 当以下**任一**条件满足时启动：
 
 1. AI 在本次会话中一次性生成了大量测试（>20 个）
-2. delivery-workflow 交付核心模块时抽样验证
+2. feat-done 交付核心模块时抽样验证
 3. 用户表达验证意图："verify tests"、"测试验资"、"红队检查"、"测试有效吗"
 4. `/test-plan` 补齐测试后，对新生成的关键测试进行验资
 5. `/test-verify all` — 全项目测试质量体检

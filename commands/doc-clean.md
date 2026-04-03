@@ -35,13 +35,13 @@ description: 文档清理和归档
 | ⭐ 低 | 已体现在代码中、过时信息、简单 bug 记录 | 可以删除 |
 | ❌ 无 | 完全过时、重复、空文件 | 应该删除 |
 
-**归档位置**：
+**归档位置**（参考 `doc-structure.md` 标准结构）：
 | 内容类型 | 推荐位置 |
 |---------|---------|
-| 架构决策 | `docs/architecture/` |
+| 架构决策 | 合并到 `docs/ARCHITECTURE.md` 对应章节 |
 | 功能说明 | `docs/features/` |
-| API 文档 | `docs/api/` |
-| 故障排查 | `docs/troubleshooting/` |
+| 故障排查 | `docs/ROADMAP.md` Known Issues 段 |
+| API 文档 | `docs/features/` 对应功能文档的 API 章节 |
 
 ---
 

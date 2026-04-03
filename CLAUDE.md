@@ -56,15 +56,15 @@
 
 1. **静态分析**：运行项目 linter，有报错则直接修复
 2. **文档同步**：代码行为变更是否与 docs/ 中的描述矛盾，矛盾则更新文档
-3. **Git 提交**：通过 Skill 调用 `/git-commit`
+3. **Git 提交**：触发 git-workflow skill
 
 ### 自动触发规则
 
 | 触发条件 | 调用 | 说明 |
 |---------|------|------|
 | 一个完整功能开发完毕 | `/feat-done` | 文档同步 + 提交 + 验收报告 |
-| 测试失败需要修复 | `/test-run` | 自动诊断修复 |
-| 用户说"项目状态不好"或开始陌生项目 | `/codebase-align` | 快速诊断对齐 |
+| 测试失败需要修复 | `test-workflow` skill | 自动诊断修复 |
+| 用户说"项目状态不好"或开始陌生项目 | `consistency-check` skill | 快速诊断对齐 |
 | 遇到产品/架构/UI 决策需要外部意见 | `feat-discuss-local-gemini` skill | 调用 Gemini API 咨询 |
 | AI 生成大量测试（>20），或用户质疑测试质量 | `test-verify` skill | 红队对抗验证 |
 | 改完业务逻辑/UI，项目有 Debug State Server | curl + 截图自主验证 | 详见项目级 CLAUDE.md |

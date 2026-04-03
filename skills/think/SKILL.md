@@ -14,7 +14,7 @@ version: 0.1.0
 ## 目的
 
 与 Gemini Think 角色进行轻量级的方法论/策略/哲学讨论。
-不同于 `/feat-discuss` 的完整流程（Handshake + 强制落库），本 skill 专注于快速获取外部视角和认知挑战。
+不同于 `feat-discuss-local-gemini` skill 的完整流程（Handshake + 强制落库），本 skill 专注于快速获取外部视角和认知挑战。
 
 **核心铁律：Gemini 是无状态的。每次 API 调用都是全新对话，所有上下文必须由 Claude Code 在 Prompt 中显式提供。**
 
@@ -31,7 +31,7 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 | **上下文来源** | 项目文档 (PRODUCT_SOUL 等) | **Claude Code 自身的分析** (按需附加项目数据) |
 | **适用场景** | 产品功能、UI/UX、架构决策 | **方法论、策略、哲学、元认知** |
 
-如果讨论中发现需要产品/设计层面的深入讨论，升级到 `/feat-discuss`。
+如果讨论中发现需要产品/设计层面的深入讨论，升级到 `feat-discuss-local-gemini` skill。
 
 ## 触发条件
 
@@ -48,8 +48,8 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 - 面临无明确最优解的策略选择时
 
 ### 不触发 (用 feat-discuss 代替)
-- 具体产品功能的方向决策 -> `/feat-discuss` product
-- UI/UX 设计决策 -> `/feat-discuss` design
+- 具体产品功能的方向决策 -> `feat-discuss-local-gemini` skill product
+- UI/UX 设计决策 -> `feat-discuss-local-gemini` skill design
 - 需要 Engineering Handshake 和 Feature Brief 落库的场景
 
 ## 执行流程

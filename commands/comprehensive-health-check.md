@@ -39,7 +39,7 @@ python batchcc.py task-health-check            # 执行
 | 代码质量 | 运行静态分析，统计警告数 | `/refactor-project`（重构） |
 | 文档过时 | 抽查路径有效性和关键断言 | `/doc-update-context`（深度审查） |
 | 基础设施问题 | 检测测试能否跑、配置完整性 | `/test-audit`（审计修复） |
-| 四要素不一致 | 不做（这是快速对齐的事） | `/codebase-align`（快速对齐） |
+| 四要素不一致 | 不做（这是快速对齐的事） | `consistency-check` skill（快速对齐） |
 
 **原则**：本命令的诊断深度到"发现问题 + 量化严重程度"为止，具体分析和修复留给专项命令。
 
@@ -93,5 +93,5 @@ python batchcc.py task-health-check            # 执行
 
 - @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查模板
-- `/codebase-align` - 快速对齐
+- `consistency-check` skill - 快速对齐
 - `/refactor-project` - 项目级重构

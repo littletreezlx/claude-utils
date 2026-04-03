@@ -3,8 +3,9 @@ name: git-workflow
 description: >
   This skill should be used when code changes have passed tests and are ready
   to commit, when a feature or bug fix is complete, when the user says "done",
-  "finished", "commit", or expresses completion intent, or when the delivery
-  workflow (feat-done) needs to create a commit. Handles conventional commit
+  "finished", "commit", or expresses completion intent, or when feat-done
+  needs to create a commit. If feat-done is orchestrating the delivery flow,
+  this skill is called as its Step 3 — do not independently trigger. Handles conventional commit
   message generation and git commit execution based on conversation context.
 version: 0.1.0
 ---
@@ -13,7 +14,7 @@ version: 0.1.0
 
 ## 目的
 
-代码变更完成且测试通过后，自动生成 commit 信息并执行提交。省去用户手动调用 `/git-commit` 的步骤。
+代码变更完成且测试通过后，自动生成 commit 信息并执行提交。
 
 ## 触发条件
 
@@ -24,7 +25,7 @@ version: 0.1.0
 3. 出现以下信号之一：
    - 用户明确说"完成"、"提交"、"commit"、"done"
    - 一个完整的 feature/bugfix/refactor 单元已结束
-   - delivery-workflow skill 请求提交
+   - feat-done 请求提交
    - test-workflow skill 确认修复后测试全部通过
 
 ## 执行流程

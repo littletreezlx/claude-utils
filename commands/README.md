@@ -8,19 +8,15 @@
 我要做什么？
 │
 ├─ 快速操作（单次执行）
-│  ├─ 审查代码 ──────────── /code-review
-│  ├─ 提交代码 ──────────── /git-commit
 │  ├─ 截图分析 ──────────── /screen
 │  └─ 学习文章经验 ────────── /learn-article
 │
 ├─ 代码库维护
-│  ├─ 快速对齐 ──────────── /codebase-align
 │  ├─ 生成/更新 CLAUDE.md ── /claudemd
 │  ├─ 文档审查 ──────────── /doc-update-context
 │  └─ 全面体检（DAG）────── /comprehensive-health-check
 │
 ├─ 功能开发
-│  ├─ 方案讨论（自动）────── /feat-discuss → Gemini API → 自动落库
 │  ├─ 方案讨论（手动）────── /feat-discuss-web-gemini → 复制到 Gemini Web
 │  ├─ PRD 转需求 ─────────── /prd-to-doc
 │  └─ 学习新项目 ─────────── /learn-new-project
@@ -65,7 +61,6 @@
 ### 代码质量 & 重构
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/code-review` | 即时 | 代码审查与提测单生成 |
 | `/refactor` | 即时 | 单文件/类级别重构 |
 | `/refactor-module` | DAG | 单模块重构 |
 | `/refactor-project` | DAG | 项目级重构 |
@@ -73,10 +68,8 @@
 ### 功能开发 & 方案设计
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/feat-discuss` | 即时 | 路由入口，默认调用 local-gemini |
-| `/feat-discuss-local-gemini` | 即时 | 自动调用 Gemini API + 自动落库 |
 | `/feat-discuss-web-gemini` | 即时 | 生成 Prompt 供手动转发 Gemini Web |
-| `/feat-done` | 即时 | 方案落库 + 验收报告 |
+| `/feat-done` | 即时 | 文档同步 + 静态分析 + 提交 |
 | `/prd-to-doc` | 即时 | PRD 转客户端需求文档 |
 | `/learn-new-project` | 即时 | 快速学习陌生项目 |
 
@@ -84,7 +77,7 @@
 | 命令 | 类型 | 说明 |
 |------|------|------|
 | `/test-plan` | DAG | 测试规划与批量编写 |
-| `/test-run` | 即时 | 测试运行与修复 |
+| `/test-run` | 即时 | 测试运行与修复（thin wrapper → test-workflow skill） |
 | `/test-audit` | 即时 | 测试基础设施审计 |
 | `/create-e2e-test` | 即时 | 创建 E2E 测试 |
 
@@ -99,7 +92,6 @@
 ### 健康检查 & 代码库维护
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/codebase-align` | 即时 | 代码库自洽性对齐（发现不一致直接修复） |
 | `/comprehensive-health-check` | DAG | 全面体检（工具驱动诊断 + 行动路线） |
 
 ### UI 工程
@@ -121,7 +113,6 @@
 ### 项目管理 & 工具
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/git-commit` | 即时 | Git 规范提交 |
 | `/todo-write` | 串行 | 保存待办清单 |
 | `/todo-doit` | 串行 | 执行待办任务 |
 | `/todo-huge-task` | DAG | 大任务智能拆分 |
@@ -173,15 +164,17 @@ python batchcc.py task-xxx
 
 ## 自动化 Skills
 
-除了手动触发的命令，还有 5 个自动触发的 Skill（Claude 根据意图自动调用）：
+除了手动触发的命令，以下 Skill 由 Claude 根据意图自动调用：
 
 | Skill | 自动触发场景 |
 |-------|-------------|
 | `git-workflow` | 代码改完、测试通过时自动提交 |
 | `test-workflow` | 代码修改后自动验证、测试失败自动修复 |
-| `delivery-workflow` | 功能完成后自动走完收尾流水线 |
 | `consistency-check` | 开始新功能时自动检查代码库自洽性 |
 | `code-quality` | 提交前自动代码审查 |
+| `feat-discuss-local-gemini` | 遇到产品/架构/UI 决策时自动调用 Gemini API |
+| `think` | 方法论/策略讨论时调用 Gemini Think |
+| `test-verify` | AI 大量生成测试时自动红队验证 |
 
 > Skills 详细说明见 `~/.claude/skills/README.md`
 
@@ -199,7 +192,7 @@ python batchcc.py task-xxx
 
 ---
 
-**命令总数**：29 个 | **Skills**：5 个 | **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：25 个 | **Skills**：7 个 | **设计原则**：目标导向、自主执行、单一真相源
 
 ---
 
@@ -207,11 +200,10 @@ python batchcc.py task-xxx
 
 项目状态不佳？按以下顺序操作：
 
-1. `/codebase-align` — 快速对齐四要素（代码/测试/文档/CLAUDE.md）
+1. `consistency-check` skill — 快速对齐四要素（代码/测试/文档/CLAUDE.md）
 2. `/test-run` — 修复失败的测试（建立安全网）
 3. `/claudemd` — 生成或更新项目级 CLAUDE.md
 4. `/comprehensive-health-check` — 需要全面诊断时，运行 DAG 体检
 5. 按诊断报告的行动路线执行专项命令
 
 核心原则：先建立测试合约 → 再修复代码 → 最后对齐文档
-

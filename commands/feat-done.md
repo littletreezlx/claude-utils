@@ -20,7 +20,7 @@ Engineering Partner，执行收尾交付流程。
 
 ### Step 3: Git 提交
 
-调用 `/git-commit` 完成提交。
+触发 git-workflow skill 完成提交。
 
 ## 约束条件
 
