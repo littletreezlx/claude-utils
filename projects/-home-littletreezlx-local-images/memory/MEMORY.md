@@ -10,6 +10,7 @@
 - [feedback_data_before_opinion.md](feedback_data_before_opinion.md) — 先跑数据再下结论，不要主观臆测。A/B 实验优先于推理
 - [feedback_ab_test_as_asset.md](feedback_ab_test_as_asset.md) — A/B test yaml 存 ab-tests/ 目录作为项目资产，不改 quick.yaml
 - [feedback_ancient_chinese_tags.md](feedback_ancient_chinese_tags.md) — 古装质感配方：hanfu + traditional_media + v3，不用现代服装词汇
+- [feedback_example_pollution.md](feedback_example_pollution.md) — Prompt 示例会被 LLM 当模板复制，必须加反例+多样性声明
 
 ## Project (项目状态)
 - [project_model_comparison.md](project_model_comparison.md) — 底模对比实验：MiaoMiao > Nova Anime3D > IlluQuaint > Flux
