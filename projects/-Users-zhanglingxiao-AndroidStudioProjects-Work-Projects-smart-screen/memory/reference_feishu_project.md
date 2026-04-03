@@ -1,1 +1,1 @@
-/Users/zhanglingxiao/.claude/projects/-Users-zhanglingxiao-AndroidStudioProjects-Work-Projects-android-pos-packages-pos-android/memory/reference_feishu_project.md
+/Users/zhanglingxiao/.claude/projects/-Users-zhanglingxiao-AndroidStudioProjects-Work-Projects-android-pos/memory/reference_feishu_project.md
