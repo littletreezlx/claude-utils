@@ -36,6 +36,12 @@
     "type": "command",
     "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
   },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
   },
