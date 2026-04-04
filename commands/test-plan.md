@@ -95,7 +95,7 @@ task-add-test                          # ← 入口文件（batchcc 执行这个
 ├── stage-3-critical-tests.md         # 关键路径测试（并行）
 ├── stage-4-important-tests.md        # 重要功能测试（并行）
 ├── stage-5-verification.md           # 全量运行验证
-└── stage-6-review.md                 # 全局审视 + /todo-write 收尾
+└── stage-6-review.md                 # 全局审视 + 直接写入 TODO.md 收尾
 ```
 
 ---

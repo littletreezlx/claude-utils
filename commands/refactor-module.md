@@ -46,7 +46,7 @@ batchcc task-refactor-module-[模块名]            # 执行
 | Stage 2 | 拆分职责、整理目录结构、优化接口 | serial |
 | Stage 3 | 运行模块测试、验证接口兼容性 | serial |
 | Stage 4 | 更新受影响的架构文档（如有） | serial |
-| Stage 5 | 全局审视 + /todo-write 收尾 | serial |
+| Stage 5 | 全局审视 + 直接写入 TODO.md 收尾 | serial |
 
 > TASK 格式遵循上下文中已加载的 DAG_FORMAT 规范
 

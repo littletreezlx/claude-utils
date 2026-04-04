@@ -76,7 +76,7 @@ batchcc task-health-check            # 执行
 
 ### 第四步：收尾审视（Stage 3 串行）
 
-按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估诊断覆盖度 → /todo-write 留痕
+按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估诊断覆盖度 → 直接写入 TODO.md 留痕
 
 ---
 

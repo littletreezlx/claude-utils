@@ -90,7 +90,7 @@ batchcc task-refactor-project            # 执行
 | Stage 2 | 跨模块整合：消除重复轮子、提取共享基础设施 | 串行 |
 | Stage 3 | 全量测试 + 集成验证 | 串行 |
 | Stage 4 | 架构文档、功能映射、ADR | 并行 |
-| Stage 5 | 全局审视 + /todo-write 收尾 | 串行 |
+| Stage 5 | 全局审视 + 直接写入 TODO.md 收尾 | 串行 |
 
 ---
 

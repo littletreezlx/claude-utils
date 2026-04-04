@@ -172,7 +172,7 @@ docs/
 
 ## TASK ##
 全局审视与收尾
-（按 DAG_FORMAT 收尾模式执行：回顾产出 → 评估完成度 → /todo-write 留痕）
+（按 DAG_FORMAT 收尾模式执行：回顾产出 → 评估完成度 → 直接写入 TODO.md 留痕）
 ```
 
 **每个 TASK 必须包含**：
