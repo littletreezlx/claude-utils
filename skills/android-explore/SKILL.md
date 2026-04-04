@@ -1,17 +1,17 @@
 ---
-name: ai-explore
+name: android-explore
 description: >
   This skill should be used when AI should autonomously explore a running
-  Flutter/Android app as a user, discovering bugs and UX issues through
-  role-play. AI picks a user persona, uses the app freely via Debug State
-  Server, and reports experience + technical issues. Use when the user says
-  "探索应用", "自由探索", "用一下", "explore", "find bugs", or after
-  qa-stories passed and deeper exploration is needed. Requires Debug State
-  Server running.
+  native Android app as a user, discovering bugs and UX issues through
+  role-play. AI picks a user persona, uses the app freely via embedded
+  Debug Server, and reports experience + technical issues. Use when the
+  user says "探索应用", "自由探索", "用一下", "explore", "find bugs",
+  or after qa-stories passed and deeper exploration is needed. Requires
+  Debug Server embedded in the app.
 version: 1.0.0
 ---
 
-# AI Explore — 角色扮演式自主探索
+# Android Explore — 角色扮演式自主探索
 
 AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计问题。不是机械测试，而是真正在"用"。
 
@@ -20,14 +20,14 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 - **我是用户，不是测试工程师** — 用用户思维做决策，不穷举边界
 - **只记录，不修复** — 发现问题记到报告，不在探索中改代码
 - **主观感受和客观 bug 都记** — 体验报告 + 技术问题清单
-- **每步看截图** — 操作后用 `/screen` 或 Read 查看截图，观察 UI 反馈
+- **每步看截图** — 操作后截图观察 UI 反馈
 
 ---
 
 ## 前置条件
 
-1. Debug State Server 运行中
-2. `ai-qa-stories` 已在本会话通过
+1. Debug Server 运行中（App 已启动，端口已转发）
+2. `android-qa-stories` 已在本会话通过
 
 如果 qa-stories 未执行，**先调用它**。在故障基线上探索只会产生噪音。
 
@@ -64,7 +64,11 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 1. **第一人称内心独白**：每步操作前，用用户视角写一句决策理由：
    > "刚打开 App，看到一堆列表但不知道从哪开始…先点第一个试试"
 
-2. **每步操作后看截图**：用 `/screen` 或 Read 查看截图，观察 UI 反馈
+2. **每步操作后截图**：
+   ```bash
+   adb exec-out screencap -p > /tmp/android_screen.png
+   ```
+   然后用 Read 查看截图，观察 UI 反馈
 
 3. **做符合人设的决策**：
    - 新手会乱点、不看说明
@@ -84,7 +88,8 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 ## 探索报告
 
 ### 环境
-- 项目: xxx | 端口: xxxx | 时间: xxx
+- 项目: xxx | 包名: com.xxx | 端口: xxxx | 时间: xxx
+- 设备: [adb devices 输出]
 - 基线: qa-stories 全部通过
 - 本轮人设: 🐣 新手小白
 
@@ -120,6 +125,6 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 
 1. **不过度探索** — 每个人设 1 轮使用循环，总共不超过 3 轮
 2. **不穷举边界** — 那是 qa-stories 的事。这里靠自然使用发现问题
-3. **截图是关键输入** — 每步操作后必须查看截图，UI 反馈是体验的核心
+3. **截图是关键输入** — 每步操作后必须截图，UI 反馈是体验的核心
 4. **保持人设一致** — 新手不会精确计算，效率达人不会慢慢浏览
-5. **端口冲突** — 检查 /providers 的 actions 是否匹配当前项目
+5. **Logcat 辅助** — 遇到异常时 `adb logcat -d -t 30 *:E` 查看错误日志
