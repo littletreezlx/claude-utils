@@ -6,7 +6,37 @@
 
 - `README.md` — 人类入口
 - `CLAUDE.md` — AI 入口
-- `TODO.md` — 临时工作文件
+- `TODO.md` — 已决策行动队列（`/todo-doit` 消费）
+- `to-discuss.md` — AI 待决策事项队列（人工或 `/think` / `/feat-discuss-local-gemini` 消费）
+
+## 三文件协作架构（行动/决策/材料 分离）
+
+| 文件 | 内容性质 | 谁来消费 |
+|------|---------|---------|
+| `TODO.md` | 已决策、可执行任务 | AI（`/todo-doit` 自动执行）|
+| `to-discuss.md` | 未决策、需人工判断的 AI 建议 | 人（或触发 `/think` / `/feat-discuss-local-gemini`）|
+| `_scratch/*.md` | 原始材料、探索报告、调试日志 | AI 查阅上下文用 |
+
+**铁律**：
+- 事实型 bug → `TODO.md`；观点/产品/设计判断 → `to-discuss.md`；原始材料 → `_scratch/`
+- **严禁把 AI 的观点伪装成已决策任务塞进 TODO.md**（会污染 `/todo-doit` 的执行流）
+- TODO.md 与 to-discuss.md **物理独立，不设指针**（否则互相污染、变成视觉盲点）
+- `to-discuss.md` 不是 backlog 而是 **Force-Decision Queue**：每条要么转 TODO，要么被 Reject，不得无限积压
+
+### to-discuss.md 条目模板
+
+```markdown
+## [UX|Product|Arch|Workflow] 简短标题 (Ref: _scratch/xxx.md § 章节)
+- **事实前提**: [基于什么客观现象，禁止加主观修饰]
+- **AI 观点**: [我认为应该...]
+- **反面检验**: [这个建议可能错在哪 / 维持现状的理由]
+- **决策选项**:
+  - [ ] Approve → 转 TODO.md
+  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
+  - [ ] Reject → 直接删
+```
+
+**禁止给 AI 观点加置信度字段** —— AI 在胡说时极度自信，置信度是噪音。
 
 ## docs/ 标准文件
 

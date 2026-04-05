@@ -54,6 +54,25 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 
 ## 执行流程
 
+### Step 0: Inbox Zero 仪式（检查 to-discuss.md）
+
+**调用本 skill 的第一件事**：检查项目根目录是否存在 `to-discuss.md`。
+
+- 如果**不存在**或为空 → 跳过，直接进入 Step 1
+- 如果**存在且有未决策条目** → 先列出条目标题（不展开详情），询问用户：
+  > "检测到 to-discuss.md 有 N 条待决策事项：[列表]。要先处理这些吗？还是直接讨论你刚才提的话题？"
+
+用户选 "先处理" → 逐条拉锯：
+  - **Approve** → 转入 `TODO.md`，从 `to-discuss.md` **硬删除**该条目
+  - **Reject** → 从 `to-discuss.md` **硬删除**该条目
+  - **Discuss** → 用该条目作为本轮 /feat-discuss 的讨论话题（照常走 Step 1-4）
+
+用户选 "直接讨论原话题" → 跳过 Inbox Zero，按原计划进入 Step 1。
+
+**设计原则**：`to-discuss.md` 是 Force-Decision Queue，不是 backlog。每次调用 /feat-discuss 都是一次清空机会，防止它变成坟墓。
+
+---
+
 ### Step 1: 选择角色 & 收集上下文
 
 **角色判断**（根据需求和项目类型自动选择）：

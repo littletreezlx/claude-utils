@@ -91,8 +91,34 @@ version: 0.1.0
 - [下一步行动]
 ```
 
+### Step 6: 分流归档（严禁混流）
+
+consistency-check 的产出混合了事实和判断，必须分流：
+
+#### 6a. 客观缺失 / 强制违反 → 直接修复 或 TODO.md
+- CLAUDE.md 规则与代码不符、失效的文档路径、invariants.sh 的 VIOLATION → 本 skill 已在 Step 2/4 直接修复
+- 若有需要代码级修复的（如模式冲突需要 /refactor）→ 调用 `todo-write` 写入 `TODO.md`，带 `§ 模式一致性` 引用
+
+#### 6b. 模式/架构判断 → to-discuss.md
+"是否引入了第二种做法"、"这个模式是否应该统一"等**需要架构决策**的事项 → 追加到项目根 `to-discuss.md`：
+
+```markdown
+## [Arch|Pattern|Convention] 简短标题 (Ref: consistency-check 报告 § 模式一致性)
+- **事实前提**: [观察到的模式分叉，带文件路径和代码行号]
+- **AI 观点**: [建议统一为模式 A / 保留两种并用]
+- **反面检验**: [第二种模式可能是有意为之 / 统一的迁移成本]
+- **决策选项**:
+  - [ ] Approve → 转 TODO.md（/refactor）
+  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
+  - [ ] Reject → 两种模式都接受，更新 CLAUDE.md 说明原因
+```
+
+**关键区分**：
+- "CLAUDE.md 说用 Riverpod 但代码还在用 Provider" = 事实 → 修 CLAUDE.md 或代码
+- "建议统一用 Repository 模式替代直接调用 DAO" = 观点 → to-discuss.md
+
 ## 约束
 
 - 执行时间控制在 5 分钟内（抽查而非全量扫描）
 - 只修复 CLAUDE.md 和文档，不修复业务代码
-- 不生成文件，只在对话中输出
+- 报告在对话中输出；模式判断型 findings 必须落到 `to-discuss.md`

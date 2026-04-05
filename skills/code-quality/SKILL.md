@@ -79,6 +79,35 @@ version: 0.1.0
 
 结构：变更模块表 → 具体变更内容 → 测试入口 → 风险提示 → 部署注意事项
 
+### Step 5: 分流归档（严禁混流）
+
+审查报告是"材料库"，还需要把可操作项分流：
+
+#### 5a. 🔴 严重问题（Blocker）→ TODO.md
+客观 bug、崩溃风险、必现错误 → 调用 `todo-write` 写入 `TODO.md`，带 `docs/reviews/review-xxx.md § 章节` 引用。
+这些是**合并前必须修的硬关卡**，不需要讨论。
+
+#### 5b. 🟡 改进建议 / 🟢 最佳实践 → to-discuss.md
+可读性建议、规范偏好、"这样写更好"的判断 → 追加到项目根 `to-discuss.md`，严格模板：
+
+```markdown
+## [Arch|Readability|Style|Maintenance] 简短标题 (Ref: docs/reviews/review-xxx.md § 章节)
+- **事实前提**: [代码中观察到的客观现象 + 文件:行号]
+- **AI 观点**: [我建议改成...]
+- **反面检验**: [当前写法的合理之处 / 改动的潜在成本 / 是否是主观偏好]
+- **决策选项**:
+  - [ ] Approve → 转 TODO.md（或 /refactor）
+  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
+  - [ ] Reject → 直接删（接受当前写法）
+```
+
+**关键区分**：
+- "这里有空指针风险" = 🔴 事实型 → TODO.md
+- "建议用策略模式代替 if-else" = 🟡 观点型 → to-discuss.md
+- "命名 `tmp` 不清晰" = 🟢 偏好型 → to-discuss.md（除非项目 linter 有明确规则）
+
+**绝对禁止**：把 🟡/🟢 建议伪装成 Blocker 塞进 TODO.md
+
 ## 审查红线
 
 1. **严禁臆测**：看不懂标记为 "❓ 疑问" 而非 "❌ 错误"
