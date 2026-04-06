@@ -25,7 +25,15 @@ AI 自主闭环：读取 `docs/user-stories/` 中的用户故事，通过 Debug 
 
 ## 执行流程
 
-### Step 0: 确认 Server 运行
+### Step 0: 环境准备（必须先执行）
+
+**⚠️ 开始 QA 前，必须先运行 `prep-cyborg-env` Skill 或 `./scripts/prep-env.sh`**，确保环境干净。
+
+这防止"幽灵状态"导致的错误验证结论——Flutter 内存状态与 DB 不一致时，QA 会给出完全错误的通过/失败判断。
+
+详见 `prep-cyborg-env` Skill 文档。
+
+### Step 1: 确认 Server 运行
 
 **端口发现**（按优先级，找到即停）：
 1. `grep 'DEBUG_PORT' scripts/start-dev.sh` → 取变量值
@@ -36,10 +44,10 @@ AI 自主闭环：读取 `docs/user-stories/` 中的用户故事，通过 Debug 
 curl -s --connect-timeout 3 localhost:$PORT/providers
 ```
 
-- ✅ 有响应 → 检查 actions 是否匹配当前项目（避免误连），跳到 Step 1
-- ❌ 无响应 → 自动启动（见下方"进程管理"）
+- ✅ 有响应 → 检查 actions 是否匹配当前项目（避免误连），跳到 Step 2
+- ❌ 无响应 → 报告用户：需要先运行 prep-cyborg-env
 
-### Step 1: 加载故事
+### Step 2: 加载故事
 
 **并行** Read 所有 `docs/user-stories/*.md`（排除 README/模板），按文件名编号排序。
 
@@ -57,7 +65,7 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
   ⚠️ /data/settings/sync — 路径格式不匹配，实际为 /data/settings-sync
 ```
 
-### Step 2: 快照初始状态
+### Step 3: 快照初始状态
 
 并行查询关键状态端点，记录为初始快照：
 
@@ -66,7 +74,7 @@ curl -s localhost:$PORT/state/auth
 curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 ```
 
-### Step 3: 逐条执行故事
+### Step 4: 逐条执行故事
 
 对每条故事的每个 Step：
 
@@ -81,7 +89,7 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 
 **效率要求**：同一故事内独立的状态查询可以并行 curl。
 
-### Step 4: 输出报告
+### Step 5: 输出报告
 
 ```markdown
 ## User Stories 验证报告

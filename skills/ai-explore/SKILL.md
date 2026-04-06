@@ -45,16 +45,27 @@ which cliclick >/dev/null 2>&1 && \
 
 ## 前置条件
 
+### ⚠️ 必须先运行 prep-cyborg-env
+
+**每次开始探索前，必须先调用 `prep-cyborg-env` Skill 或运行 `./scripts/prep-env.sh`**，确保环境干净。
+
+详见 `prep-cyborg-env` Skill 文档。核心流程：
+1. Kill 所有 Flutter 进程
+2. Seed 测试数据
+3. `--force-reset` 启动 App
+4. 验证 State 和 Data 一致
+
+**严禁在脏状态下开始探索**——三角验证会在矛盾的状态下给出错误结论。
+
 ### 共同条件
-1. Debug State Server 运行中（localhost:8788）
-2. 基线数据就绪（有可用 group/option 等数据）
+1. ✅ prep-cyborg-env 已执行（环境干净）
+2. Debug State Server 运行中（localhost:8788）
+3. 基线数据就绪（有可用 group/option 等数据）
 
 ### Cyborg 额外条件
-3. iOS Simulator 运行中且 App 已启动
-4. `cliclick` 已安装（`brew install cliclick`）
-5. macOS 环境（screencapture、osascript）
-
-**基线不足时，只做最小 seed**（创建 1-2 组数据就开始）。想验证 stories 的用户应调用 `/ai-qa-stories`。
+4. iOS Simulator 运行中且 App 已启动
+5. `cliclick` 已安装（`brew install cliclick`）
+6. macOS 环境（screencapture、osascript）
 
 ---
 

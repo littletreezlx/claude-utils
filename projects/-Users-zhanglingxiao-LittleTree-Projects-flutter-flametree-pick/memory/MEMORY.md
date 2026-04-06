@@ -3,3 +3,4 @@
 - [模型无关设计](feedback_model_agnostic_design.md) — 不为不同模型设计不同路径，提升输入质量
 - [红队测试质量记录](test_quality_red_team_2026-04-03.md) — 2026-04-03 红队验证结果：Tier 1 0/4 → 部分改善，测试盲点修复记录
 - [Cyborg Explore 架构决策](project_cyborg_explore_decision.md) — 2026-04-06: explore 演进为 Vision+OS Tap+State Oracle，POC 验证后重写 skills
+- [卡片微旋转审美陷阱](feedback_card_rotation.md) — AI两次推荐±3°旋转被拒，禁止再推荐增强散落感
