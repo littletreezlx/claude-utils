@@ -249,7 +249,7 @@ ls lib/path/to/<Name>.dart
 向用户报告审查计划摘要后，提示执行：
 
 ```bash
-batchcc task-doc-update-context            # 执行
+batchcc task-doc-review            # 执行
 ```
 
 ---

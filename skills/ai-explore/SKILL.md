@@ -73,21 +73,28 @@ which cliclick >/dev/null 2>&1 && \
 
 ### Step 0: 环境初始化
 
-获取 Simulator 窗口参数（后续所有截图和点击依赖这些值）：
+验证 Cyborg Probe 端点可用：
 
 ```bash
-# 获取窗口位置和尺寸
+# 验证 /cyborg/dom 返回节点（semantics tree 已启用）
+curl -s localhost:8788/cyborg/dom | python3 -c "
+import sys,json
+d=json.load(sys.stdin)['data']
+print(f'Nodes: {d[\"totalCount\"]}, screen={d[\"screenSize\"]}')
+"
+
+# 验证 /cyborg/tap 可用
+curl -s 'localhost:8788/cyborg/tap?nodeId=0' | python3 -c "import sys,json; print(json.load(sys.stdin))"
+```
+
+> /cyborg/dom 返回 0 nodes → semantics 未启用，需要重启 App（`start-dev.sh --force-reset`）
+
+获取 Simulator 窗口参数（仅截图用，tap 不需要）：
+
+```bash
 osascript -e 'tell application "System Events" to tell process "Simulator" to get {position, size} of front window'
-# 返回示例: {393, 30}, {237, 558}  →  win_x=393, win_y=30, win_w=237, win_h=558
+# 返回示例: {393, 30}, {237, 558}
 ```
-
-记住坐标转换公式（POC 已验证）：
-```
-screen_x = win_x + image_pixel_x / 2
-screen_y = win_y + image_pixel_y / 2
-```
-
-> Retina @2x：截图像素 = 屏幕点 × 2，所以 image_px / 2 = screen_pt
 
 ### Step 1: 建立用户认知
 
@@ -162,34 +169,43 @@ curl -s localhost:8788/state/route     # 当前在哪个页面
 curl -s localhost:8788/state/overlays  # 是否有弹窗
 ```
 
-#### A — 行动（基于人设决策点击）
+#### A — 行动（内部事件注入，无需坐标转换）
 
-**优先使用语义树坐标**：
+**主力方式：`/cyborg/tap?nodeId=X`（语义动作注入）**
 
 ```bash
-# 激活 Simulator（确保点击命中 Simulator 而非其他窗口）
-osascript -e 'tell application "Simulator" to activate'
-sleep 0.3
+# 直接用 node ID 触发 tap — 零坐标转换，100% 精准
+curl -s 'localhost:8788/cyborg/tap?nodeId=12'
+# → {"ok":true,"data":{"action":"tap","nodeId":12,"status":"dispatched"}}
 
-# 使用语义树获取的 center 坐标（已经是屏幕点坐标）
-# 注意：语义树的坐标是物理像素，需要除以 devicePixelRatio
-# screen_x = center.x / devicePixelRatio
-# screen_y = center.y / devicePixelRatio
-cliclick c:{screen_x},{screen_y}
+# 长按
+curl -s 'localhost:8788/cyborg/longPress?nodeId=12'
+
+# 文字输入（直接注入到 TextField，绕过键盘）
+curl -s 'localhost:8788/cyborg/input?nodeId=7&text=hello'
+
+# 滚动
+curl -s 'localhost:8788/cyborg/scroll?nodeId=8&direction=down'
 ```
 
-**语义树查询示例** — 找到骰子按钮：
+**⚠️ 关键：导航后 node ID 会变！** 每次页面切换后必须重新查询 DOM 获取最新 ID。
+
+**查找目标节点的标准流程**：
 
 ```bash
+# 1. 获取 DOM
+# 2. 找到目标（如 label 包含关键字 + hasTap=true）
+# 3. 用 nodeId 执行操作
 curl -s localhost:8788/cyborg/dom | python3 -c "
 import sys,json
 d=json.load(sys.stdin)['data']
-for n in d['nodes']:
-    if n.get('hasTap') and '骰子' in n.get('label',''):
-        dpr = d.get('devicePixelRatio',1)
-        cx = n['center']['x'] / dpr
-        cy = n['center']['y'] / dpr
-        print(f\"Found: {n['label']} at ({cx:.1f}, {cy:.1f})\")
+def find(nodes):
+    for n in nodes:
+        if n.get('hasTap') and '管理' in n.get('label',''):
+            print(f'Found: [{n[\"id\"]}] \"{n[\"label\"]}\"')
+        if 'children' in n:
+            find(n['children'])
+find(d['nodes'])
 "
 ```
 
@@ -197,6 +213,13 @@ for n in d['nodes']:
 - 新手会点最显眼的按钮
 - 效率达人直奔目标
 - 洁癖用户先找删除/整理入口
+
+**备选方式：坐标点击（测试触摸区域大小时）**
+
+```bash
+# 用 Flutter 逻辑坐标直接注入 PointerEvent
+curl -s 'localhost:8788/cyborg/tap?x=200&y=300'
+```
 
 #### V — 验证（State Oracle 确认效果）
 

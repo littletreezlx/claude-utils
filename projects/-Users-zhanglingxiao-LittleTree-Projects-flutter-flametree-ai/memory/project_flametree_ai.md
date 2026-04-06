@@ -36,6 +36,13 @@ type: project
 | 04-ai-drawing | 🐛 /data/images 端点缺失 |
 | 05-role-management | ✅ 端点正常（已知限制：/data/roles 不存在） |
 
+## P3 审查发现 (2026-04-06)
+
+**user-stories 与 Debug Server API 不一致（已修正）：**
+- `/data/messages` 需要 `sessionId` query 参数（Story 01, 05）
+- `quickAsk` state 无 `isVisible` 字段，应用 `/state/overlay.isOverlayVisible` 替代
+- 响应结构无 `.data` 包裹层：`quickAsk` 直接 `.messages`，`organizeTasks` 直接 `.tasks`，`images` 直接 `.images`
+
 ## 如何应用
 
 执行 ai-qa-stories 时，先启动 server，再启动 app，最后执行验证。
