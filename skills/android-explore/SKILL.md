@@ -1,103 +1,168 @@
 ---
 name: android-explore
 description: >
-  This skill should be used when AI should autonomously explore a running
-  native Android app as a user, discovering bugs and UX issues through
-  role-play. AI picks a user persona, uses the app freely via embedded
-  Debug Server, and reports experience + technical issues. Use when the
-  user says "探索应用", "自由探索", "用一下", "explore", "find bugs",
-  or after qa-stories passed and deeper exploration is needed. Requires
-  Debug Server embedded in the app.
-version: 1.0.0
+  AI autonomously explores a running native Android app as a user, discovering
+  bugs and UX issues through role-play. Supports two modes: Cyborg (Vision +
+  adb tap + State Oracle, default when emulator/device connected) and Fallback
+  (curl-only, when adb unavailable). Use when the user says "探索应用",
+  "自由探索", "用一下", "explore", "find bugs", or after qa-stories passed
+  and deeper exploration is needed. Requires Debug Server embedded in the app.
+version: 2.0.0
 ---
 
-# Android Explore — 角色扮演式自主探索
+# Android Explore — Cyborg 自主探索
 
-AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计问题。不是机械测试，而是真正在"用"。
+AI 扮演用户自由使用���用。Cyborg 模式下通过**截图识别 + adb tap**真正操作 UI，State Oracle 验证状态变化。
 
 ## 核心原则
 
-- **决策时是用户，报告时是工程师** — 用用户人设决定要 curl 什么（多样化探索路径），但报告问题必须走证据链（工程师纪律）
-- **本质定位：状态机扰动源 + 视觉快照采集器** — 价值在于以意想不到的顺序排列 L1 端点调用，观察系统状态与 UI 快照，而非模拟真实手势
-- **归因必须有证据链** — 截图只告诉你 WHAT（当前状态），不告诉你 HOW（怎么到这的）。Bug = 我发送 curl X → 服务端返回/状态变化 Y → 截图验证 Z。缺任一环 → 不是 bug，是盲区观察
-- **不做故事验证** — 那是 qa-stories 的职责。explore 假定基线 OK，专注第一人称体验 + 状态扰动
-- **只记录，不修复** — 发现问题记到报告，不在探索中改代码
-- **主观感受和客观 bug 都记** — 体验报告 + 技术问题清单 + 盲区观察
-- **每步看截图+查状态** — 操作后截图看 UI 反馈，**并**用 curl 读相关 `/state` 端点对比，不靠截图脑补因果；Logcat (`adb logcat -d -t 30 *:E`) 作为第三证据源
+- **Cyborg = 皮（Vision+Tap），Oracle = 骨（State 验证）** — 截图感知 UI，adb tap 驱动交互，curl 验证状态。三层配合，缺一不可
+- **同源坐标系** — adb screencap 和 adb input tap 天然使用同一设备像素坐标，无需转换
+- **决策时是用户，报告时是工程师** — 用人设决定点哪里，但报告问题必须走证据链
+- **归因必须有证据链** — Bug = 操作 X → State Oracle 返回 Y → 与预期 Z 不符。缺任一环 → 盲区观察，不是 bug
+- **不做故事验证** — 那是 android-qa-stories 的职责
+- **只记录，不修复** — 发���问题记到报告，不在探索中改代码
+
+---
+
+## 模式选择（自动判断）
+
+```bash
+# 检测 Cyborg 模式前置条件
+adb devices 2>/dev/null | grep -q 'device$' && \
+  curl -s localhost:$PORT/providers >/dev/null 2>&1
+```
+
+| 条件 | 模式 | 探索能力 |
+|------|------|---------|
+| adb 设备连接 + Debug Server 就绪 | **Cyborg** | 真实 UI 交互 + 导航 + 手势 + State 验证 + Logcat |
+| 仅 Debug Server 可用 | **Fallback** | 端点覆盖测试（诚实声明：探索范围 = 端点数量） |
 
 ---
 
 ## 前置条件
 
+### 共同条件
 1. Debug Server 运行中（App 已启动，端口已转发）
-2. 基线数据就绪（有可用业务数据供探索）
+2. 基线数据就绪
 
-**基线不足时，只做最小 seed**（创建 1-2 组数据就开始），不要跑完整 stories。想验证 stories 的用户应显式调用 `/android-qa-stories`。
+### Cyborg 额外条件
+3. `adb devices` 显示已连接设备/模拟器
+4. 端口转发已建立：`adb forward tcp:$PORT tcp:$PORT`
+
+**基线不足时，只做最小 seed**。想验证 stories 的用户应调�� `/android-qa-stories`。
 
 ---
 
-## 执行流程
+## Cyborg 模式执行流程
+
+### Step 0: 环境初始化
+
+```bash
+# 确认设备连接
+adb devices
+
+# 获取屏幕尺寸（用于理解坐标范围）
+adb shell wm size
+# 返回示例: Physical size: 1080x2400
+```
+
+坐标系说明（Android 天然同源）：
+- `adb exec-out screencap -p` → 设备像素坐标的截图
+- `adb shell input tap X Y` → 设备像素坐标的点击
+- **无需任何坐标转换**
 
 ### Step 1: 建立用户认知
-
-读取项目文档，理解"我是谁、我为什么用这个应用"：
 
 ```
 读 docs/PRODUCT_SOUL.md    → 产品愿景、情感目标
 读 docs/PRODUCT_BEHAVIOR.md → 我能做什么、系统规则
-读 /providers              → 我能执行哪些操作
+curl localhost:$PORT/providers  → 可用的 state/data 端点（验证用）
 ```
 
-**选择本轮用户人设**（从预设池选一个，或根据项目特点自拟）：
+**选择本轮用户人设**（1-2 轮，每轮换人设）：
 
-| 人设 | 行为倾向 | 自然覆盖的系统 |
-|------|---------|--------------|
-| 🐣 新手小白 | 不看引导，随手点，不理解专业术语 | 引导缺失、容错性、术语可达性 |
-| ⚡ 效率达人 | 最快完成目标，跳过一切非必要步骤 | 流程流畅度、快捷操作、冗余步骤 |
-| 🐒 混乱操作者 | 逆序调用、密集请求、操作中途切目标 | 状态一致性、竞态条件、错误恢复 |
-| 🔄 回归用户 | 之前用过，隔了很久回来，期望数据还在 | 数据持久化、状态恢复、迁移兼容 |
-| 🧹 洁癖用户 | 频繁整理、删除、归类，追求"干净" | 批量操作、删除级联、空状态 |
+| 人设 | 行为倾向 | 自然覆盖 |
+|------|---------|---------|
+| 🐣 新手小白 | 不看引导，随手点 | 引导缺失、容错性 |
+| ⚡ 效率达人 | 最快完成目标 | 流程流畅度、冗余步骤 |
+| 🐒 混乱操作者 | 逆序操作、密集请求 | 状态一致性、竞态 |
+| 🔄 回归用户 | 隔很久回来 | 数据持久化、状态恢复 |
+| 🧹 洁癖用户 | 频繁整理删除 | 批量操作、删除级联、空状态 |
 
-### Step 2: 自由使用
+**每轮开头写 3-5 句使用计划**（替代逐步独白）：
+> "我��新手小白，刚装好这个 App。计划：先看首页 → 随便点几个 → 试试核心功能 → 加点东西试试。"
 
-**每轮 = 一次完整使用循环**（打开 → 完成核心任务 → 浏览 → 退出）。建议 1-2 轮，每轮换人设。轮数不是目标，发现高质量问题才是。
+### Step 2: 感知-行动-验证循环
 
-#### 使用规则
+每步操作遵循 **PAV 循��**（Perceive → Act → Verify）：
 
-1. **第一人称内心独白**：每步操作前，用用户视角写一句决策理由：
-   > "刚打开 App，看到一堆列表但不知道从哪开始…先点第一个试试"
+#### P — 感知（截图 + 读状态）
 
-2. **每步操作后截图**：
-   ```bash
-   adb exec-out screencap -p > /tmp/android_screen.png
-   ```
-   然后用 Read 查看截图，观察 UI 反馈
+```bash
+# 截取设备屏幕
+adb exec-out screencap -p > /tmp/android_screen_N.png
+```
 
-3. **做符合人设的决策**：
-   - 新手会乱点、不看说明
-   - 效率达人会直奔目标、忽略装饰性内容
-   - 洁癖用户会先整理再使用
+用 Read 工具查看截图 → AI 分析当前界面，识别元素的设备像素坐标。
 
-4. **破坏性操作放到每轮末尾**：delete/logout/clear 等不可逆操作，确认只读探索完成后再执行，避免早期破坏导致后续全部误报
+**辅助定位**：结合 State Oracle 缩小搜索范围：
+```bash
+curl -s localhost:$PORT/state/route     # 当前页面（如有）
+curl -s localhost:$PORT/state/overlays  # 弹窗状态（如有）
+```
 
-5. **遇到异常时**：
-   - 技术异常（curl 报错/状态不一致）→ 记录到技术问题清单，**必须附触发 curl 和响应**，继续用
-   - UI 现象无法用 curl 归因（看到 X 发生但说不清自己做了什么导致）→ 记录到**盲区观察**区块，**不进 bug 清单**
-   - 体验困惑（不知道该干嘛/UI 看不懂）→ 记录到体验报告，继续用
-   - Server 完全无响应 → 停止，输出已收集的报告
+#### A — 行动（基于人设决策点击）
 
-6. **人设受阻时**：某条路径无法通过 debug server 验证（如纯客户端导航、手势操作）→ 记录为"盲区观察 + 建议新增 L1 端点"，换角度继续，不要硬卡。**严禁**把盲区内的现象伪装成 bug 报
+```bash
+# 直接用设备像素坐标点击 — 无需转换
+adb shell input tap X Y
 
-### Step 3: 输出报告
+# 滑动（如需要）
+adb shell input swipe X1 Y1 X2 Y2 duration_ms
 
-**同时做两件事**：
+# 返回键
+adb shell input keyevent KEYCODE_BACK
+```
 
-1. **写入本地文件**：`_scratch/explore-YYYY-MM-DD.md`（项目根目录下）
-   - 目录不存在则创建
-   - 同日多次追加到同一文件（新增 `## 第 N 次探索` 节）
-   - 文件头部加 `# Purpose:` 和 `# Created:` 标注
+#### V — 验证（State Oracle + Logcat 确认效果）
 
-2. **打印到对话**：便于用户直接阅读
+每次点击后 **必须** 验证：
+
+```bash
+# 1. 截图确认 UI 变化
+adb exec-out screencap -p > /tmp/android_screen_N_after.png
+
+# 2. State Oracle 验证
+curl -s localhost:$PORT/state/...
+
+# 3. Logcat 检查异常（第三证据源）
+adb logcat -d -t 30 *:E
+```
+
+**异常处理**：
+- 点击无反应 → 重新截图定位，调整坐标再试（最多 2 次）
+- State Oracle 返回异常 → 记录为技术问题（含截图 + curl 响应 + Logcat）
+- UI 变化与 State 不一致 → 记录为可疑 bug，需人工确认
+
+### 截图策略（节省 token）
+
+**必须截图**：每轮起始、页面切换、弹窗出现/消失、预期外变化
+**不需截图**：连续同类操作（只截最后一张）、State Oracle 已确认正确
+
+### 使用规则
+
+1. **破坏性操作放到每轮末尾**
+2. **遇到异常时**：技术异常→记录（附截图+curl+Logcat）；UI 不确定→盲区观察；体验困��→体验报告
+3. **过程中只在遇到意外时写反应**
+
+### Step 3: 数据恢复
+
+探索结束后，**必须恢复基线数据**（运行 seed 脚本，或提醒用户数据已被修改）。
+
+### Step 4: 输出报告
+
+**同时做两件事**：写入 `_scratch/explore-YYYY-MM-DD.md` + 打印到对话。
 
 报告格式：
 
@@ -106,82 +171,78 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 
 ### 环境
 - 项目: xxx | 包名: com.xxx | 端口: xxxx | 时间: xxx
+- 模式: Cyborg / Fallback
 - 设备: [adb devices 输出]
-- 基线: [qa-stories 已通过 / 仅做最小 seed / 用户提供数据]
+- 基线: [seed 数据 / 用户提供数据]
 - 本轮人设: 🐣 新手小白
 
 ### 🎮 用户体验
-
-#### 第一轮: [人设名]
-> [2-3 段第一人称体验描述]
-> "打开应用，首页有三个 Tab 但图标含义不明确…"
-> "想找设置页，翻了半天找不到入口，最后发现在头像里…"
+#### ���一轮: [人设名]
+> [使用计划 3-5 句]
+> [2-3 段体验描述，只在意外处详写]
 
 **体感问题**:
-1. [描述] — 感受：[困惑/沮丧/无聊/...]
-2. ...
-
-#### 第二轮: [人设名]
-> ...
+1. [描述] — 感受：[困惑/沮丧/...]
 
 ### 🐛 技术问题清单（证据链必备）
-| # | 触发 curl (必填) | 预期 | 实际返回/状态变化 | 归因 | 严重程度 |
-|---|-----------------|------|-------------------|------|---------|
-| 1 | `curl -X POST .../action/xxx -d {...}` | 状态 Y | `{实际响应}` | 直接/间接 | 高/中/低 |
-
-- **归因=直接**：curl 直接返回异常（HTTP 5xx、错误响应、字段值不对）
-- **归因=间接**：curl 正常后读 `/state/*` 或 Logcat 发现状态不一致
-- **不满足证据链 → 不进此表，转下方"盲区观察"**
+| # | 操作（截图+tap/curl） | 预期 | 实际（State Oracle/Logcat） | 归因 | 严重程度 |
+|---|---------------------|------|---------------------------|------|---------|
 
 ### 🔭 debug 盲区观察（需人工复核）
-- **现象**：[描述截图/Logcat 看到的异常]
-- **为什么是盲区**：[如 UI 组件无 debug 端点 / 纯客户端动画 / 导航栈变化无观测端点]
-- **缺的端点**：[建议新增的 `/action/xxx` 或 `/state/xxx`，帮后续 explorer 摆脱盲区]
-- **人工验证方法**：[如何手动在设备上复现]
+- **现象** / **为什么是盲区** / **人工验证方法**
 
 ### 💡 设计建议（可选）
-- [建议] — 基于 [哪个人设的体验]
-
-### 建议补充的 User Stories
-- [如果发现了重要但未被故事覆盖的路径]
 ```
 
-### Step 4: 分流归档（严禁混流）
+### Step 4.5: /think 评估（质量关卡）
 
-按性质分两路：**事实 → 行动队列，观点 → 决策队列**
+报告写完后、分流归档前，调用 `/think --quick` 对发现进行 sanity check：
 
-#### 4a. 事实型 bug → TODO.md
-**必须带证据链**的技术问题（有触发 curl + 观察到异常响应/状态/Logcat）→ 调用 `todo-write` 写入 `TODO.md`，带 `_scratch/explore-YYYY-MM-DD.md § 章节` 引用。
-**盲区观察不进 TODO.md**，留在报告里供人工复核；盲区中若识别出"缺 L1/L1.5 端点"的架构建议，应转 to-discuss.md。
+1. **Bug 真实性** — 证据链完整吗？是真 bug 还是 debug server 限制？
+2. **建议合理性** — 值得 filing 吗？维持现状成本多高？
+3. **Filing 决策** — 哪些进 TODO、哪些进 to-discuss、哪些丢弃
+4. **Skill 自检** — 执行中 skill 本身有系统性问题吗？（有 → to-discuss，不自动改 skill）
 
-#### 4b. 观点/判断型 → to-discuss.md
-体验优化、产品方向、stories 补齐等**需要人工判断**的事项 → 追加到项目根 `to-discuss.md`，严格模板：
+> 用 `--quick`（DeepSeek），cheap sanity check。不可用时跳过，标注"未经评估"。
+
+### Step 5: 分流归档（严禁混流）
+
+#### 5a. 事实型 bug → TODO.md
+有证据链的技术问题。带 `_scratch/explore-YYYY-MM-DD.md § 章节` ���用。
+**盲区观察不进 TODO.md**。
+
+#### 5b. 观点/判断型 → to-discuss.md
 
 ```markdown
 ## [UX|Product|Arch|Workflow] 简短标题 (Ref: _scratch/explore-YYYY-MM-DD.md § 章节)
-- **事实前提**: [基于什么客观现象，禁止加主观修饰]
+- **事实前提**: [一句话客观现象 + Ref 引用，不重复展开]
 - **AI 观点**: [我认为应该...]
-- **反面检验**: [这个建议可能错在哪 / 维持现状的理由]
+- **反面检验**: [可能错在哪 / 维持现状的理由]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md
   - [ ] Discuss → /think 或 /feat-discuss-local-gemini
   - [ ] Reject → 直接删
 ```
 
-**绝对禁止**：
-- 观点塞进 TODO.md
-- **把盲区观察伪装成 bug**（只看截图没有触发 curl → 不是 bug）
-- **从截图脑补因果**（"我看到 X，所以一定是我刚才的 Y 动作导致的"）
-- 跳过反面检验
-- 两文件之间设指针
+**绝对禁止**：观点伪装成 bug、盲区伪装成 bug、从截图脑补因果、加置信度、TODO/to-discuss 设指针。
+
+---
+
+## Fallback 模式（纯 curl）
+
+当 adb 设备不可用时自动降级。
+
+**诚实声明**：Fallback 模式下探索范围 = Debug Server 端点数量。无法覆盖页面导航、手势交互、动画流程。
+
+**执行流程**：同 Cyborg 的 Step 1 → Step 4 → Step 4.5 → Step 5，但 Step 2 改为 curl 端点操作 + Logcat 辅助。
 
 ---
 
 ## 注意事项
 
-1. **不过度探索** — 每个人设 1 轮使用循环，总共不超过 2 轮
-2. **不穷举边界、不跑故事** — 那是 qa-stories 的事。explore 只靠自然使用发现问题
-3. **截图+状态+Logcat 三证据** — 截图看 UI 反馈，curl /state 看内部状态（归因），Logcat 看异常，三者配合才能避免脑补因果
-4. **保持人设一致** — 新手不会精确计算，效率达人不会慢慢浏览
-5. **Logcat 辅助** — 遇到异常时 `adb logcat -d -t 30 *:E` 查看错误日志
-6. **报告落盘** — 完整报告写入 `_scratch/explore-YYYY-MM-DD.md`；有证据链的 bug → `TODO.md`；观点建议 → `to-discuss.md`；**盲区观察留在报告**
+1. **不过度探索** — 每个人设 1 轮，总共不超过 2 轮
+2. **不穷举边界、不跑故事** — 那是 android-qa-stories 的事
+3. **三证据源** — 截图（UI）+ State Oracle（状态）+ Logcat（异常），配合归因
+4. **保持人设一致**
+5. **探索后必须恢复数据**
+6. **报告落盘** — `_scratch/` + TODO.md + to-discuss.md + 盲区留在报告
