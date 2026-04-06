@@ -7,7 +7,7 @@ description: >
   when no Simulator). Use when the user says "探索应用", "自由探索", "用一下",
   "explore", "find bugs", or after qa-stories passed and deeper exploration
   is needed. Requires Debug State Server running.
-version: 2.0.0
+version: 3.0.0
 ---
 
 # AI Explore — Cyborg 自主探索
@@ -114,22 +114,47 @@ curl localhost:8788/providers  → 可用的 state/data 端点（验证用）
 
 每步操作遵循 **PAV 循环**（Perceive → Act → Verify）：
 
-#### P — 感知（截图 + 读状态）
+#### P — 感知（语义树 + 截图）
+
+**优先使用 Cyborg Probe 语义树获取精准坐标**：
+
+```bash
+# 1. 查询语义树（获取 widget 坐标）
+curl -s localhost:8788/cyborg/dom | python3 -m json.tool
+```
+
+语义树返回结构化 JSON：
+```json
+{
+  "nodes": [
+    {
+      "id": 1,
+      "label": "骰子",
+      "role": "button",
+      "rect": {"x": 100, "y": 200, "width": 50, "height": 50},
+      "center": {"x": 125, "y": 225},
+      "hasTap": true
+    }
+  ],
+  "screenSize": {"width": 390, "height": 844}
+}
+```
+
+**AI 直接使用 `center` 坐标进行点击**：
+- 找到目标 widget（如 `label="骰子"`）
+- 使用 `center.x` 和 `center.y` 作为点击坐标
+- 无需截图和坐标转换
+
+**截图仅用于视觉确认**（当语义树不足以判断 UI 状态时）：
 
 ```bash
 # 激活 Simulator 窗口
 osascript -e 'tell application "Simulator" to activate'
-# 等待窗口前置
 sleep 0.3
 
 # 截取 Simulator 窗口（-R = region, macOS 屏幕点坐标）
 screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/cyborg-poc/step_N.png
 ```
-
-用 Read 工具查看截图 → AI 分析当前界面：
-- 可见的 UI 元素（按钮、列表、Tab）
-- 元素的大致 image pixel 坐标
-- 当前页面状态
 
 **辅助定位**：结合 State Oracle 缩小搜索范围：
 ```bash
@@ -139,15 +164,33 @@ curl -s localhost:8788/state/overlays  # 是否有弹窗
 
 #### A — 行动（基于人设决策点击）
 
+**优先使用语义树坐标**：
+
 ```bash
 # 激活 Simulator（确保点击命中 Simulator 而非其他窗口）
 osascript -e 'tell application "Simulator" to activate'
 sleep 0.3
 
-# 坐标转换 + 点击
-# screen_x = win_x + image_pixel_x / 2
-# screen_y = win_y + image_pixel_y / 2
+# 使用语义树获取的 center 坐标（已经是屏幕点坐标）
+# 注意：语义树的坐标是物理像素，需要除以 devicePixelRatio
+# screen_x = center.x / devicePixelRatio
+# screen_y = center.y / devicePixelRatio
 cliclick c:{screen_x},{screen_y}
+```
+
+**语义树查询示例** — 找到骰子按钮：
+
+```bash
+curl -s localhost:8788/cyborg/dom | python3 -c "
+import sys,json
+d=json.load(sys.stdin)['data']
+for n in d['nodes']:
+    if n.get('hasTap') and '骰子' in n.get('label',''):
+        dpr = d.get('devicePixelRatio',1)
+        cx = n['center']['x'] / dpr
+        cy = n['center']['y'] / dpr
+        print(f\"Found: {n['label']} at ({cx:.1f}, {cy:.1f})\")
+"
 ```
 
 **点击决策由人设驱动**：
@@ -160,7 +203,7 @@ cliclick c:{screen_x},{screen_y}
 每次点击后 **必须** 验证：
 
 ```bash
-# 1. 截图确认 UI 变化
+# 1. 截图确认 UI 变化（如有必要）
 screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/cyborg-poc/step_N_after.png
 
 # 2. State Oracle 验证状态变化
@@ -171,9 +214,17 @@ curl -s localhost:8788/data/groups      # DB 层数据验证（如适用）
 ```
 
 **异常处理**：
-- 点击无反应 → 可能坐标偏移，重新截图定位，调整坐标再试（最多 2 次）
+- 点击无反应 → 检查 `/cyborg/dom` 返回的坐标是否正确，重新尝试（最多 2 次）
+- `/cyborg/dom` 返回错误 → 回退到截图分析模式，但需在报告中标注
 - State Oracle 返回异常 → 记录为技术问题（含操作截图 + curl 响应）
 - UI 变化与 State 不一致 → 记录为可疑 bug，需人工确认
+
+### 截图黑暗降级策略
+
+如果 macOS screencapture 截图全黑或模糊：
+1. **主要依赖**：`/cyborg/dom` 语义树获取坐标
+2. **截图降级**：截图仅作为辅助验证，不作为主要感知手段
+3. **端点不可用时**：Fallback 模式降级，诚实声明探索范围受限
 
 ### 截图策略（节省 token）
 
