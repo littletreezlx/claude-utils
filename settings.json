@@ -14,7 +14,8 @@
       "Bash(mv:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "mcp__pencil"
     ],
     "deny": [],
     "defaultMode": "dontAsk"
@@ -39,7 +40,9 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     }
   },
   "enabledPlugins": {
