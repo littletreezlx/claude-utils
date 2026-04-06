@@ -12,16 +12,16 @@ description: 测试审查与补齐（DAG 编排）ultrathink
 
 ```bash
 /test-plan                                    # 生成测试任务
-batchcc task-add-test               # 执行
+batchcc task-test-plan               # 执行
 ```
 
 ## ⚠️ 重要：入口文件位置
 
-**入口文件 `task-add-test` 必须放在项目根目录**，不是 `.test-tasks/` 目录！
+**入口文件 `task-test-plan` 必须放在项目根目录**，不是 `.task-test-plan/` 目录！
 
 ```
-✅ 正确：~/project/task-add-test.md           （根目录）
-❌ 错误：~/project/.test-tasks/task-add-test.md
+✅ 正确：~/project/task-test-plan.md           （根目录）
+❌ 错误：~/project/.task-test-plan/task-test-plan.md
 ```
 
 > **格式规范**：
@@ -34,7 +34,7 @@ batchcc task-add-test               # 执行
 
 ### 第一步：摸底 — 现有测试能不能跑
 
-**先检查上一轮 test-plan 的遗留**：如果根目录存在 `task-add-test` 或 `.test-tasks/`，读取其 state.json 了解哪些任务已完成、哪些中断，避免重复摸底已覆盖的模块。
+**先检查上一轮 test-plan 的遗留**：如果根目录存在 `task-test-plan` 或 `.task-test-plan/`，读取其 state.json 了解哪些任务已完成、哪些中断，避免重复摸底已覆盖的模块。
 
 运行全量测试（精简输出），快速分类：
 - **能跑且有意义** → 保留
@@ -84,12 +84,12 @@ batchcc task-add-test               # 执行
 
 **必须生成两个产出**：
 
-1. **入口文件** `task-add-test`（项目根目录）— `batchcc` 直接执行
-2. **任务细节目录** `.test-tasks/` — 存放各阶段详细说明
+1. **入口文件** `task-test-plan`（项目根目录）— `batchcc` 直接执行
+2. **任务细节目录** `.task-test-plan/` — 存放各阶段详细说明
 
 ```
-task-add-test                          # ← 入口文件（batchcc 执行这个）
-.test-tasks/                           # 任务细节
+task-test-plan                         # ← 入口文件（batchcc 执行这个）
+.task-test-plan/                       # 任务细节
 ├── stage-1-triage.md                 # 现有测试分类（保留/改写/删除）
 ├── stage-2-cleanup.md                # 清理无效和冗余测试
 ├── stage-3-critical-tests.md         # 关键路径测试（并行）
