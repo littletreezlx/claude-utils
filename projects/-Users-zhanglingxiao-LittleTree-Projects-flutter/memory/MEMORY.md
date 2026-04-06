@@ -23,9 +23,10 @@
 
 - [methodology_autonomous_dev.md](methodology_autonomous_dev.md) — AI 自主开发闭环：Debug State Server + 截图 + 日志（首发 flametree_pick）
 
-## 新项目
+## AI 图片生态
 
-- [project_ai_image_studio.md](project_ai_image_studio.md) — AI Image Studio: 独立文生图 App（2026-03-28 立项），后端直连 ai-image-engine
+- [project_ai_image_ecosystem.md](project_ai_image_ecosystem.md) — 三项目协作拓扑：engine(底层) → studio(家庭创作) + game-mvp(游戏资产管线)
+- [project_ai_image_studio.md](project_ai_image_studio.md) — AI Image Studio: 独立文生图 App（V1 完成），后端直连 ai-image-engine
 
 # currentDate
 Today's date is 2026-03-28.
