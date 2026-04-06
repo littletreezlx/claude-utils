@@ -2,3 +2,4 @@
 - [User Stories 基础设施](project_user_stories_infra.md) — docs/user-stories/ + ai-qa-stories/ai-explore 双 skill 体系
 - [模型无关设计](feedback_model_agnostic_design.md) — 不为不同模型设计不同路径，提升输入质量
 - [红队测试质量记录](test_quality_red_team_2026-04-03.md) — 2026-04-03 红队验证结果：Tier 1 0/4 → 部分改善，测试盲点修复记录
+- [Cyborg Explore 架构决策](project_cyborg_explore_decision.md) — 2026-04-06: explore 演进为 Vision+OS Tap+State Oracle，POC 验证后重写 skills
