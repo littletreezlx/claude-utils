@@ -21,4 +21,12 @@ type: project
 - State Oracle 路由追踪：`/` ↔ `/management` 双向验证通过
 - 自动化脚本：`scripts/cyborg-poc.sh`（含自动和交互两种模式）
 - 已知缺口：`/state/overlays` 不追踪 Navigator-pushed dialog → 待 TODO 第二项修复
-- 下一步：修复 overlays 盲区 → 重写 3 个 explore skills
+
+**实现完成（2026-04-06 下午）:**
+- Semantic Tree API 方案：D-2（Flutter 内置 Semantics Tree，零入侵）
+- `flutter_common/dev_tools/debug_server_framework.dart` 新增 `CyborgEndpointHandler` callback + `/cyborg/*` 路由
+- `flametree_pick/lib/dev_tools/cyborg_probe.dart` 实现 `_buildDomTree()` + `_traverseSemanticsNode()`
+- `/cyborg/dom` 返回 JSON：nodes[{id, label, role, rect, center, hasTap, hasLongPress, hasScroll}], screenSize, devicePixelRatio
+- ai-explore skill v3.0.0：PAV 感知优先用语义树坐标，截图降级为辅助验证
+- 坐标获取：`curl /cyborg/dom | python3 -c "..."` → `cliclick c:{screen_x},{screen_y}`
+- 通用性：方案入 framework 层，10+ Flutter 项目均可直接复用

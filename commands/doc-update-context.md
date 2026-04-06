@@ -97,9 +97,58 @@ docs/
 
 > 文档间有强一致性依赖（BEHAVIOR 改了 → ARCH 可能同步调整），全程串行，不并行。
 
-采用 Phase 1 评估 → Phase 2 生成 DAG 任务文件 → `batchcc` 自动连续执行的模式。
+采用 **Phase 0 存在性预检** → Phase 1 评估 → Phase 2 生成 DAG 任务文件 → `batchcc` 自动连续执行的模式。
 
-### Phase 1: 快速锚定变更范围
+---
+
+## Phase 0: 存在性预检（新增）
+
+**目的**：在审查任何文档之前，先行发现「文档提到但代码中不存在」的幽灵引用。
+
+> 典型症状：文档描述了一个 `RandomResultDialog` 组件，但 `lib/` 里根本找不到这个文件。多个文档重复描述同一个不存在的组件，形成「文档层幽灵债务」。
+
+### 执行方法
+
+**Step 1**: 收集所有文档中的组件/类/Widget 名称
+
+从以下模式中提取名称：
+- Markdown 代码块中的类名：`class Foo`、`Widget Foo`、`Foo(...)`
+- 流程图/表格中的组件名：``, `| Foo |`（在组件/组件名称列）
+- 路径中的文件名：`lib/path/to/foo.dart`
+
+**Step 2**: 验证每个名称是否存在于代码中
+
+```bash
+# 对于每个提取的名称，执行：
+grep -r "class <Name>" lib/ --include="*.dart" -l
+grep -r "<Name>(" lib/ --include="*.dart" -l
+# 或检查文件是否存在：
+ls lib/path/to/<Name>.dart
+```
+
+**Step 3**: 生成「幽灵引用报告」
+
+```
+❌ 幽灵引用（文档提到但代码不存在）：
+  - RandomResultDialog（PRODUCT_BEHAVIOR.md, features/random_selection.md, screens.md, user-stories/01-first-time-user.md, user-stories/02-daily-random-selection.md）
+  - JourneyCompleteView（docs/features/random_selection.md）← 需验证
+
+✅ 真实引用（代码中存在）：
+  - RandomSelectionPage ✓
+  - CeramicCard ✓
+  - GroupChipBar ✓
+```
+
+**Step 4**: 将幽灵引用条目作为 TASK 优先处理
+
+每个幽灵引用都是需要修正的问题：
+- **组件已实现但文档路径错误** → 修正路径
+- **组件从未实现** → 从文档中删除引用，并检查为什么没有实现
+- **组件已删除** → 确认删除决策，更新所有引用该组件的文档
+
+---
+
+## Phase 1: 快速锚定变更范围
 
 只读取轻量信息来判断哪些文档最可能需要更新：
 - 读 `docs/ROADMAP.md`（了解项目当前状态）
@@ -114,11 +163,27 @@ docs/
 - **审查优先级**：风险高的排前面
 - **孤儿检测**：子目录文档对应的功能/模块是否已被删除或重构？
 
-### Phase 2: 生成 DAG 任务文件
+### Phase 1 输出
+
+生成「审查优先级矩阵」：
+
+| 优先级 | 文档 | 风险类型 | 原因 |
+|--------|------|----------|------|
+| P0 | 有幽灵引用的文档 | 文档与代码严重不一致 | Phase 0 已发现 |
+| P1 | PRODUCT_BEHAVIOR.md | 重叠 + 过时 | RandomResultDialog + 重复内容 |
+| P1 | ROADMAP.md | 状态过时 | App Store 上架停滞 |
+| P1 | FEATURE_CODE_MAP.md | broken paths | 2 个失效路径 |
+| P2 | features/*.md | 准确性 | 需验证组件是否存在 |
+| P3 | user-stories/*.md | 时效性 | curl 端点可能过时 |
+| P3 | ui/*.md | 低风险 | 主要是截图引用 |
+
+---
+
+## Phase 2: 生成 DAG 任务文件
 
 > **格式规范**：@templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 
-将评估结果输出为 DAG 任务文件（`./task-doc-review`），**全部使用串行 STAGE**，按优先级排序，每个文档一个 TASK：
+将评估结果输出为 DAG 任务文件（`./task-doc-update-context`），**全部使用串行 STAGE**，按优先级排序，每个文档一个 TASK：
 
 ```markdown
 # docs 深度审查
@@ -127,46 +192,46 @@ docs/
 > 深度审查 docs/ 全部文档，对比实际代码和项目状态，修正过时/错误/遗漏的内容。
 > 文档间有强一致性依赖，必须按优先级串行处理。前序文档的修改结果是后续文档审查的输入。
 
-## STAGE ## name="高优先级文档" mode="serial"
+## STAGE ## name="P0: 幽灵引用修复" mode="serial"
+
+## TASK ##
+修复 docs/PRODUCT_BEHAVIOR.md 中的幽灵引用
+
+**🎯 目标**：删除 RandomResultDialog 等不存在的组件引用
+
+**📁 核心文件**：
+- `docs/PRODUCT_BEHAVIOR.md` - [修改]
+
+**🔨 执行步骤**：
+1. Phase 0 已发现：RandomResultDialog（不存在于代码中）
+2. 删除所有相关引用
+3. 检查是否有替代实现
+
+**审查维度**：准确性
+
+**✅ 完成标志**：
+- [ ] 无幽灵引用残留
+
+文件: docs/PRODUCT_BEHAVIOR.md
+验证: echo "幽灵引用修复完成"
+
+---
+
+## STAGE ## name="P1: 高优先级文档" mode="serial"
 
 ## TASK ##
 审查 docs/ROADMAP.md
-
-**🎯 目标**：对比代码和 git log，修正过时状态、补充缺失功能、更新 Known Issues
-
-**📁 核心文件**：
-- `docs/ROADMAP.md` - [修改]
-
-**🔨 执行步骤**：
-1. 读文档全文
-2. 按需查代码验证关键断言（Lazy Loading，不预加载）
-3. 修正不一致的内容
-4. 对照审查维度逐项检查
-
-**审查维度**：准确性、完整性、时效性、可操作性
-
-**✅ 完成标志**：
-- [ ] 文档内容与代码实际状态一致
-- [ ] Known Issues 和 Next Steps 反映真实现状
-
-文件: docs/ROADMAP.md
-验证: echo "ROADMAP 审查完成"
-
-## TASK ##
-审查 docs/PRODUCT_BEHAVIOR.md
 ...（同上格式，选取对应审查维度）
 
-## STAGE ## name="普通优先级文档" mode="serial"
+## TASK ##
+审查 docs/FEATURE_CODE_MAP.md
+...（同上格式，选取对应审查维度）
+
+## STAGE ## name="P2: features/ 模块文档" mode="serial"
 
 ## TASK ##
-审查 docs/ARCHITECTURE.md
-...
-
-## STAGE ## name="清理项" mode="serial"
-
-## TASK ##
-删除 docs/features/old-feature.md（对应功能已移除）
-...
+审查 docs/features/random_selection.md
+...（同上格式，选取对应审查维度）
 
 ## STAGE ## name="review" mode="serial"
 
@@ -187,7 +252,9 @@ docs/
 batchcc task-doc-review            # 执行
 ```
 
-### 单文档审查流程（TASK 执行时）
+---
+
+## 单文档审查流程（TASK 执行时）
 
 每个 TASK 内部执行 **调查-验证-修正** 循环：
 
@@ -202,7 +269,9 @@ batchcc task-doc-review            # 执行
 
 **不确定的改动**：标记任务 `failed`，说明不确定原因和可选方案，等用户决策后重跑。
 
-### 审查维度
+---
+
+## 审查维度
 
 | 维度 | 适用文档 | 检查什么 |
 |------|---------|---------|
@@ -215,6 +284,7 @@ batchcc task-doc-review            # 执行
 | **行为覆盖** | BEHAVIOR, features/ | 导航图和流程是否反映当前实际路由？新增页面/交互模式是否已记录？ |
 | **索引同步** | BEHAVIOR ↔ features/ | BEHAVIOR 中索引的 features/*.md 是否都存在？features/ 中的文档是否都被索引？ |
 | **孤儿检测** | 子目录文档 | 文档对应的功能模块是否还存在于代码中？ |
+| **存在性** | 全部 | 文档中提到的组件/类/Widget 是否真实存在于 `lib/` 中？ |
 
 ---
 
@@ -223,11 +293,13 @@ batchcc task-doc-review            # 执行
 审查时如果发现信息放错了位置，按以下规则迁移：
 
 | 边界 | 裁决标准 |
-|------|---------|
+|------|----------|
 | BEHAVIOR vs features/ | BEHAVIOR 只写**跨页面的、通用的、核心闭环**流程；features/ 写**页面内部的、分支众多的**局部逻辑 |
 | BEHAVIOR vs ARCHITECTURE | BEHAVIOR 讲**页面怎么流转**（用户视角）；ARCHITECTURE 讲**代码怎么组织**（开发者视角） |
 | ROADMAP vs MEMORY | ROADMAP 关注**进度**（做完了吗）；MEMORY 关注**知识**（为什么难做、怎么避坑） |
 | 核心文档 vs 子目录文档 | 核心文档写**概要和索引**；子目录文档写**详细实现和分支逻辑** |
+
+---
 
 ## 质量标准
 
@@ -237,7 +309,12 @@ batchcc task-doc-review            # 执行
 4. **ROADMAP 可操作**：Next Steps 必须包含优先级
 5. **诚实报告**：只报告实际修改的内容，如果确实没有需要改的就说清楚原因
 6. **禁止易变计数**：文档中不写随代码变动的精确数量（如"21 个信号""4 个 Resource 脚本""98 tests"）。这些数字写入即腐烂，维护成本远大于信息价值。应描述**职责和结构**而非数量（如"按域分组"而非"21 个信号，7 域"）。设计约束类数字除外（如"4×5 网格""5 级上限"）。审查时发现此类计数不一致，应**直接删除该计数**而非修正为新数字
+7. **幽灵引用零容忍**：文档中提到但不存在的组件是最高优先级问题，必须立即修复
+
+---
 
 ## 约束
+
 - 不要生成"一切 OK"的走过场报告
 - 子目录文档数量多时，优先审查变更风险高的，低风险的可以标记"跳过（无变更）"
+- **Phase 0 是必选项**，不可跳过。即使 Phase 1 判断某文档"低风险"，Phase 0 的存在性验证仍需执行

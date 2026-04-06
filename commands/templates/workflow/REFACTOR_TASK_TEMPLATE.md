@@ -12,17 +12,17 @@
 
 ## STAGE ## name="fix-critical" mode="serial"
 # 阶段1：修复阻塞性问题（串行，避免冲突）
-@.refactor-tasks/fix-critical-tests.md
-@.refactor-tasks/fix-critical-architecture.md
+@.task-refactor-project/fix-critical-tests.md
+@.task-refactor-project/fix-critical-architecture.md
 
 ## STAGE ## name="fix-high" mode="parallel" max_workers="3"
 # 阶段2：修复重要问题（并行）
-@.refactor-tasks/fix-high-missing-tests.md
-@.refactor-tasks/fix-high-outdated-docs.md
+@.task-refactor-project/fix-high-missing-tests.md
+@.task-refactor-project/fix-high-outdated-docs.md
 
 ## STAGE ## name="fix-medium" mode="parallel" max_workers="4"
 # 阶段3：修复一般问题（并行）
-@.refactor-tasks/fix-medium-code-quality.md
+@.task-refactor-project/fix-medium-code-quality.md
 
 ## STAGE ## name="final-verification" mode="serial"
 # 阶段4：全量测试验证 + 生成修复报告

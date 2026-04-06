@@ -15,7 +15,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 /todo-huge-task "实现完整的用户管理系统"
 /todo-huge-task $ARGUMENTS
 
-# 产出文件命名为 task-{用户指定名}，如 task-user-system
+# 产出文件命名为 task-{用户指定名}，如 task-user-system；细节目录为 .task-{用户指定名}/
 batchcc task-user-system            # 执行
 ```
 

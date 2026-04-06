@@ -1,6 +1,6 @@
 # 项目健康检查任务模板
 
-> 生成 `task-health-check` 的参考骨架。基于项目实际情况调整模块和工具。
+> 生成 `task-comprehensive-health-check` 的参考骨架。基于项目实际情况调整模块和工具。
 
 ## 主任务文件结构
 
@@ -12,23 +12,23 @@
 
 ## STAGE ## name="test-health" mode="parallel" max_workers="4"
 # 阶段1：测试健康检查 - 每个模块一个 TASK
-@.health-check-tasks/stage-1-test-health.md
+@.task-comprehensive-health-check/stage-1-test-health.md
 
 ## STAGE ## name="code-quality" mode="parallel" max_workers="4"
 # 阶段2：代码质量检查 - 每个模块一个 TASK
-@.health-check-tasks/stage-2-code-quality.md
+@.task-comprehensive-health-check/stage-2-code-quality.md
 
 ## STAGE ## name="architecture" mode="serial"
 # 阶段3：架构一致性 + 循环依赖检查
-@.health-check-tasks/stage-3-architecture.md
+@.task-comprehensive-health-check/stage-3-architecture.md
 
 ## STAGE ## name="documentation" mode="parallel" max_workers="2"
 # 阶段4：文档一致性检查
-@.health-check-tasks/stage-4-documentation.md
+@.task-comprehensive-health-check/stage-4-documentation.md
 
 ## STAGE ## name="summary" mode="serial"
 # 阶段5：汇总报告 + 自动生成 task-refactor
-@.health-check-tasks/stage-5-summary.md
+@.task-comprehensive-health-check/stage-5-summary.md
 
 ## STAGE ## name="review" mode="serial"
 

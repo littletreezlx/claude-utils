@@ -80,7 +80,7 @@ batchcc task-refactor-project            # 执行
 
 **必须生成两个产出**：
 1. **入口文件** `task-refactor-project`（项目根目录）
-2. **任务细节目录** `.refactor-tasks/`
+2. **任务细节目录** `.task-refactor-project/`
 
 ### 第三步：各阶段设计
 
