@@ -84,6 +84,7 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 - 如果涉及具体项目, 按需读取相关文档片段
 - 不携带 CLAUDE.md (工程操作指南, Gemini 不需要)
 - 不要求在特定项目目录中 -- 可以在任意目录讨论跨项目问题
+- **必须在 Context 段开头声明协作模式**：「这是一个 AI-Only 开发项目——AI（Claude Code）全权负责代码/测试/文档，人类是产品负责人，不写代码。请基于此前提给出建议。」
 
 ### Step 2: 调用外部 AI Think
 
@@ -106,6 +107,9 @@ export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" &
 
 ```
 ## Context
+
+> 协作模式：AI-Only 开发。AI（Claude Code）全权负责代码/测试/文档维护，人类是产品负责人，不写代码。所有工作流中不存在人类程序员介入。
+
 {Claude Code 的分析和当前思考}
 
 ## The Problem
