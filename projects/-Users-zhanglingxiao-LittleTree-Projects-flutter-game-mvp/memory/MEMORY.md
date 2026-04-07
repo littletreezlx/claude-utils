@@ -1,0 +1,1 @@
+- [godot-tscn-comment-trap](godot-tscn-comment-trap.md) — Godot 4.6 .tscn 文件禁止 # 注释分隔符
