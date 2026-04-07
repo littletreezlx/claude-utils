@@ -3,23 +3,31 @@ name: ai-qa-stories
 description: >
   This skill should be used when AI should autonomously verify user stories
   against a running Flutter/Android app via Debug State Server. A true AI-autonomous
-  loop: reads stories, executes curl sequences, validates assertions, reports
-  failures. Use when the user says "验证故事", "跑用户故事",
-  "regression", "run stories", "qa stories", or after a batch of code changes
-  needs holistic verification beyond unit tests. Requires Debug State Server
-  running and docs/user-stories/ to exist.
-version: 1.0.0
+  loop: reads QA verification files from docs/user-stories/qa/, executes curl
+  sequences, validates assertions, reports failures. Use when the user says
+  "验证故事", "跑用户故事", "regression", "run stories", "qa stories", or after
+  a batch of code changes needs holistic verification beyond unit tests. Requires
+  Debug State Server running and docs/user-stories/qa/ to exist.
+version: 2.0.0
 ---
 
 # AI QA Stories — 用户故事自主验证
 
-AI 自主闭环：读取 `docs/user-stories/` 中的用户故事，通过 Debug State Server 逐步 curl 验证，确保 Happy Path 全部通过。**纯验证，不修代码。**
+AI 自主闭环：读取 `docs/user-stories/qa/*.qa.md` 中的验证脚本，通过 Debug State Server 逐步 curl 验证，确保 Happy Path 全部通过。**纯验证，不修代码。**
+
+## 双文件架构
+
+| 文件 | 角色 | 本 skill 怎么用 |
+|------|------|----------------|
+| `docs/user-stories/qa/*.qa.md` | 验证脚本（编译产物） | **日常消费** — 直接读取并执行 |
+| `docs/user-stories/*.md` | 产品故事（源码） | **仅在失败排障时参考** — 理解业务意图 |
 
 ## 核心原则
 
 - **只验证，不修复** — 发现问题记录到报告，不改代码、不补端点、不重启 App
 - **QA 过程中不重启** — 启动一次，跑完所有故事
 - **故事按编号顺序** — 前序故事可能创建后序需要的数据
+- **只读 qa/ 目录** — 不解析 Story 文件中的内容来执行验证
 
 ---
 
@@ -30,8 +38,6 @@ AI 自主闭环：读取 `docs/user-stories/` 中的用户故事，通过 Debug 
 **⚠️ 开始 QA 前，必须先运行 `prep-cyborg-env` Skill 或 `./scripts/prep-env.sh`**，确保环境干净。
 
 这防止"幽灵状态"导致的错误验证结论——Flutter 内存状态与 DB 不一致时，QA 会给出完全错误的通过/失败判断。
-
-详见 `prep-cyborg-env` Skill 文档。
 
 ### Step 1: 确认 Server 运行
 
@@ -47,11 +53,16 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
 - ✅ 有响应 → 检查 actions 是否匹配当前项目（避免误连），跳到 Step 2
 - ❌ 无响应 → 报告用户：需要先运行 prep-cyborg-env
 
-### Step 2: 加载故事
+### Step 2: 加载 QA 文件
 
-**并行** Read 所有 `docs/user-stories/*.md`（排除 README/模板），按文件名编号排序。
+**并行** Read 所有 `docs/user-stories/qa/*.qa.md`，按文件名编号排序。
 
-同时读取 `/providers` 响应，与故事中引用的端点做对账：
+**如果 qa/ 目录不存在或为空**：
+- 检查 `docs/user-stories/*.md` 是否存在旧格式故事
+- 如有旧格式 → 提示用户：「检测到旧格式故事文件，需要先运行 `/generate-stories` 迁移到双文件架构」
+- 如无故事 → 提示用户：「没有用户故事，需要先运行 `/generate-stories` 生成」
+
+**端点对账**：读取每个 QA 文件末尾的「端点依赖」表，与 `/providers` 实际端点做对账：
 
 ```
 端点对账: 12/12 匹配 ✅
@@ -61,8 +72,8 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
 
 ```
 端点对账: 10/12 匹配
-  ⚠️ /action/xxx — 故事引用但 Server 无此端点
-  ⚠️ /data/settings/sync — 路径格式不匹配，实际为 /data/settings-sync
+  ⚠️ /action/xxx — QA 引用但 Server 无此端点
+  ⚠️ /data/settings/sync — 路径不匹配，实际为 /data/settings-sync
 ```
 
 ### Step 3: 快照初始状态
@@ -74,20 +85,24 @@ curl -s localhost:$PORT/state/auth
 curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 ```
 
-### Step 4: 逐条执行故事
+### Step 4: 逐条执行验证
 
-对每条故事的每个 Step：
+对每个 QA 文件的每个 Scenario：
 
-1. 读意图 → 执行 curl → 验证断言
-2. 判定结果（三种）：
+1. **读 Intent** — 理解这步在验证什么
+2. **执行 curl** — 按文件中的 bash 代码块顺序执行
+3. **校验 Assert** — 比对实际返回与断言
+4. 判定结果（三种）：
 
 | 结果 | 处理 |
 |------|------|
 | ✅ 通过 | 继续 |
-| 🐛 失败 | 记录（curl 命令 + 实际返回 + 期望值），继续执行后续步骤 |
-| ⏭️ 跳过 | 端点缺失 / 外部依赖 / 需要人工操作，记录原因，继续 |
+| 🐛 失败 | 记录（curl 命令 + 实际返回 + 期望值 + Intent），继续 |
+| ⏭️ 跳过 | `# TODO` 标记 / 端点缺失 / 外部依赖，记录原因，继续 |
 
-**效率要求**：同一故事内独立的状态查询可以并行 curl。
+**效率要求**：同一 QA 文件内独立的状态查询可以并行 curl。
+
+**失败时回溯**（可选）：如果某个 Scenario 失败且 Intent 不足以判断原因，读取对应的 Story 文件（`../NN-xxx.md`）获取业务上下文，辅助诊断。
 
 ### Step 5: 输出报告
 
@@ -104,14 +119,16 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 | 02-daily-use | 🐛 | 3/5 |
 
 ### 失败详情
-#### 02-daily-use Step 3: [描述]
-- curl: `curl -s -X POST localhost:$PORT/action/xxx -d '...'`
-- 期望: `success == true`
-- 实际: `{"error":"..."}`
+#### 02-daily-use Scenario 3: {Intent 描述}
+- **Intent**: {验证意图}
+- **curl**: `curl -s -X POST localhost:$PORT/action/xxx -d '...'`
+- **期望**: `success == true`
+- **实际**: `{"error":"..."}`
+- **初步判断**: {基于 Intent 的快速判断：代码 bug / 测试过期 / 环境问题}
 
 ### 跳过项
-- 03-xxx Step 5: 端点 /action/yyy 不存在
-- 04-xxx Step 2: 需要外部 API key
+- 03-xxx Scenario 5: 端点 /action/yyy 不存在（标记为 TODO）
+- 04-xxx Scenario 2: 需要外部 API key
 
 ### 端点对账不匹配项
 - /data/settings/sync → 实际为 /data/settings-sync
@@ -137,7 +154,7 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
    | `macos` | `./scripts/start-dev.sh --background --device macos` |
    | 指定设备 | `./scripts/start-dev.sh --background --device <设备>` |
 
-3. **同时并行加载故事**（Step 1），不傻等
+3. **同时并行加载 QA 文件**（Step 2），不傻等
 4. 等后台启动完成通知后 `curl providers` 确认就绪
 
 ### 禁止行为
@@ -157,4 +174,5 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 2. **端口冲突** — 同机器多项目可能各自有 Debug Server，检查 /providers 的 actions 是否匹配当前项目
 3. **zsh URL 转义** — `curl "url?param=value"` 必须双引号包裹
 4. **autoDispose State 可能为空** — 断言优先用 `/data/`（直读 Repository）而非 `/state/`（读 ViewModel 内存状态）
-5. **故事按编号顺序** — 前序故事可能创建后序需要的数据
+5. **QA 按编号顺序** — 前序 QA 可能创建后序需要的数据
+6. **旧格式兼容** — 如果只有 `docs/user-stories/*.md` 而没有 `qa/` 目录，提示用户迁移

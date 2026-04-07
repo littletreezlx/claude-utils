@@ -2,19 +2,23 @@
 
 本文件定义项目 docs/ 目录的标准文件体系。全局 CLAUDE.md 通过 `@` 引用本文件，避免每次会话都加载完整表格。
 
+> **受众**：文档体系的首要读者是 AI（跨会话上下文传递），次要读者是产品负责人（做产品决策时偶尔阅读）。格式优先满足 AI 高效消费和人类偶尔阅读。
+>
+> **协作模式**：AI-Only 开发。所有文档由 AI 生成和维护，人类是产品负责人。工作流中不存在「人工审核代码」「人工走查」等环节。
+
 ## 根目录入口文件
 
 - `README.md` — 人类入口
 - `CLAUDE.md` — AI 入口
 - `TODO.md` — 已决策行动队列（`/todo-doit` 消费）
-- `to-discuss.md` — AI 待决策事项队列（人工或 `/think` / `/feat-discuss-local-gemini` 消费）
+- `to-discuss.md` — AI 待决策事项队列（产品负责人决策 或 `/think` / `/feat-discuss-local-gemini` 代理消费）
 
 ## 三文件协作架构（行动/决策/材料 分离）
 
 | 文件 | 内容性质 | 谁来消费 |
 |------|---------|---------|
 | `TODO.md` | 已决策、可执行任务 | AI（`/todo-doit` 自动执行）|
-| `to-discuss.md` | 未决策、需人工判断的 AI 建议 | 人（或触发 `/think` / `/feat-discuss-local-gemini`）|
+| `to-discuss.md` | 未决策、需产品负责人决策的 AI 建议 | 产品负责人（或触发 `/think` / `/feat-discuss-local-gemini`）|
 | `_scratch/*.md` | 原始材料、探索报告、调试日志 | AI 查阅上下文用 |
 
 **铁律**：
@@ -45,6 +49,7 @@
 | `docs/PRODUCT_SOUL.md` | **为谁**做、**为什么**存在 | 极少变 | 产品愿景、用户画像、设计隐喻、情感目标 |
 | `docs/PRODUCT_BEHAVIOR.md` | 系统**怎么运转** | 中频 | 状态机、导航规则、交互模式、全局状态策略 |
 | `docs/user-stories/*.md` | 用户**会做什么** | 中频 | 用户视角操作序列 + 可执行验证步骤（`/ai-qa-stories` 消费） |
+| `docs/user-stories/qa/*.qa.md` | 怎么**自动验证** | 中频 | 结构化验证脚本（编译自 story，AI 专属） |
 | `docs/features/*.md` | 功能**怎么设计** | 中频 | 功能架构、API 契约、交互细节、实现决策 |
 | `docs/ARCHITECTURE.md` | 系统**怎么搭建** | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
 | `docs/ROADMAP.md` | 项目**去向哪** | 高频 | 当前阶段状态、Known Issues、Next Steps |
@@ -54,7 +59,7 @@
 ## 文档边界（易混淆的三者）
 
 - **BEHAVIOR** = 系统规则（"状态 A 在条件 X 下转移到 B"）
-- **user-stories** = 用户叙事（"小明不知道吃什么→打开 App→摇→火锅"）+ 可执行 curl 验证
+- **user-stories** = 用户叙事（"小明不知道吃什么→打开 App→摇→火锅"），qa/ 子目录存放编译的验证脚本
 - **features/** = 工程设计（"随机选择用 Fisher-Yates 算法"）
 
 > User Stories 格式模板：`docs/USER_STORIES_TEMPLATE.md`
@@ -71,4 +76,4 @@
 
 - FEATURE_CODE_MAP.md 中引用的代码路径必须实际存在，失效路径视为文档腐烂
 - 代码文件新增/删除/重命名后，检查文档索引是否需要同步
-- user-stories 中的 curl 命令返回 404 或断言失败 → 故事过时，需更新
+- user-stories/qa/ 中的 curl 命令返回 404 或断言失败 → 故事过时，需从 story 重新编译 qa
