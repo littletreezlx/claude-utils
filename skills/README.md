@@ -47,6 +47,7 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `godot-explore` | Godot 游戏：角色扮演式自主探索，玩家人设驱动 | `/godot-explore` |
 | `generate-stories` | 从现有文档生成 user-stories 初稿（需人工审核） | `/generate-stories` |
 | `init-debug-server` | 为 Flutter 项目搭建 Debug State Server 基建 | `/init-debug-server` |
+| `ai-self-audit` | 用户请求"项目自省"/"AI 维护性"/"怎么让你更好维护"时，审计 AI 自主维护能力 | — (用户主动触发) |
 
 ---
 
