@@ -1,6 +1,6 @@
 # [项目名] 测试补齐计划
 
-> ⚠️ **此文件是入口文件，必须放在项目根目录，命名为 `task-add-test`**（不是 `.test-tasks/task-add-test.md`）
+> ⚠️ **此文件是入口文件，必须放在项目根目录，命名为 `task-test-plan`**（不是 `.task-test-plan/task-test-plan.md`）
 
 > **🏠 项目宏观目标**：
 > [描述项目的测试补齐目标，为什么要这样做]
@@ -9,7 +9,7 @@
 
 ## TASK ##
 Stage 1: 测试分类（已完成）
-详见 `.test-tasks/stage-1-triage.md`
+详见 `.task-test-plan/stage-1-triage.md`
 
 **✅ 完成标志**：
 - [x] 现有测试已分类
@@ -18,7 +18,7 @@ Stage 1: 测试分类（已完成）
 
 ## TASK ##
 Stage 2: 清理任务（如有）
-详见 `.test-tasks/stage-2-cleanup.md`
+详见 `.task-test-plan/stage-2-cleanup.md`
 
 **✅ 完成标志**：
 - [x] 无需清理（或已清理）

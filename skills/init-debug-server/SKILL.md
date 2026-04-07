@@ -144,6 +144,49 @@ curl localhost:8788/logs               # 查看操作日志
 
 ---
 
+## Clean Session Startup（AI 协作必须遵守）
+
+### 问题背景
+
+Flutter App 有独立的 Drift SQLite 副本。通过外部脚本（`seed-test-data.sh`）修改 DB 时，运行中的 App 的 Riverpod 内存状态**不会**自动同步。这会导致：
+
+- App UI 显示旧数据（Riverpod 缓存）
+- Debug Server 返回最新数据（直读 DB）
+- AI 三角验证矛盾 → 错误结论
+
+### 职责边界
+
+| 组件 | 职责 |
+|------|------|
+| `init-debug-server` | 搭建 Debug Server 代码骨架 |
+| `start-dev.sh --force-reset` | 提供干净进程沙箱 |
+| `seed-test-data.sh` | 通过 Debug Server API 播种数据 |
+| **`prep-cyborg-env` Skill** | **统一环境准备**：Kill → Seed → Restart → Verify |
+| `ai-explore` / `ai-qa-stories` | **假设环境干净**，不处理状态修复 |
+
+### 正确的启动顺序
+
+```
+1. prep-cyborg-env（或 ./scripts/prep-env.sh）
+   ├── Kill 所有 Flutter 进程
+   ├── Seed 数据（通过 Debug Server API）
+   └── start-dev.sh --force-reset（全新启动 + Wait ready）
+   
+2. 健康验证
+   ├── curl /state/home 的 activeGroupId
+   ├── curl /data/groups 的第一个分组 id
+   └── 两者必须一致
+   
+3. 开始 AI 业务 Skill（ai-explore / ai-qa-stories）
+```
+
+### 启动脚本更新记录
+
+- `start-dev.sh --force-reset`：新增强制重置参数，保证干净沙箱
+- `scripts/prep-env.sh`：一键环境准备脚本（Kill → Seed → Reset → Verify）
+
+---
+
 ## Gotchas / 踩坑点
 
 ### 架构级（生成代码时必须遵守）
@@ -170,3 +213,5 @@ flametree_pick 完整实现：
 - `flametree_pick/lib/dev_tools/debug_state_registry.dart` — State + Data 注册
 - `flametree_pick/lib/dev_tools/debug_action_registry.dart` — Action 注册
 - `flametree_pick/scripts/seed-test-data.sh` — 测试数据播种
+- `flametree_pick/scripts/start-dev.sh` — 支持 `--force-reset` 强制重置
+- `flametree_pick/scripts/prep-env.sh` — 一键环境准备（Kill → Seed → Reset → Verify）

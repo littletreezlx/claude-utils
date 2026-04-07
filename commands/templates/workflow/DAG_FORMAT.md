@@ -25,21 +25,23 @@ batchcc task-xxx --restart
 
 | 文件 | 位置 | 说明 |
 |------|------|------|
-| `task-{名称}` | **项目根目录** | batchcc 入口文件，**不带** `.md` 后缀 |
-| `.{名称}-tasks/*.md` | 项目根目录 | 任务细节文件（复杂任务时使用） |
+| `task-{命令名}` | **项目根目录** | batchcc 入口文件，**不带** `.md` 后缀 |
+| `.task-{命令名}/*.md` | 项目根目录 | 任务细节文件（复杂任务时使用） |
 
 **入口文件必须在项目根目录**，不是在子目录中。
 
 ### 命名约定
 
+**规则**：入口文件 = `task-{命令名}`，细节目录 = `.task-{命令名}/`
+
 | 命令 | 入口文件 | 细节目录 |
 |------|---------|---------|
-| `/refactor-project` | `task-refactor-project` | `.refactor-tasks/` |
-| `/test-plan` | `task-add-test` | `.test-tasks/` |
-| `/comprehensive-health-check` | `task-health-check` | `.health-check-tasks/` |
+| `/refactor-project` | `task-refactor-project` | `.task-refactor-project/` |
+| `/test-plan` | `task-test-plan` | `.task-test-plan/` |
+| `/comprehensive-health-check` | `task-comprehensive-health-check` | `.task-comprehensive-health-check/` |
 | `/refactor-module` | `task-refactor-module-[模块名]` | — |
-| `/todo-huge-task` | `task-{用户指定名}` | `.{名称}-tasks/` |
-| `/doc-update-context` | `task-doc-review` | — |
+| `/todo-huge-task` | `task-{用户指定名}` | `.task-{用户指定名}/` |
+| `/doc-update-context` | `task-doc-update-context` | — |
 
 ### 入口文件必备结构
 

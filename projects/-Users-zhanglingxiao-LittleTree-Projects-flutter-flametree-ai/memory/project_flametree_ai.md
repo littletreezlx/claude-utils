@@ -23,8 +23,25 @@ type: project
 
 ## 已知状态
 
-- Backend 连接失败：`state/sessions` 选择 session 后报错"网络连接失败，请检查服务器是否运行"
-- Debug Server 端点缺失：roles、organize、images 相关端点未注册
+- **AI 回复网络错误**：QuickAsk 发送消息后 AI 回复"⚠️ 网络连接失败"，即使 server 在运行（端口 61003）。根因待查。
+- **Debug Server 端点缺失**：`/data/images` 端点不存在，Story 04 验证失败。
+
+## QA 验证记录 (2026-04-06)
+
+| 故事 | 结果 |
+|------|------|
+| 01-first-time-user | 🐛 AI 回复网络错误 |
+| 02-daily-chat | 🐛 AI 回复网络错误 |
+| 03-document-organization | ✅ 端点正常 |
+| 04-ai-drawing | 🐛 /data/images 端点缺失 |
+| 05-role-management | ✅ 端点正常（已知限制：/data/roles 不存在） |
+
+## P3 审查发现 (2026-04-06)
+
+**user-stories 与 Debug Server API 不一致（已修正）：**
+- `/data/messages` 需要 `sessionId` query 参数（Story 01, 05）
+- `quickAsk` state 无 `isVisible` 字段，应用 `/state/overlay.isOverlayVisible` 替代
+- 响应结构无 `.data` 包裹层：`quickAsk` 直接 `.messages`，`organizeTasks` 直接 `.tasks`，`images` 直接 `.images`
 
 ## 如何应用
 

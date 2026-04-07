@@ -1,29 +1,41 @@
 ---
 name: godot-explore
 description: >
-  This skill should be used when AI should autonomously explore a running
-  Godot game as a player, discovering bugs and UX issues through role-play.
-  AI picks a player persona, plays the game freely via DebugPlayServer,
-  and reports experience + technical issues. Use when the user says
-  "探索游戏", "自由探索", "玩一下", "explore", "playtest", or after
-  qa-stories passed and deeper exploration is needed. Requires DebugPlayServer
-  running (port 9999).
-version: 0.1.0
+  AI autonomously explores a running Godot game as a player, discovering bugs
+  and UX issues through role-play. Primary mode: curl-driven exploration via
+  DebugPlayServer's rich endpoint set. Optional Cyborg mode (Vision + cliclick)
+  for UI-heavy scenes. Use when the user says "探索游戏", "自由探索", "��一下",
+  "explore", "playtest", or after qa-stories passed and deeper exploration
+  is needed. Requires DebugPlayServer running (port 9999).
+version: 2.0.0
 ---
 
 # Godot Explore — 角色扮演式自主探索
 
-AI 扮演玩家自由游玩游戏，通过第一人称体验发现 bug 和设计问题。不是机械测试，而是真正在"玩"。
+AI 扮演玩家自由游玩游戏。通过 DebugPlayServer 的丰富端点驱动游戏流程，截图观察画面效果，State Oracle 验证状态变化。
 
 ## 核心原则
 
-- **决策时是玩家，报告时是工程师** — 用玩家人设决定要 curl 什么（多样化探索路径），但报告问题必须走证据链（工程师纪律）
-- **本质定位：状态机扰动源 + 视觉快照采集器** — 价值在于以意想不到的顺序排列 L1 端点调用，观察游戏状态与画面快照，而非模拟真实输入
-- **归因必须有证据链** — 截图只告诉你 WHAT（当前画面），不告诉你 HOW（怎么到这的）。Bug = 我发送 curl X → 服务端返回/状态变化 Y → 截图验证 Z。缺任一环 → 不是 bug，是盲区观察
-- **不做故事验证** — 那是 qa-stories 的职责。explore 假定基线 OK，专注第一人称体验 + 状态扰动
+- **决策时是玩家，报告时是工程师** — 用玩家人设决定操作顺序，但报告问题必须走证据链
+- **归因必须有证据链** — Bug = 操作 X → State Oracle 返回 Y → 与预期 Z 不符。缺任一环 → 盲区观察，不是 bug
+- **端点丰富 ≠ 自由探索** — DebugPlayServer 有导航/战斗/经济端点，覆盖远好于 Flutter Debug Server，但仍无法覆盖纯客户端动效和精确输入操作
+- **不做故事验证** — 那是 godot-qa-stories 的职责
 - **只记录，不修复** — 发现问题记到报告，不在探索中改代码
-- **主观感受和客观 bug 都记** — 体验报告 + 技术问题清单 + 盲区观察
-- **每步看截图+查状态** — 操作后 Read 查看 `_screenshot`，**并**用 curl 读相关 `/state/*` 端点对比，不靠截图脑补因果
+
+---
+
+## 模式说明
+
+**主模式：curl 驱动**（DebugPlayServer 端点覆盖度高）
+- 导航：goto_camp / goto_battle / goto_world_map / goto_menu
+- 战斗：deploy_unit / start_battle / wait_battle_end / skip_wave
+- 经济：add_gold / add_gems / blacksmith_upgrade
+- 状态：/state/game / /state/save / /state/battle / /state/units
+
+**可选 Cyborg 模式**（桌面 Godot 窗口 + screencapture + cliclick）
+- 适用场景：UI 菜单交互、按钮点击等 DebugPlayServer 未覆盖的界面操作
+- 技术方案与 Flutter Cyborg 相同：`screencapture -R` + `cliclick c:X,Y` + 公式 `screen = win_origin + image_px/2`
+- **非必需**：大多数探索场景靠 curl 端点就够了
 
 ---
 
@@ -32,7 +44,7 @@ AI 扮演玩家自由游玩游戏，通过第一人称体验发现 bug 和设计
 1. DebugPlayServer 运行中（端口 9999）
 2. 基线数据就绪（存档/关卡进度可用于游玩）
 
-**基线不足时，只做最小 seed**（给点金币、解锁 1-2 关就开始），不要跑完整 stories。想验证 stories 的用户应显式调用 `/godot-qa-stories`。
+**基线不足时，只做最小 seed**。想验证 stories 的用户应调用 `/godot-qa-stories`。
 
 ---
 
@@ -40,182 +52,163 @@ AI 扮演玩家自由游玩游戏，通过第一人称体验发现 bug 和设计
 
 ### Step 1: 建立玩家认知
 
-读取项目文档，理解"我是谁、我为什么玩这个游戏"：
-
 ```
 读 docs/PRODUCT_SOUL.md    → 产品愿景、情感目标
 读 docs/PRODUCT_BEHAVIOR.md → 我能做什么、系统规则
-读 Core/Autoloads/DebugPlayServer.gd 的 _route 函数 → 我能执行哪些操作
+读 Core/Autoloads/DebugPlayServer.gd 的 _route 函数 → 可用操作
 ```
 
-**选择本轮玩家人设**（从预设池选一个，或根据项目特点自拟）：
+**选择本轮玩家人设**（1-2 轮，每轮换人设）：
 
-| 人设 | 行为倾向 | 自然覆盖的系统 |
-|------|---------|--------------|
+| 人设 | 行为倾向 | 自然覆盖 |
+|------|---------|---------|
 | 🐣 新手小白 | 不看教程，乱点，金币乱花 | 引导缺失、容错性 |
-| 💰 经济运营玩家 | 精打细算，攒钱升级，晚出高级兵 | 经济平衡、升级体验 |
-| ⚡ 速攻玩家 | 最快速度推完，跳过一切 | 流程流畅度、跳过逻辑 |
-| 🌱 养成玩家 | 反复刷关卡，关注兵团成长 | 存档、跨局养成、重复体验 |
+| 💰 经济运营玩家 | 精打细算，攒钱升级 | 经济平���、升级体验 |
+| ⚡ 速攻玩家 | 最快速度推完 | 流程流畅度、跳过逻辑 |
+| 🌱 养成玩家 | 反复刷关卡，关注成长 | 存档、跨局养成、重复体验 |
+
+**每轮开头写 3-5 句游玩计划**：
+> "我是新手小白，第一次打开游戏。计划：看看营地有什么 → 随便选个指挥官 → 打第一关试试 → 看看钱够不够升级。"
 
 ### Step 2: 自由游玩
 
-**每轮 = 一次完整游玩循环**（营地 → 战斗 × N → 结算 → 回营地）。建议 1-2 轮，每轮换人设。轮数不是目标，发现高质量问题才是。
+每步操作遵循 **PAV 循环**（Perceive → Act → Verify）：
 
-#### 游玩规则
+#### P — 感知
 
-1. **第一人称内心独白**：每步操作前，用玩家视角写一句决策理由：
-   > "金币只有 200，士兵要 80…我只能放 2 个，先放弓箭手试试远程"
-
-2. **每步操作后看截图**：`Read` 查看 `_screenshot` 路径，观察 UI 反馈
-
-3. **做符合人设的决策**：
-   - 新手会乱点、不看说明
-   - 经济玩家会先查价格再决定
-   - 速攻玩家会跳过一切直接开打
-
-4. **遇到异常时**：
-   - 技术异常（curl 报错/状态不一致）→ 记录到技术问题清单，**必须附触发 curl 和响应**，继续玩
-   - 画面现象无法用 curl 归因（看到 X 发生但说不清自己做了什么导致）→ 记录到**盲区观察**区块，**不进 bug 清单**
-   - 体验困惑（不知道该干嘛/UI 看不懂）→ 记录到体验报告，继续玩
-   - Server 完全无响应 → 停止，输出已收集的报告
-
-5. **人设受阻时**：某条路径无法通过 debug server 验证（如纯客户端动效、输入操作）→ 记录为"盲区观察 + 建议新增 L1 端点"，换角度继续，不要硬卡。**严禁**把盲区内的现象伪装成 bug 报
-
-#### 可用操作速查
-
-**导航**：
 ```bash
-curl -s -X POST localhost:9999/play/goto_camp
-curl -s -X POST localhost:9999/play/goto_battle -d '{"level":1}'
-curl -s -X POST localhost:9999/play/goto_world_map
-curl -s -X POST localhost:9999/play/goto_menu
+# 通过 DebugPlayServer 的截图端点（如有）或直接查看游戏窗口
+curl -s localhost:9999/state/game    # 当前经济/进度
+curl -s localhost:9999/state/battle  # 战斗中状态
 ```
 
-**战斗**：
+如需视觉确认（Cyborg 可选）：
 ```bash
+# 截取 Godot 窗口
+screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/godot_screen_N.png
+```
+
+#### A — 行动（人设驱动）
+
+```bash
+# 导航
+curl -s -X POST localhost:9999/play/goto_camp
+curl -s -X POST localhost:9999/play/goto_battle -d '{"level":1}'
+
+# 战斗
 curl -s -X POST localhost:9999/play/confirm_commander
 curl -s -X POST localhost:9999/play/deploy_unit -d '{"unit_index":0,"grid_x":3,"grid_y":10}'
 curl -s -X POST localhost:9999/play/start_battle -d '{"speed":8}'
 curl -s localhost:9999/play/wait_battle_end
-curl -s -X POST localhost:9999/play/skip_wave
-curl -s -X POST localhost:9999/play/kill_all_enemies
-```
 
-**状态查询**：
-```bash
-curl -s localhost:9999/state/game      # 金币、人口
-curl -s localhost:9999/state/save      # 存档
-curl -s localhost:9999/state/battle    # 战斗状态（仅战斗中）
-curl -s localhost:9999/state/commander # 指挥官
-curl -s localhost:9999/state/units     # 兵种
-```
-
-**调试**：
-```bash
+# 经济（谨慎使用 — 调试类操作破坏真实体验）
 curl -s -X POST localhost:9999/play/add_gold -d '{"amount":500}'
-curl -s -X POST localhost:9999/play/add_gems -d '{"amount":100}'
-curl -s -X POST localhost:9999/play/save_reset
-curl -s -X POST localhost:9999/time_scale -d '{"scale":8}'
-curl -s -X POST localhost:9999/play/select_commander -d '{"index":0}'
-curl -s -X POST localhost:9999/play/blacksmith_upgrade -d '{"unit_id":"soldier","stat":"hp"}'
 ```
 
-> 调试类操作（add_gold 等）新手/速攻人设不该用；经济/养成人设也应尽量少用，保持真实体验。
+> 调试类操作（add_gold 等）新手/速攻人设不该用；经济/养成人设也应尽量少用。
 
-### Step 3: 输出报告
+#### V — 验证
 
-**同时做两件事**：
+```bash
+curl -s localhost:9999/state/game      # 金币/人口变化
+curl -s localhost:9999/state/save      # 存档状态
+curl -s localhost:9999/state/units     # 兵种状态
+```
 
-1. **写入本地文件**：`_scratch/explore-YYYY-MM-DD.md`（项目根目录下）
-   - 目录不存在则创建
-   - 同日多次追加到同一文件（新增 `## 第 N 次探索` 节）
-   - 文件头部加 `# Purpose:` 和 `# Created:` 标注
+**异常处理**：
+- State Oracle 返回异常 → 记录为技术问题（含触发 curl + 响应）
+- 截图与 State 不一致 → 记录为可疑 bug
+- Server 429 → 单任务锁，稍后重试
 
-2. **打印到对话**：便于用户直接阅读
+### 截图策略
 
-报告格式：
+**必须截图**（如有视觉通道）：每轮起始、场景切换、战斗结束、预期外变化
+**不需截图**：连续同类操作、State Oracle 已确认正确
+
+### 使用规则
+
+1. **破坏性操作放到每轮末尾**（save_reset 等）
+2. **过程中只在遇到意外时写反应**
+3. **curl JSON 参数**用单引号包裹：`-d '{"level":1}'`
+4. **单任务锁**：Server 同时只处理一个请求，429 = 忙
+
+### Step 3: 数据恢复
+
+```bash
+# 如有存档重置端点
+curl -s -X POST localhost:9999/play/save_reset
+```
+
+无重置端点时提醒用户存档已被修改。
+
+### Step 4: 输出报告
+
+写入 `_scratch/explore-YYYY-MM-DD.md` + 打印到对话。
 
 ```markdown
 ## 探索报告
 
 ### 环境
-- 项目: Barracks Clash | 端口: 9999 | 时间: xxx
-- 基线: [qa-stories 已通过 / 仅做最小 seed / 用户提供数据]
+- 项目: xxx | 端口: 9999 | 时间: xxx
+- 模式: curl 驱动 / Cyborg 辅助
+- 基线: [seed 数据 / 用户提供存档]
 - 本轮人设: 🐣 新手小白
 
 ### 🎮 玩家体验
-
 #### 第一轮: [人设名]
-> [2-3 段第一人称体验描述]
-> "打开游戏，看到三个建筑但不知道先去哪个…"
-> "第一场战斗金币不够，只放了一个兵就开打了，被秒了…"
+> [游玩计划 3-5 句]
+> [2-3 段体验描述，只在意外处详写]
 
 **体感问题**:
 1. [描述] — 感受：[困惑/沮丧/无聊/...]
-2. ...
-
-#### 第二轮: [人设名]
-> ...
 
 ### 🐛 技术问题清单（证据链必备）
-| # | 触发 curl (必填) | 预期 | 实际返回/状态变化 | 归因 | 严重程度 |
-|---|-----------------|------|-------------------|------|---------|
-| 1 | `curl -X POST .../play/xxx -d {...}` | 状态 Y | `{实际响应}` | 直接/间接 | 高/中/低 |
-
-- **归因=直接**：curl 直接返回异常（HTTP 5xx、错误响应、字段值不对）
-- **归因=间接**：curl 正常后读 `/state/*` 发现状态不一致（金币/血量/关卡等）
-- **不满足证据链 → 不进此表，转下方"盲区观察"**
+| # | 触发 curl | 预期 | 实际（State Oracle） | 归因 | 严重程度 |
+|---|----------|------|---------------------|------|---------|
 
 ### 🔭 debug 盲区观察（需人工复核）
-- **现象**：[描述截图看到的异常]
-- **为什么是盲区**：[如 UI 控件无 debug 端点 / 纯客户端动效 / 战斗动画中间态]
-- **缺的端点**：[建议新增的 `/play/xxx` 或 `/state/xxx`，帮后续 explorer 摆脱盲区]
-- **人工验证方法**：[如何手动复现]
+- **现象** / **为什么是盲区** / **人工验证方法**
 
 ### 💡 设计建议（可选）
-- [建议] — 基于 [哪个人设的体验]
-
-### 建议补充的 User Stories
-- [如果发现了重要但未被故事覆盖的路径]
 ```
 
-### Step 4: 分流归档（严禁混流）
+### Step 4.5: /think 评估（质量关卡）
 
-按性质分两路：**事实 → 行动队列，观点 → 决策队列**
+报告写完后、分流归档前，调用 `/think --quick` 对发现进行 sanity check：
 
-#### 4a. 事实型 bug → TODO.md
-**必须带证据链**的技术问题（有触发 curl + 观察到异常响应/状态）→ 调用 `todo-write` 写入 `TODO.md`，带 `_scratch/explore-YYYY-MM-DD.md § 章节` 引用。
-**盲区观察不进 TODO.md**，留在报告里供人工复核；盲区中若识别出"缺 L1/L1.5 端点"的架构建议，应转 to-discuss.md。
+1. **Bug 真实性** — 证据链完整吗？是真 bug 还是 server 限制？
+2. **建议合理性** — 值得 filing 吗？
+3. **Filing 决策** — TODO / to-discuss / 丢弃
+4. **Skill 自检** — 执行中 skill 本身有问题吗？（有 → to-discuss）
 
-#### 4b. 观点/判断型 → to-discuss.md
-体感问题、设计建议、stories 补齐等**需要人工判断**的事项 → 追加到项目根 `to-discuss.md`，严格模板：
+> 用 `--quick`（DeepSeek）。不可用时跳过，标注"未经评估"。
+
+### Step 5: 分流归档（严禁混流）
+
+#### 5a. 事实型 bug → TODO.md
+有证据链的技术问题。带 Ref 引用。**盲区观察不进 TODO.md**。
+
+#### 5b. 观点/判断型 → to-discuss.md
 
 ```markdown
 ## [UX|Gameplay|Economy|Workflow] 简短标题 (Ref: _scratch/explore-YYYY-MM-DD.md § 章节)
-- **事实前提**: [基于什么客观现象，禁止加主观修饰]
+- **事实前提**: [一句话客观现象 + Ref 引用，不重复展开]
 - **AI 观点**: [我认为应该...]
-- **反面检验**: [这个建议可能错在哪 / 维持现状的理由 / 是否是人设偏见]
+- **反面检验**: [可能错在哪 / 维持现状的理由 / 是否人设偏见]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md
   - [ ] Discuss → /think 或 /feat-discuss-local-gemini
   - [ ] Reject → 直接删
 ```
 
-**绝对禁止**：
-- 观点塞进 TODO.md
-- **把盲区观察伪装成 bug**（只看截图没有触发 curl → 不是 bug）
-- **从截图脑补因果**（"我看到 X，所以一定是我刚才的 Y 动作导致的"）
-- 跳过反面检验
-- 两文件之间设指针
+**绝对禁止**：观点伪装成 bug、盲区伪装成 bug、从截图脑补因果、加置信度、TODO/to-discuss 设指针。
 
 ---
 
 ## 注意事项
 
-1. **不过度探索** — 每个人设 1 轮游玩循环，总共不超过 2 轮
-2. **不穷举边界、不跑故事** — 那是 qa-stories 的事。explore 只靠自然游玩发现问题
-3. **截图+状态双证据** — Read 截图看画面，curl /state 看游戏状态（金币/血量/关卡），两者配合才能避免脑补因果
-4. **curl JSON 参数** — 单引号包裹：`-d '{"level":1}'`
-5. **单任务锁** — Server 同时只处理一个请求，429 = 忙，稍后重试
-6. **保持人设一致** — 新手不会精确计算 DPS，经济玩家不会乱花钱
-7. **报告落盘** — 完整报告写入 `_scratch/explore-YYYY-MM-DD.md`；有证据链的 bug → `TODO.md`；观点建议 → `to-discuss.md`；**盲区观察留在报告**
+1. **不过度探索** — 每个人设 1 轮，总共不超过 2 轮
+2. **不穷举边界、不跑故事** — 那是 godot-qa-stories 的事
+3. **保持人设一致** — 新手不会精确计算 DPS，经济玩家不会乱花钱
+4. **探索后必须恢复数据**
+5. **报告落盘** — `_scratch/` + TODO.md + to-discuss.md + 盲区留在报告

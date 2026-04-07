@@ -10,7 +10,7 @@ description: 全面健康检查（DAG）- 诊断调度 + 行动路线
 
 ```bash
 /comprehensive-health-check        # 生成诊断任务文件
-batchcc task-health-check            # 执行
+batchcc task-comprehensive-health-check            # 执行
 ```
 
 产出：`docs/health-check/{YYYY-MM-DD}/SUMMARY.md`（诊断报告 + 行动路线）

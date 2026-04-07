@@ -3,23 +3,31 @@ name: android-qa-stories
 description: >
   This skill should be used when AI should autonomously verify user stories
   against a running native Android app via embedded Debug Server. A true
-  AI-autonomous loop: reads stories, executes curl sequences, validates
-  assertions, reports failures. Use when the user says "验证故事", "跑用户故事",
-  "regression", "run stories", "qa stories", or after a batch of code changes
-  needs holistic verification beyond unit tests. Requires Debug Server embedded
-  in the app and docs/user-stories/ to exist.
+  AI-autonomous loop: reads QA verification files from docs/user-stories/qa/,
+  executes curl sequences, validates assertions, reports failures. Use when
+  the user says "验证故事", "跑用户故事", "regression", "run stories", "qa stories",
+  or after a batch of code changes needs holistic verification beyond unit tests.
+  Requires Debug Server embedded in the app and docs/user-stories/qa/ to exist.
 version: 1.0.0
 ---
 
 # Android QA Stories — 用户故事自主验证
 
-AI 自主闭环：读取 `docs/user-stories/` 中的用户故事，通过嵌入式 Debug Server 逐步 curl 验证，确保 Happy Path 全部通过。**纯验证，不修代码。**
+AI 自主闭环：读取 `docs/user-stories/qa/*.qa.md` 中的验证脚本，通过嵌入式 Debug Server 逐步 curl 验证，确保 Happy Path 全部通过。**纯验证，不修代码。**
+
+## 双文件架构
+
+| 文件 | 角色 | 本 skill 怎么用 |
+|------|------|----------------|
+| `docs/user-stories/qa/*.qa.md` | 验证脚本（编译产物） | **日常消费** — 直接读取并执行 |
+| `docs/user-stories/*.md` | 产品故事（源码） | **仅在失败排障时参考** |
 
 ## 核心原则
 
 - **只验证，不修复** — 发现问题记录到报告，不改代码、不补端点、不重启 App
 - **QA 过程中不重启** — 启动一次，跑完所有故事
 - **故事按编号顺序** — 前序故事可能创建后序需要的数据
+- **只读 qa/ 目录** — 不解析 Story 文件中的内容来执行验证
 
 ---
 
@@ -46,11 +54,13 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
 - ✅ 有响应 → 检查 actions 是否匹配当前项目，跳到 Step 1
 - ❌ 无响应 → 自动启动（见下方"进程管理"）
 
-### Step 1: 加载故事
+### Step 1: 加载 QA 文件
 
-**并行** Read 所有 `docs/user-stories/*.md`（排除 README/模板），按文件名编号排序。
+**并行** Read 所有 `docs/user-stories/qa/*.qa.md`，按文件名编号排序。
 
-同时读取 `/providers` 响应，与故事中引用的端点做对账：
+**如果 qa/ 目录不存在**：提示用户先运行 `/generate-stories` 迁移到双文件架构。
+
+同时读取 `/providers` 响应，与 QA 文件末尾的端点依赖表做对账：
 
 ```
 端点对账: 12/12 匹配 ✅
@@ -72,11 +82,11 @@ curl -s localhost:$PORT/state/auth
 curl -s localhost:$PORT/data/items    # 项目核心数据
 ```
 
-### Step 3: 逐条执行故事
+### Step 3: 逐条执行验证
 
-对每条故事的每个 Step：
+对每个 QA 文件的每个 Scenario：
 
-1. 读意图 → 执行 curl → 验证断言
+1. 读 Intent → 执行 curl → 校验 Assert
 2. 判定结果（三种）：
 
 | 结果 | 处理 |

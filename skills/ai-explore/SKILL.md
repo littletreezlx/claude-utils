@@ -1,97 +1,296 @@
 ---
 name: ai-explore
 description: >
-  This skill should be used when AI should autonomously explore a running
-  Flutter/Android app as a user, discovering bugs and UX issues through
-  role-play. AI picks a user persona, uses the app freely via Debug State
-  Server, and reports experience + technical issues. Use when the user says
-  "探索应用", "自由探索", "用一下", "explore", "find bugs", or after
-  qa-stories passed and deeper exploration is needed. Requires Debug State
-  Server running.
-version: 1.0.0
+  AI autonomously explores a running Flutter app as a user, discovering bugs
+  and UX issues through role-play. Supports two modes: Cyborg (Vision + OS Tap
+  + State Oracle, default when Simulator available) and Fallback (curl-only,
+  when no Simulator). Use when the user says "探索应用", "自由探索", "用一下",
+  "explore", "find bugs", or after qa-stories passed and deeper exploration
+  is needed. Requires Debug State Server running.
+version: 3.0.0
 ---
 
-# AI Explore — 角色扮演式自主探索
+# AI Explore — Cyborg 自主探索
 
-AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计问题。不是机械测试，而是真正在"用"。
+AI 扮演用户自由使用应用。Cyborg 模式下通过**视觉识别 + OS 级点击**真正操作 UI，State Oracle 验证状态变化。
 
 ## 核心原则
 
-- **决策时是用户，报告时是工程师** — 用用户人设决定要 curl 什么（多样化探索路径），但报告问题必须走证据链（工程师纪律）
-- **本质定位：状态机扰动源 + 视觉快照采集器** — 价值在于以意想不到的顺序排列 L1 端点调用，观察系统状态与 UI 快照，而非模拟真实手势
-- **归因必须有证据链** — 截图只告诉你 WHAT（当前状态），不告诉你 HOW（怎么到这的）。Bug = 我发送 curl X → 服务端返回/状态变化 Y → 截图验证 Z。缺任一环 → 不是 bug，是盲区观察
-- **不做故事验证** — 那是 qa-stories 的职责。explore 假定基线 OK，专注第一人称体验 + 状态扰动
+- **Cyborg = 皮（Vision+Tap），Oracle = 骨（State 验证）** — 截图感知 UI，`/cyborg/tap` 内部注入驱动交互，curl 验证状态。三层配合，缺一不可
+- **零坐标转换** — `/cyborg/tap?nodeId=X` 通过语义节点 ID 注入事件，绕过坐标系转换，100% 精准命中
+- **决策时是用户，报告时是工程师** — 用人设决定点哪里，但报告问题必须走证据链
+- **归因必须有证据链** — Bug = 操作 X → State Oracle 返回 Y → 与预期 Z 不符。缺任一环 → 盲区观察，不是 bug
+- **不做故事验证** — 那是 qa-stories 的职责
 - **只记录，不修复** — 发现问题记到报告，不在探索中改代码
-- **主观感受和客观 bug 都记** — 体验报告 + 技术问题清单 + 盲区观察
-- **每步看截图+查状态** — 操作后 `/screen` 查看 UI 反馈，**并**用 curl 读相关 `/state` 端点对比，不靠截图脑补因果
+
+---
+
+## 模式选择（自动判断）
+
+启动时执行环境检测，决定探索模式：
+
+```bash
+# 检测 Cyborg 模式前置条件
+pgrep -x Simulator >/dev/null 2>&1 && \
+  curl -s localhost:8788/providers >/dev/null 2>&1 && \
+  curl -s 'localhost:8788/cyborg/dom' | python3 -c "import sys,json; d=json.load(sys.stdin)['data']; assert d['totalCount']>0" 2>/dev/null
+```
+
+| 条件 | 模式 | 探索能力 |
+|------|------|---------|
+| Simulator + Debug Server + `/cyborg/dom` 返回节点 | **Cyborg** | 真实 UI 交互 + 导航 + 手势 + State 验证 |
+| 仅 Debug Server 可用（无 Simulator 或 Cyborg Probe 不可用） | **Fallback** | 端点覆盖测试（诚实声明：探索范围 = 端点数量，无法覆盖导航/手势/动画） |
 
 ---
 
 ## 前置条件
 
-1. Debug State Server 运行中
-2. 基线数据就绪（有可用的 group/option 等数据供探索）
+### ⚠️ 必须先运行 prep-cyborg-env
 
-**基线不足时，只做最小 seed**（创建 1-2 组数据就开始），不要跑完整 stories。想验证 stories 的用户应显式调用 `/ai-qa-stories`。
+**每次开始探索前，必须先调用 `prep-cyborg-env` Skill 或运行 `./scripts/prep-env.sh`**，确保环境干净。
+
+详见 `prep-cyborg-env` Skill 文档。核心流程：
+1. Kill 所有 Flutter 进程
+2. Seed 测试数据
+3. `--force-reset` 启动 App
+4. 验证 State 和 Data 一致
+
+**严禁在脏状态下开始探索**——三角验证会在矛盾的状态下给出错误结论。
+
+### 共同条件
+1. ✅ prep-cyborg-env 已执行（环境干净）
+2. Debug State Server 运行中（localhost:8788）
+3. 基线数据就绪（有可用 group/option 等数据）
+
+### Cyborg 额外条件
+4. iOS Simulator 运行中且 App 已启动
+5. `/cyborg/dom` 返回节点（semantics tree 启用）
+6. macOS 环境（screencapture、osascript，仅截图用）
 
 ---
 
-## 执行流程
+## Cyborg 模式执行流程
+
+### Step 0: 环境初始化
+
+验证 Cyborg Probe 端点可用：
+
+```bash
+# 验证 /cyborg/dom 返回节点（semantics tree 已启用）
+curl -s localhost:8788/cyborg/dom | python3 -c "
+import sys,json
+d=json.load(sys.stdin)['data']
+print(f'Nodes: {d[\"totalCount\"]}, screen={d[\"screenSize\"]}')
+"
+
+# 验证 /cyborg/tap 可用
+curl -s 'localhost:8788/cyborg/tap?nodeId=0' | python3 -c "import sys,json; print(json.load(sys.stdin))"
+```
+
+> /cyborg/dom 返回 0 nodes → semantics 未启用，需要重启 App（`start-dev.sh --force-reset`）
+
+获取 Simulator 窗口参数（仅截图用，tap 不需要）：
+
+```bash
+osascript -e 'tell application "System Events" to tell process "Simulator" to get {position, size} of front window'
+# 返回示例: {393, 30}, {237, 558}
+```
 
 ### Step 1: 建立用户认知
-
-读取项目文档，理解"我是谁、我为什么用这个应用"：
 
 ```
 读 docs/PRODUCT_SOUL.md    → 产品愿景、情感目标
 读 docs/PRODUCT_BEHAVIOR.md → 我能做什么、系统规则
-读 /providers              → 我能执行哪些操作
+curl localhost:8788/providers  → 可用的 state/data 端点（验证用）
 ```
 
-**选择本轮用户人设**（从预设池选一个，或根据项目特点自拟）：
+**选择本轮用户人设**（1-2 轮，每轮换人设）：
 
-| 人设 | 行为倾向 | 自然覆盖的系统 |
-|------|---------|--------------|
-| 🐣 新手小白 | 不看引导，随手点，不理解专业术语 | 引导缺失、容错性、术语可达性 |
-| ⚡ 效率达人 | 最快完成目标，跳过一切非必要步骤 | 流程流畅度、快捷操作、冗余步骤 |
-| 🐒 混乱操作者 | 逆序调用、密集请求、操作中途切目标 | 状态一致性、竞态条件、错误恢复 |
-| 🔄 回归用户 | 之前用过，隔了很久回来，期望数据还在 | 数据持久化、状态恢复、迁移兼容 |
-| 🧹 洁癖用户 | 频繁整理、删除、归类，追求"干净" | 批量操作、删除级联、空状态 |
+| 人设 | 行为倾向 | 自然覆盖 |
+|------|---------|---------|
+| 🐣 新手小白 | 不看引导，随手点 | 引导缺失、容错性 |
+| ⚡ 效率达人 | 最快完成目标 | 流程流畅度、冗余步骤 |
+| 🐒 混乱操作者 | 逆序操作、密集请求 | 状态一致性、竞态 |
+| 🔄 回归用户 | 隔很久回来 | 数据持久化、状态恢复 |
+| 🧹 洁癖用户 | 频繁整理删除 | 批量操作、删除级联、空状态 |
 
-### Step 2: 自由使用
+**每轮开头写 3-5 句使用计划**（替代逐步独白）：
+> "我是新手小白，刚下载这个 App。计划：先看首页有什么 → 随便点几个看看 → 试试核心功能（骰子）→ 加点东西试试。"
 
-**每轮 = 一次完整使用循环**（打开 → 完成核心任务 → 浏览 → 退出）。建议 1-2 轮，每轮换人设。轮数不是目标，发现高质量问题才是。
+### Step 2: 感知-行动-验证循环
 
-#### 使用规则
+每步操作遵循 **PAV 循环**（Perceive → Act → Verify）：
 
-1. **第一人称内心独白**：每步操作前，用用户视角写一句决策理由：
-   > "刚打开 App，看到一堆列表但不知道从哪开始…先点第一个试试"
+#### P — 感知（语义树 + 截图）
 
-2. **每步操作后看截图**：用 `/screen` 或 Read 查看截图，观察 UI 反馈
+**优先使用 Cyborg Probe 语义树获取精准坐标**：
 
-3. **做符合人设的决策**：
-   - 新手会乱点、不看说明
-   - 效率达人会直奔目标、忽略装饰性内容
-   - 洁癖用户会先整理再使用
+```bash
+# 1. 查询语义树（获取 widget 坐标）
+curl -s localhost:8788/cyborg/dom | python3 -m json.tool
+```
 
-4. **破坏性操作放到每轮末尾**：delete/logout/clear 等不可逆操作，确认只读探索完成后再执行，避免早期破坏导致后续全部误报
+语义树返回结构化 JSON：
+```json
+{
+  "nodes": [
+    {
+      "id": 1,
+      "label": "骰子",
+      "role": "button",
+      "rect": {"x": 100, "y": 200, "width": 50, "height": 50},
+      "center": {"x": 125, "y": 225},
+      "hasTap": true
+    }
+  ],
+  "screenSize": {"width": 390, "height": 844}
+}
+```
 
-5. **遇到异常时**：
-   - 技术异常（curl 报错/状态不一致）→ 记录到技术问题清单，**必须附触发 curl 和响应**，继续用
-   - UI 现象无法用 curl 归因（看到 X 发生但说不清自己做了什么导致）→ 记录到**盲区观察**区块，**不进 bug 清单**
-   - 体验困惑（不知道该干嘛/UI 看不懂）→ 记录到体验报告，继续用
+**AI 直接使用 `center` 坐标进行点击**：
+- 找到目标 widget（如 `label="骰子"`）
+- 使用 `center.x` 和 `center.y` 作为点击坐标
+- 无需截图和坐标转换
+
+**截图仅用于视觉确认**（当语义树不足以判断 UI 状态时）：
+
+```bash
+# 激活 Simulator 窗口
+osascript -e 'tell application "Simulator" to activate'
+sleep 0.3
+
+# 截取 Simulator 窗口（-R = region, macOS 屏幕点坐标）
+screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/cyborg-poc/step_N.png
+```
+
+**辅助定位**：结合 State Oracle 缩小搜索范围：
+```bash
+curl -s localhost:8788/state/route     # 当前在哪个页面
+curl -s localhost:8788/state/overlays  # 是否有弹窗
+```
+
+#### A — 行动（内部事件注入，无需坐标转换）
+
+**主力方式：`/cyborg/tap?nodeId=X`（语义动作注入）**
+
+```bash
+# 直接用 node ID 触发 tap — 零坐标转换，100% 精准
+curl -s 'localhost:8788/cyborg/tap?nodeId=12'
+# → {"ok":true,"data":{"action":"tap","nodeId":12,"status":"dispatched"}}
+
+# 长按
+curl -s 'localhost:8788/cyborg/longPress?nodeId=12'
+
+# 文字输入（直接注入到 TextField，绕过键盘）
+curl -s 'localhost:8788/cyborg/input?nodeId=7&text=hello'
+
+# 滚动
+curl -s 'localhost:8788/cyborg/scroll?nodeId=8&direction=down'
+```
+
+**⚠️ 关键：导航后 node ID 会变！** 每次页面切换后必须重新查询 DOM 获取最新 ID。
+
+**查找目标节点的标准流程**：
+
+```bash
+# 1. 获取 DOM
+# 2. 找到目标（如 label 包含关键字 + hasTap=true）
+# 3. 用 nodeId 执行操作
+curl -s localhost:8788/cyborg/dom | python3 -c "
+import sys,json
+d=json.load(sys.stdin)['data']
+def find(nodes):
+    for n in nodes:
+        if n.get('hasTap') and '管理' in n.get('label',''):
+            print(f'Found: [{n[\"id\"]}] \"{n[\"label\"]}\"')
+        if 'children' in n:
+            find(n['children'])
+find(d['nodes'])
+"
+```
+
+**点击决策由人设驱动**：
+- 新手会点最显眼的按钮
+- 效率达人直奔目标
+- 洁癖用户先找删除/整理入口
+
+**备选方式：坐标点击（测试触摸区域大小时）**
+
+```bash
+# 用 Flutter 逻辑坐标直接注入 PointerEvent
+curl -s 'localhost:8788/cyborg/tap?x=200&y=300'
+```
+
+#### V — 验证（State Oracle 确认效果）
+
+每次点击后 **必须** 验证：
+
+```bash
+# 1. 截图确认 UI 变化（如有必要）
+screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/cyborg-poc/step_N_after.png
+
+# 2. State Oracle 验证状态变化
+curl -s localhost:8788/state/route      # 页面是否切换
+curl -s localhost:8788/state/overlays   # 弹窗是否出现/消失
+curl -s localhost:8788/state/management # 数据是否变化（如适用）
+curl -s localhost:8788/data/groups      # DB 层数据验证（如适用）
+```
+
+**异常处理**：
+- 点击无反应 → 检查 `/cyborg/dom` 返回的坐标是否正确，重新尝试（最多 2 次）
+- `/cyborg/dom` 返回错误 → 回退到截图分析模式，但需在报告中标注
+- State Oracle 返回异常 → 记录为技术问题（含操作截图 + curl 响应）
+- UI 变化与 State 不一致 → 记录为可疑 bug，需人工确认
+
+### 截图黑暗降级策略
+
+如果 macOS screencapture 截图全黑或模糊：
+1. **主要依赖**：`/cyborg/dom` 语义树获取坐标
+2. **截图降级**：截图仅作为辅助验证，不作为主要感知手段
+3. **端点不可用时**：Fallback 模式降级，诚实声明探索范围受限
+
+### 截图策略（节省 token）
+
+**必须截图的时机**：
+- 每轮探索的起始状态
+- 页面切换后（路由变化）
+- 弹窗出现/消失后
+- 预期外的 UI 变化
+
+**不需要截图的时机**：
+- 连续同类操作（如连续删 5 个选项，只截最后一张）
+- State Oracle 已确认状态正确且无 UI 异常
+
+### 使用规则
+
+1. **破坏性操作放到每轮末尾**：delete/clear 等不可逆操作，确认只读探索完成后再执行
+2. **遇到异常时**：
+   - 技术异常（状态不一致）→ 记录到技术问题清单，**附操作截图 + curl 响应**
+   - UI 元素识别不确定 → 记录为盲区观察，**不进 bug 清单**
+   - 体验困惑（不知道该干嘛）→ 记录到体验报告
    - Server 完全无响应 → 停止，输出已收集的报告
+3. **过程中只在遇到意外时写反应**（不需要每步都写独白）
 
-6. **人设受阻时**：某条路径无法通过 debug server 验证（如纯客户端导航、手势、SuperDock 类展示组件）→ 记录为"盲区观察 + 建议新增 L1 端点"，换角度继续，不要硬卡。**严禁**把盲区内的现象伪装成 bug 报
+### Step 3: 数据恢复
 
-### Step 3: 输出报告
+探索结束后，**必须恢复基线数据**：
+
+```bash
+# 如项目有 seed 脚本
+./scripts/seed-test-data.sh clean   # 清理探索产生的数据
+./scripts/seed-test-data.sh         # 重新播种基线数据
+```
+
+无 seed 脚本时提醒用户数据已被修改。
+
+### Step 4: 输出报告
 
 **同时做两件事**：
 
-1. **写入本地文件**：`_scratch/explore-YYYY-MM-DD.md`（项目根目录下）
+1. **写入本地文件**：`_scratch/explore-YYYY-MM-DD.md`
    - 目录不存在则创建
-   - 同日多次探索追加到同一文件（新增 `## 第 N 次探索` 节）
-   - 文件头部加 `# Purpose:` 和 `# Created:` 标注（见全局 CLAUDE.md 临时产物规范）
+   - 同日多次追加 `## 第 N 次探索`
+   - 头部加 `# Purpose:` + `# Created:`
 
 2. **打印到对话**：便于用户直接阅读
 
@@ -100,67 +299,75 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 ```markdown
 ## 探索报告
 
-### 环境fl
+### 环境
 - 项目: xxx | 端口: xxxx | 时间: xxx
-- 基线: [qa-stories 已通过 / 仅做最小 seed / 用户提供数据]
+- 模式: Cyborg / Fallback
+- 基线: [seed 数据 / 用户提供数据]
 - 本轮人设: 🐣 新手小白
 
 ### 🎮 用户体验
 
 #### 第一轮: [人设名]
-> [2-3 段第一人称体验描述]
-> "打开应用，首页有三个 Tab 但图标含义不明确…"
-> "想找设置页，翻了半天找不到入口，最后发现在头像里…"
+> [使用计划 3-5 句]
+> [2-3 段体验描述，只在意外处详写]
 
 **体感问题**:
 1. [描述] — 感受：[困惑/沮丧/无聊/...]
-2. ...
-
-#### 第二轮: [人设名]
-> ...
 
 ### 🐛 技术问题清单（证据链必备）
-| # | 触发 curl (必填) | 预期 | 实际返回/状态变化 | 归因 | 严重程度 |
-|---|-----------------|------|-------------------|------|---------|
-| 1 | `curl -X POST .../action/xxx -d {...}` | 状态 Y | `{实际响应}` | 直接/间接 | 高/中/低 |
+| # | 操作（截图+点击/curl） | 预期 | 实际（State Oracle 返回） | 归因 | 严重程度 |
+|---|----------------------|------|--------------------------|------|---------|
+| 1 | 点击 X 按钮 (step_3.png) + `curl /state/overlays` | 弹窗出现 | count=0 | 直接 | 高 |
 
-- **归因=直接**：curl 直接返回异常（HTTP 5xx、错误响应、字段值不对）
-- **归因=间接**：curl 正常后读 `/state/*` 或 `/data/*` 发现状态不一致
-- **不满足证据链 → 不进此表，转下方"盲区观察"**
+- **归因=直接**：State Oracle 返回与预期明确矛盾
+- **归因=间接**：操作后读状态发现不一致
+- **不满足证据链 → 不进此表，转"盲区观察"**
 
 ### 🔭 debug 盲区观察（需人工复核）
-- **现象**：[描述截图/日志看到的异常]
-- **为什么是盲区**：[如 SuperDock 无 debug 端点 / 纯客户端动画 / 导航栈变化无观测端点]
-- **缺的端点**：[建议新增的 `/action/xxx` 或 `/state/xxx`，帮后续 explorer 摆脱盲区]
-- **人工验证方法**：[如何手动在模拟器上复现]
+- **现象**：[描述]
+- **为什么是盲区**：[如 State Oracle 无对应端点 / 纯视觉动画]
+- **人工验证方法**：[如何手动复现]
 
 ### 💡 设计建议（可选）
 - [建议] — 基于 [哪个人设的体验]
-
-### 建议补充的 User Stories
-- [如果发现了重要但未被故事覆盖的路径]
 ```
 
-### Step 4: 分流归档（严禁混流）
+### Step 4.5: /think 评估（质量关卡）
 
-按性质分两路：**事实 → 行动队列，观点 → 决策队列**
+报告写完后、分流归档前，调用 `/think --quick` 对发现进行 sanity check：
 
-#### 4a. 事实型 bug → TODO.md
+**输入给 /think 的内容**：
+- 报告中的技术问题清单（含证据链）
+- 盲区观察列表
+- 设计建议
+- 探索模式（Cyborg / Fallback）和实际覆盖范围
 
-触发条件：**必须带证据链**的技术问题（有触发 curl + 观察到异常响应/状态）。
-调用 `todo-write` skill 写入 TODO.md，按严重程度分类，每条带 `_scratch/explore-YYYY-MM-DD.md § 章节` 引用。
-**盲区观察不进 TODO.md**，留在报告里供人工复核；盲区中若识别出"缺 L1/L1.5 端点"的架构建议，应转 to-discuss.md。
+**要求 /think 评估**：
+1. **Bug 真实性** — 证据链是否完整？是真 bug 还是 debug server 限制？
+2. **建议合理性** — 建议是否过度设计？维持现状的成本有多高？
+3. **Filing 决策** — 哪些进 TODO（事实型 bug）、哪些进 to-discuss（需判断）、哪些直接丢弃（噪音）
+4. **Skill 自检** — 本次执行中 skill 本身是否暴露了系统性问题？（如有 → 作为 to-discuss 条目输出，不自动改 skill）
 
-#### 4b. 观点/判断型 → to-discuss.md
+**输出**：过滤后的 filing 清单，Step 5 按此清单执行。
 
-触发条件：体验优化建议、产品方向建议、补充 stories 建议 —— 凡是需要设计者/产品人判断的事项。
-追加到项目根目录的 `to-discuss.md`（不存在则创建），**严格按以下模板**：
+> 用 `--quick`（DeepSeek）而非默认 Gemini — 这是自主调用的 sanity check，不需要最高质量。
+> 如果 /think 不可用（API 故障等），跳过此步直接进 Step 5，但在报告中标注"未经 /think 评估"。
+
+### Step 5: 分流归档（严禁混流）
+
+#### 5a. 事实型 bug → TODO.md
+触发条件：有证据链的技术问题（操作 + State Oracle 异常）。
+用 `todo-write` skill 写入，带 `_scratch/explore-YYYY-MM-DD.md § 章节` 引用。
+**盲区观察不进 TODO.md**。
+
+#### 5b. 观点/判断型 → to-discuss.md
+追加到 `to-discuss.md`，格式：
 
 ```markdown
-## [UX|Product|Arch|Workflow] 简短标题 (Ref: _scratch/explore-YYYY-MM-DD.md § 章节名)
-- **事实前提**: [基于什么客观现象，禁止加主观修饰]
+## [UX|Product|Arch|Workflow] 简短标题 (Ref: _scratch/explore-YYYY-MM-DD.md § 章节)
+- **事实前提**: [一句话客观现象 + Ref 引用，不重复展开]
 - **AI 观点**: [我认为应该...]
-- **反面检验**: [这个建议可能错在哪 / 为什么可能是过度设计 / 维持现状的理由]
+- **反面检验**: [可能错在哪 / 维持现状的理由]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md
   - [ ] Discuss → /think 或 /feat-discuss-local-gemini
@@ -169,21 +376,39 @@ AI 扮演用户自由使用应用，通过第一人称体验发现 bug 和设计
 
 **绝对禁止**：
 - 把观点伪装成 bug 塞进 TODO.md
-- **把盲区观察伪装成 bug**（只看截图没有触发 curl → 不是 bug，是盲区）
-- **从截图脑补因果**（"我看到 X，所以一定是我刚才的 Y 动作导致的"）
-- 在 to-discuss.md 里跳过"反面检验"和"决策选项"
-- 给"AI 观点"加置信度字段（AI 在胡说时极度自信，置信度是噪音）
-- TODO.md 与 to-discuss.md 之间设指针/引用条目（两者物理独立，不耦合）
+- 把盲区观察伪装成 bug（没有 State Oracle 证据 → 不是 bug）
+- 从截图脑补因果
+- 给 AI 观点加置信度字段
+- TODO.md 与 to-discuss.md 之间设指针
 
-> **体验报告（第一人称独白）不进 TODO.md 也不进 to-discuss.md** —— 留在 `_scratch/` 报告里供人工查阅
+---
+
+## Fallback 模式（纯 curl）
+
+当 Simulator 或 Cyborg Probe 端点不可用时自动降级。
+
+**诚实声明**：Fallback 模式下探索范围 = Debug Server 端点数量。无法覆盖页面导航、手势交互、动画流程。这些是 Cyborg 模式的职责。
+
+**执行流程**：与 Cyborg 模式相同的 Step 1（认知）→ Step 4（报告）→ Step 4.5（/think 评估）→ Step 5（分流），但 Step 2 改为：
+
+1. 通过 `curl /action/*` 端点执行操作
+2. 通过 `curl /state/*` + `curl /data/*` 验证状态
+3. 每次路由/数据变更后用 `quick-screenshot.sh` 截图观察 UI（非连续同类操作）
+4. 人设驱动操作顺序和破坏性决策时机
+
+**Fallback 限制**（必须在报告中声明）：
+- 无法验证导航流程、手势交互、动画效果
+- 操作绕过 UI 层（不经过确认弹窗、不触发动画）
+- 发现的问题可能是 Debug Server 限制而非真实 bug
 
 ---
 
 ## 注意事项
 
-1. **不过度探索** — 每个人设 1 轮使用循环，总共不超过 2 轮
-2. **不穷举边界、不跑故事** — 那是 qa-stories 的事。explore 只靠自然使用发现问题
-3. **截图+状态双证据** — 截图看 UI 反馈（体验），curl /state 看内部状态（归因），两者配合才能避免脑补因果
+1. **不过度探索** — 每个人设 1 轮，总共不超过 2 轮
+2. **不穷举边界、不跑故事** — 那是 qa-stories 的事
+3. **Cyborg 模式下截图 = 感知手段**，不是额外成本 — 但仍按截图策略控制频率
 4. **保持人设一致** — 新手不会精确计算，效率达人不会慢慢浏览
-5. **端口冲突** — 检查 /providers 的 actions 是否匹配当前项目
-6. **报告落盘** — 完整报告写入 `_scratch/explore-YYYY-MM-DD.md`；有证据链的 bug → `TODO.md`；观点建议 → `to-discuss.md`；**盲区观察留在报告**
+5. **nodeId 点击精度 100%** — 但 DOM 中未暴露的 UI 元素无法操作，需结合截图发现盲区
+6. **探索后必须恢复数据** — 运行 seed 脚本或提醒用户
+7. **报告落盘** — 完整报告写入 `_scratch/`；有证据链的 bug → `TODO.md`；观点 → `to-discuss.md`；盲区留在报告

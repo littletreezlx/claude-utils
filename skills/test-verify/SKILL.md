@@ -163,11 +163,19 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 1. AI 生成测试修复方案（新增断言或新增测试用例）
 2. **优先更新现有测试 > 创建新测试**
 3. 修复后重新注入同一变异，验证测试能 catch
-4. **熔断**：同一变异点修复 2 次仍无法 catch → 标记 `[MANUAL]` 需人工介入
+4. **熔断**：同一变异点修复 2 次仍无法 catch → 标记 `[ESCALATION]` AI 升级调试策略（代码设计评审/重构后重试），仍无法解决则写入 to-discuss.md
 
-### Step 4: 输出验证报告
+### Step 4: 输出验证报告 + 留痕
 
-在控制台输出（不生成文件，除非用户要求）。
+控制台输出完整报告后，**追加一行记录**到项目的 `_scratch/test-verify-log.md`（不存在则创建）。
+
+```markdown
+| 2026-04-07 | sync_service.dart, article_repository.dart | 4/5 (80%) | 1 ESCAPED → 已修复 |
+```
+
+格式：`| 日期 | 目标文件 | Mutation Score | 备注 |`
+
+**目的**：下次 `/ai-self-audit` 或新 AI 会话可追溯红队验证历史，判断哪些模块验过、何时验的、质量如何。控制台报告随会话消失，这一行是唯一持久化痕迹。
 
 #### 精准/增量模式（单文件报告）
 
@@ -224,12 +232,12 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 | File | Mutation | Fix Status |
 |------|----------|------------|
 | payment_service.dart:L67 | [状态截断] 跳过扣款确认 | ✅ 已修复 |
-| order_service.dart:L112 | [逻辑反转] 反转退款条件 | ⚠️ MANUAL |
+| order_service.dart:L112 | [逻辑反转] 反转退款条件 | ⚠️ ESCALATION |
 
 ## Verdict
 
 全局 Mutation Score: 81% (16 mutations, 13 caught)
-测试盲点已修复: 2/3 | 需人工介入: 1
+测试盲点已修复: 2/3 | 需升级处理: 1
 ```
 
 ## 约束
