@@ -285,6 +285,7 @@ batchcc task-doc-review            # 执行
 | **索引同步** | BEHAVIOR ↔ features/ | BEHAVIOR 中索引的 features/*.md 是否都存在？features/ 中的文档是否都被索引？ |
 | **孤儿检测** | 子目录文档 | 文档对应的功能模块是否还存在于代码中？ |
 | **存在性** | 全部 | 文档中提到的组件/类/Widget 是否真实存在于 `lib/` 中？ |
+| **AI-Only 合规性** | 全部 | 文档是否假设人类开发者操作？（"开发者需要"、"手动运行"、"请确认后继续"等表述应改为明确指向 AI 自主执行或产品负责人决策） |
 
 ---
 
@@ -295,7 +296,7 @@ batchcc task-doc-review            # 执行
 | 边界 | 裁决标准 |
 |------|----------|
 | BEHAVIOR vs features/ | BEHAVIOR 只写**跨页面的、通用的、核心闭环**流程；features/ 写**页面内部的、分支众多的**局部逻辑 |
-| BEHAVIOR vs ARCHITECTURE | BEHAVIOR 讲**页面怎么流转**（用户视角）；ARCHITECTURE 讲**代码怎么组织**（开发者视角） |
+| BEHAVIOR vs ARCHITECTURE | BEHAVIOR 讲**页面怎么流转**（用户视角）；ARCHITECTURE 讲**代码怎么组织**（工程视角） |
 | ROADMAP vs MEMORY | ROADMAP 关注**进度**（做完了吗）；MEMORY 关注**知识**（为什么难做、怎么避坑） |
 | 核心文档 vs 子目录文档 | 核心文档写**概要和索引**；子目录文档写**详细实现和分支逻辑** |
 

@@ -57,7 +57,7 @@ jest / pytest / flutter test
 
 ### 死循环熔断
 
-同一测试修复 **3 次仍失败**：停止修复，标记"需要人工介入"，记录已尝试方向，跳过处理下一个。
+同一测试修复 **3 次仍失败**：停止修复，标记为疑难问题，升级调试策略（/think --quick 获取外部视角 或 写入 to-discuss.md），记录已尝试方向，跳过处理下一个。
 
 ## 约束
 
@@ -69,4 +69,4 @@ jest / pytest / flutter test
 
 - 日常迭代：只跑 unit + widget test（`../scripts/test.sh`）
 - **禁止自动跑 E2E**：`integration_test` 需要模拟器，耗时且脆弱，Agent 无法区分环境抖动和真实 Bug
-- E2E 仅发布前由用户人工触发
+- E2E 由用户指示触发（产品决策，非编程操作）

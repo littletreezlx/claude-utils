@@ -163,7 +163,7 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 1. AI 生成测试修复方案（新增断言或新增测试用例）
 2. **优先更新现有测试 > 创建新测试**
 3. 修复后重新注入同一变异，验证测试能 catch
-4. **熔断**：同一变异点修复 2 次仍无法 catch → 标记 `[MANUAL]` 需人工介入
+4. **熔断**：同一变异点修复 2 次仍无法 catch → 标记 `[ESCALATION]` AI 升级调试策略（代码设计评审/重构后重试），仍无法解决则写入 to-discuss.md
 
 ### Step 4: 输出验证报告
 
@@ -224,12 +224,12 @@ test-workflow → "跑一下看结果" （执行 + 诊断）
 | File | Mutation | Fix Status |
 |------|----------|------------|
 | payment_service.dart:L67 | [状态截断] 跳过扣款确认 | ✅ 已修复 |
-| order_service.dart:L112 | [逻辑反转] 反转退款条件 | ⚠️ MANUAL |
+| order_service.dart:L112 | [逻辑反转] 反转退款条件 | ⚠️ ESCALATION |
 
 ## Verdict
 
 全局 Mutation Score: 81% (16 mutations, 13 caught)
-测试盲点已修复: 2/3 | 需人工介入: 1
+测试盲点已修复: 2/3 | 需升级处理: 1
 ```
 
 ## 约束

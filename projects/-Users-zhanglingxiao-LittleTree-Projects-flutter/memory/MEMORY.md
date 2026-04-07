@@ -6,6 +6,7 @@
 - [feedback_autonomous_verification.md](feedback_autonomous_verification.md) — 运行时验证是默认行为，不要问用户去手动测试
 - [feedback_ai_only_paradigm.md](feedback_ai_only_paradigm.md) — AI-Only 前提：工作流不假设人类程序员存在，决策按影响半径升级
 - [feedback_screenshot_platform.md](feedback_screenshot_platform.md) — 截图时不要自作主张选平台，macOS 应用优先于后台模拟器
+- [feedback_no_theoretical_problems.md](feedback_no_theoretical_problems.md) — to-discuss.md 只记录有实际痛点的议题，不写理论推导出的假设性问题
 
 ## 项目状态
 
@@ -30,4 +31,4 @@
 - [project_ai_image_studio.md](project_ai_image_studio.md) — AI Image Studio: 独立文生图 App（V1 完成），后端直连 ai-image-engine
 
 # currentDate
-Today's date is 2026-03-28.
+Today's date is 2026-04-07.

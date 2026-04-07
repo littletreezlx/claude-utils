@@ -28,5 +28,11 @@ type: project
 - `flametree_pick/lib/dev_tools/cyborg_probe.dart` 实现 `_buildDomTree()` + `_traverseSemanticsNode()`
 - `/cyborg/dom` 返回 JSON：nodes[{id, label, role, rect, center, hasTap, hasLongPress, hasScroll}], screenSize, devicePixelRatio
 - ai-explore skill v3.0.0：PAV 感知优先用语义树坐标，截图降级为辅助验证
-- 坐标获取：`curl /cyborg/dom | python3 -c "..."` → `cliclick c:{screen_x},{screen_y}`
-- 通用性：方案入 framework 层，10+ Flutter 项目均可直接复用
+- 坐标获取：`curl /cyborg/dom` → `curl /cyborg/tap?nodeId=X`（零坐标转换，cliclick 已废弃）
+- 通用性：方案入 framework 层，各 Flutter 项目各写 `cyborg_probe.dart` 即可复用
+
+**最终形态（2026-04-07）:**
+- 行动方式：`/cyborg/tap?nodeId=X` 内部语义动作注入，彻底消除 cliclick 和坐标转换
+- 新增端点：`/cyborg/input`（文字注入）、`/cyborg/longPress`、`/cyborg/scroll`
+- UTF-8 修复：framework 层 query string 用 `Uri.encodeQueryComponent` 正确编解码
+- ai-explore SKILL.md 已同步：cliclick 引用全部移除，模式检测改为 `/cyborg/dom` 节点检查
