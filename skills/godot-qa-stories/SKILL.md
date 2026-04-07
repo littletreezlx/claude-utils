@@ -3,23 +3,31 @@ name: godot-qa-stories
 description: >
   This skill should be used when AI should autonomously verify user stories
   against a running Godot game via DebugPlayServer. A true AI-autonomous
-  loop: reads stories, executes curl sequences, validates assertions, reports
-  failures. Use when the user says "验证故事", "跑用户故事",
-  "regression", "run stories", "qa stories", or after a batch of code changes
-  needs holistic verification beyond unit tests. Requires DebugPlayServer
-  running (port 9999) and docs/user-stories/ to exist.
+  loop: reads QA verification files from docs/user-stories/qa/, executes curl
+  sequences, validates assertions, reports failures. Use when the user says
+  "验证故事", "跑用户故事", "regression", "run stories", "qa stories", or after
+  a batch of code changes needs holistic verification beyond unit tests.
+  Requires DebugPlayServer running (port 9999) and docs/user-stories/qa/ to exist.
 version: 0.2.0
 ---
 
 # Godot QA Stories — 用户故事自主验证
 
-AI 自主闭环：读取 `docs/user-stories/` 中的用户故事，通过 DebugPlayServer 逐步 curl 验证，确保 Happy Path 全部通过。**纯验证，不修代码。**
+AI 自主闭环：读取 `docs/user-stories/qa/*.qa.md` 中的验证脚本，通过 DebugPlayServer 逐步 curl 验证，确保 Happy Path 全部通过。**纯验证，不修代码。**
+
+## 双文件架构
+
+| 文件 | 角色 | 本 skill 怎么用 |
+|------|------|----------------|
+| `docs/user-stories/qa/*.qa.md` | 验证脚本（编译产物） | **日常消费** — 直接读取并执行 |
+| `docs/user-stories/*.md` | 产品故事（源码） | **仅在失败排障时参考** |
 
 ## 核心原则
 
 - **只验证，不修复** — 发现问题记录到报告，不改代码、不补端点、不重启游戏
 - **QA 过程中不重启** — 启动一次，跑完所有故事
 - **故事按编号顺序** — 前序故事可能创建后序需要的数据
+- **只读 qa/ 目录** — 不解析 Story 文件中的内容来执行验证
 
 ---
 
@@ -34,13 +42,15 @@ curl -s --connect-timeout 3 localhost:9999/ping
 - ✅ 有响应 → 跳到 Step 1
 - ❌ 无响应 → 自动启动（见下方"进程管理"）
 
-### Step 1: 加载故事
+### Step 1: 加载 QA 文件
 
-**并行** Read 所有 `docs/user-stories/*.md`（排除 README/模板），按文件名编号排序。
+**并行** Read 所有 `docs/user-stories/qa/*.qa.md`，按文件名编号排序。
+
+**如果 qa/ 目录不存在**：提示用户先运行 `/generate-stories` 迁移到双文件架构。
 
 同时读 `Core/Autoloads/DebugPlayServer.gd` 的 `_route` 函数，获取实际可用端点列表（不硬编码）。
 
-对比故事中引用的端点与实际端点，输出简要对账：
+对比 QA 文件末尾的端点依赖表与实际端点，输出简要对账：
 
 ```
 端点对账: 12/12 匹配 ✅
@@ -62,11 +72,11 @@ curl -s localhost:9999/state/game   # gold, population
 curl -s localhost:9999/state/save   # save data
 ```
 
-### Step 3: 逐条执行故事
+### Step 3: 逐条执行验证
 
-对每条故事的每个 Step：
+对每个 QA 文件的每个 Scenario：
 
-1. 读意图 → 执行 curl → 验证断言
+1. 读 Intent → 执行 curl → 校验 Assert
 2. 判定结果（三种）：
 
 | 结果 | 处理 |
