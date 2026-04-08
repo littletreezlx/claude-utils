@@ -2,11 +2,13 @@
 name: think
 description: >
   Lightweight AI Think collaboration for methodology, strategy, philosophy, and meta-cognition.
-  Supports two modes: default (Gemini, high quality) and --quick (DeepSeek, cheap/fast for autonomous calls).
+  Always uses Gemini by default (--quick DeepSeek only when user explicitly requests).
   Lighter than feat-discuss: no Handshake, no mandatory filing. Trigger when the user says
   "think", "想想", "深入思考", "换个角度", "有没有更好的思路", "challenge this",
   "问问 Gemini 怎么看", or when Claude Code needs an external perspective on strategy/methodology
-  before escalating to the user. NOT for product feature decisions or UI/UX design (use feat-discuss).
+  before escalating to the user. Also auto-triggers on: non-obvious strategy/architecture choices,
+  cross-project tool/pattern design, workflow methodology improvements.
+  NOT for product feature decisions or UI/UX design (use feat-discuss).
 version: 0.2.0
 ---
 
@@ -17,26 +19,14 @@ version: 0.2.0
 与外部 AI 进行轻量级的方法论/策略/哲学讨论。
 不同于 `feat-discuss-local-gemini` skill 的完整流程（Handshake + 强制落库），本 skill 专注于快速获取外部视角和认知挑战。
 
-**双模式架构：**
-- **默认模式 (Gemini)** — 用户手动触发时使用，高质量深度讨论
-- **Quick 模式 (DeepSeek)** — Claude Code 自主调用时使用，低成本快速 sanity check
+**统一使用 Gemini**。`--quick` (DeepSeek) 仅在用户显式要求时使用。
 
 **核心铁律：外部 AI 是无状态的。每次 API 调用都是全新对话，所有上下文必须由 Claude Code 在 Prompt 中显式提供。**
 
-## 双模式架构
+## 模式
 
-| 维度 | 默认模式 (Gemini) | Quick 模式 (DeepSeek) |
-|------|-------------------|----------------------|
-| **触发方式** | 用户手动 `/think` | Claude Code 自主调用 |
-| **命令** | `think.mjs "<prompt>"` | `think.mjs --quick "<prompt>"` |
-| **模型** | `DESIGN_MODEL` (Gemini) | `CHEAP_MODEL` (DeepSeek R1) |
-| **成本** | 中等 | 极低 |
-| **适用场景** | 影响项目方向的方法论/哲学讨论 | debug 卡住时快速 sanity check、简单策略验证 |
-| **质量** | 深度推理 + 反直觉检验 | 逻辑清晰但创造性弱、Devil's Advocate 能力有限 |
-
-**分流核心维度是"决策影响半径"**：
-- 影响当前会话 → `--quick` (DeepSeek) 足够
-- 影响项目方向/全局配置 → 默认 (Gemini)
+- **默认：Gemini** — 所有场景（手动触发、自主触发）统一使用
+- **`--quick` (DeepSeek)** — 仅在用户显式要求时使用（如 "用 deepseek 想想"）
 
 ## 与 feat-discuss 的关系
 
@@ -60,12 +50,11 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 - 用户说 "问问 Gemini 怎么看", "challenge this"
 - 用户说 "跟 Gemini 聊聊这个思路", "找 Gemini 挑战一下"
 
-### 自动触发 (Claude Code 主动调用)
-- 连续 2 次尝试修复同一问题失败，即将停下来问用户前
+### 自动触发 (Claude Code 主动调用，统一使用 Gemini)
+- 面临无明确最优解的策略/架构选择时
 - 设计一个会影响多个项目的通用工具/模式时
 - 提出新的工作流/方法论改进时 (需要 Devil's Advocate)
 - 用户发出元认知指令 ("全面思考"、"深入想想这个问题")
-- 面临无明确最优解的策略选择时
 
 ### 不触发 (用 feat-discuss 代替)
 - 具体产品功能的方向决策 -> `feat-discuss-local-gemini` skill product
@@ -88,20 +77,17 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 
 ### Step 2: 调用外部 AI Think
 
-**根据触发方式选择模式：**
+**统一使用 Gemini（默认模式）：**
 
 ```bash
-# 默认模式 (Gemini) — 用户手动触发 /think 时使用
 export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs "<prompt>"
-
-# Quick 模式 (DeepSeek) — Claude Code 自主调用时使用
-export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --quick "<prompt>"
 ```
 
-**模式选择规则：**
-- 用户说 "think"/"想想"/"深入思考" → **默认模式** (Gemini)
-- Claude Code 自主触发（debug 卡住、快速验证思路）→ **--quick** (DeepSeek)
-- 影响多项目的方法论/全局配置决策 → **默认模式** (Gemini)，即使是自主触发
+**`--quick` (DeepSeek) 仅在用户显式要求时使用**（如 "用 deepseek 想想"、"quick think"）：
+
+```bash
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --quick "<prompt>"
+```
 
 #### 首轮 Prompt 格式
 

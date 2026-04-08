@@ -82,7 +82,8 @@
 | 遇到产品/架构/UI 决策需要外部意见 | `feat-discuss-local-gemini` skill | 调用 Gemini API 咨询 |
 | AI 生成大量测试（>20），或用户质疑测试质量 | `test-verify` skill | 红队对抗验证 |
 | 改完业务逻辑/UI，项目有 Debug State Server | curl + 截图自主验证 | 详见项目级 CLAUDE.md |
-| debug 卡住（连续 2 次失败）或需要快速验证思路 | `think --quick` skill | 调用 DeepSeek 低成本 sanity check |
+| 面临无明确最优解的策略/架构选择 | `think` skill (Gemini) | 获取外部视角再决策 |
+| 设计跨项目通用工具/模式，或提出工作流改进 | `think` skill (Gemini) | Devil's Advocate 检验 |
 
 **不自动触发的**（需用户明确要求）：
 
