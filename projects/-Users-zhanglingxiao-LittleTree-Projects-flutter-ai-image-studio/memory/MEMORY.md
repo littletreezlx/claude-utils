@@ -1,2 +1,3 @@
 - [Backend Location](reference_backend_location.md) — ai-image-engine 后端项目路径及部署方式
 - [Sync Workflow](feedback_sync_workflow.md) — 后端同步走 git push/pull，不用 SSH/SCP
+- [Anti-Purity Bias](feedback_anti_purity_bias.md) — AI 协作防纯度偏见：原则关注结果而非机制

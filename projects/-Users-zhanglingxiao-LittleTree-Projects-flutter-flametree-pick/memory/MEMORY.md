@@ -6,3 +6,4 @@
 - [卡片微旋转审美陷阱](feedback_card_rotation.md) — AI两次推荐±3°旋转被拒，禁止再推荐增强散落感
 - [Cyborg 探索前确认代码已编译](feedback_cyborg_fresh_build.md) — force-reset≠新代码生效，需验证关键端点
 - [探索前确认实际行为非文档](feedback_explore_verify_behavior.md) — 不能用文档预期当验证标准，先观察实际行为
+- [原则关注结果而非机制](feedback_principle_vs_mechanism.md) — 产品原则应基于用户体验结果评估，不能机械套用到实现机制
