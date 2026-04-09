@@ -1,1 +1,2 @@
 - [WSL2 Caddy 反向代理架构](reference_wsl2_port_forwarding.md) — 内部 8101 + Caddy 对外 8100，含 netsh portproxy 冲突排查经验
+- [WSL2 环境位置认知](wsl_location.md) — 我在 WSL 内部，localhost ≠ Windows，需通过 172.17.128.1 访问 Windows 服务

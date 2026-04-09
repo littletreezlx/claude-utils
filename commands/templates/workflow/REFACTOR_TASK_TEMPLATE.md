@@ -12,17 +12,17 @@
 
 ## STAGE ## name="fix-critical" mode="serial"
 # 阶段1：修复阻塞性问题（串行，避免冲突）
-@.refactor-tasks/fix-critical-tests.md
-@.refactor-tasks/fix-critical-architecture.md
+@.task-refactor-project/fix-critical-tests.md
+@.task-refactor-project/fix-critical-architecture.md
 
 ## STAGE ## name="fix-high" mode="parallel" max_workers="3"
 # 阶段2：修复重要问题（并行）
-@.refactor-tasks/fix-high-missing-tests.md
-@.refactor-tasks/fix-high-outdated-docs.md
+@.task-refactor-project/fix-high-missing-tests.md
+@.task-refactor-project/fix-high-outdated-docs.md
 
 ## STAGE ## name="fix-medium" mode="parallel" max_workers="4"
 # 阶段3：修复一般问题（并行）
-@.refactor-tasks/fix-medium-code-quality.md
+@.task-refactor-project/fix-medium-code-quality.md
 
 ## STAGE ## name="final-verification" mode="serial"
 # 阶段4：全量测试验证 + 生成修复报告
@@ -52,13 +52,15 @@
 2. 评估整体完成度：哪些问题已修复？哪些有偏差？
 3. 记录关键决策和背景
 4. 自问：还有什么没做完？还有什么可以进一步优化？
-5. 调用 /todo-write 写入 TODO.md
+5. **直接写入项目根目录 TODO.md**（不依赖 /todo-write），包含已完成清单、遗留问题、下一步行动项
+
+**⚠️ 重要**：你没有前序任务的会话历史，必须通过 `git log`、`git diff --stat` 和文件系统自行发现前序产出。
 
 **完成标志**：
-- [ ] TODO.md 已通过 /todo-write 更新
+- [ ] TODO.md 已写入项目根目录且包含遗留事项和下一步行动
 
 文件: TODO.md
-验证: test -f TODO.md
+验证: test -f TODO.md && grep -c "\- \[ \]" TODO.md
 ```
 
 ## 修复任务分类规则

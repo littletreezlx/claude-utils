@@ -1,22 +1,32 @@
 ---
 name: think
 description: >
-  Lightweight Gemini Think collaboration for methodology, strategy, philosophy, and meta-cognition.
+  Lightweight AI Think collaboration for methodology, strategy, philosophy, and meta-cognition.
+  Always uses Gemini by default (--quick DeepSeek only when user explicitly requests).
   Lighter than feat-discuss: no Handshake, no mandatory filing. Trigger when the user says
   "think", "想想", "深入思考", "换个角度", "有没有更好的思路", "challenge this",
   "问问 Gemini 怎么看", or when Claude Code needs an external perspective on strategy/methodology
-  before escalating to the user. NOT for product feature decisions or UI/UX design (use feat-discuss).
-version: 0.1.0
+  before escalating to the user. Also auto-triggers on: non-obvious strategy/architecture choices,
+  cross-project tool/pattern design, workflow methodology improvements.
+  NOT for product feature decisions or UI/UX design (use feat-discuss).
+version: 0.2.0
 ---
 
 # 轻量级 Think 协作
 
 ## 目的
 
-与 Gemini Think 角色进行轻量级的方法论/策略/哲学讨论。
+与外部 AI 进行轻量级的方法论/策略/哲学讨论。
 不同于 `feat-discuss-local-gemini` skill 的完整流程（Handshake + 强制落库），本 skill 专注于快速获取外部视角和认知挑战。
 
-**核心铁律：Gemini 是无状态的。每次 API 调用都是全新对话，所有上下文必须由 Claude Code 在 Prompt 中显式提供。**
+**统一使用 Gemini**。`--quick` (DeepSeek) 仅在用户显式要求时使用。
+
+**核心铁律：外部 AI 是无状态的。每次 API 调用都是全新对话，所有上下文必须由 Claude Code 在 Prompt 中显式提供。**
+
+## 模式
+
+- **默认：Gemini** — 所有场景（手动触发、自主触发）统一使用
+- **`--quick` (DeepSeek)** — 仅在用户显式要求时使用（如 "用 deepseek 想想"）
 
 ## 与 feat-discuss 的关系
 
@@ -40,12 +50,11 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 - 用户说 "问问 Gemini 怎么看", "challenge this"
 - 用户说 "跟 Gemini 聊聊这个思路", "找 Gemini 挑战一下"
 
-### 自动触发 (Claude Code 主动调用)
-- 连续 2 次尝试修复同一问题失败，即将停下来问用户前
+### 自动触发 (Claude Code 主动调用，统一使用 Gemini)
+- 面临无明确最优解的策略/架构选择时
 - 设计一个会影响多个项目的通用工具/模式时
 - 提出新的工作流/方法论改进时 (需要 Devil's Advocate)
 - 用户发出元认知指令 ("全面思考"、"深入想想这个问题")
-- 面临无明确最优解的策略选择时
 
 ### 不触发 (用 feat-discuss 代替)
 - 具体产品功能的方向决策 -> `feat-discuss-local-gemini` skill product
@@ -64,17 +73,29 @@ Think skill 是从 `feat-discuss-local-gemini` 中拆分出的轻量级子集：
 - 如果涉及具体项目, 按需读取相关文档片段
 - 不携带 CLAUDE.md (工程操作指南, Gemini 不需要)
 - 不要求在特定项目目录中 -- 可以在任意目录讨论跨项目问题
+- **必须在 Context 段开头声明协作模式**：「这是一个 AI-Only 开发项目——AI（Claude Code）全权负责代码/测试/文档，人类是产品负责人，不写代码。请基于此前提给出建议。」
 
-### Step 2: 调用 Gemini Think
+### Step 2: 调用外部 AI Think
+
+**统一使用 Gemini（默认模式）：**
 
 ```bash
 export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs "<prompt>"
+```
+
+**`--quick` (DeepSeek) 仅在用户显式要求时使用**（如 "用 deepseek 想想"、"quick think"）：
+
+```bash
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --quick "<prompt>"
 ```
 
 #### 首轮 Prompt 格式
 
 ```
 ## Context
+
+> 协作模式：AI-Only 开发。AI（Claude Code）全权负责代码/测试/文档维护，人类是产品负责人，不写代码。所有工作流中不存在人类程序员介入。
+
 {Claude Code 的分析和当前思考}
 
 ## The Problem
@@ -139,16 +160,37 @@ Gemini 无记忆, 多轮对话时必须在 Prompt 中重建完整上下文。
 1. **描述事实, 不描述体系** -- "我们有 1178 个单元测试" 比 "冰山模式测试策略" 更不容易被误解
 2. **Gemini 需要理解背景, 不是评价体系** -- 提供上下文, 不是要它审核内部流程
 3. **标注触发方式** -- 提到工具/流程时, 说清楚是 "手动按需" 还是 "自动触发"
+4. **防"实现即目的"（Anti Means-as-End）** -- 传递产品原则时附带：「以上原则关注用户体验的结果，不是实现机制。」当 Gemini 用美学类比论证时，Claude Code 必须还原为因果链，因果断裂则抛弃。当用户与 AI 有不同观点时，prompt 中必须平等呈现双方方案。
 
 ### Step 3: 展示 + Claude 补充判断
 
 1. **展示** Gemini 完整回复
 2. **Claude Code 补充** 自己的判断 (同意/分歧/补充)
 3. **追问** -- 如需追问, 按多轮格式重新调用
-4. **可选落库** -- 如果讨论产出了可执行的策略或决策:
-   - 涉及项目 -> 落库到 docs/ 相关文档 (ADR, CLAUDE.md 等)
-   - 涉及全局 -> 落库到 ~/.claude/ 相关文档
-   - 纯探讨性质 -> 不强制落库, 展示给用户即可
+4. **按产出性质分流**:
+
+| 产出性质 | 去向 |
+|---------|------|
+| 已明确达成共识、立即可执行的工作流/方法论改进 | 直接更新相关 skill / doc / CLAUDE.md |
+| 待执行的具体任务（Claude 或用户） | 写入 `TODO.md`（调用 `todo-write`） |
+| **需要用户/设计者拍板的策略选择** | 写入项目根 `to-discuss.md` |
+| 纯探讨性质、无可执行产出 | 不落库, 展示给用户即可 |
+
+**to-discuss.md 模板**（当讨论未收敛、需要人决断时）：
+```markdown
+## [Strategy|Methodology|Workflow] 简短标题 (Ref: think 讨论 YYYY-MM-DD)
+- **事实前提**: [讨论基于的客观现状]
+- **选项 A**: [方案 A + Gemini 倾向/Claude 倾向]
+- **选项 B**: [方案 B + 理由]
+- **反面检验**: [各方案的盲区]
+- **决策选项**:
+  - [ ] Approve A → 落库为规则/更新 skill
+  - [ ] Approve B → 同上
+  - [ ] Discuss → 再次 /think 深入追问
+  - [ ] Reject → 维持现状
+```
+
+**原则**：think 的产出很容易过度自信（"我和 Gemini 都觉得应该 X"），涉及影响多项目的决策时**默认进 to-discuss.md**，不要自作主张更新全局配置。
 
 ## 沟通规范
 

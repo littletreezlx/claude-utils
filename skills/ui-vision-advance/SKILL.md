@@ -96,6 +96,33 @@ version: 1.0.0
 
 如果上下文不足以支撑高质量评审（缺截图、不清楚目标平台、产品灵魂未明确），**停止推演**，用 `### ⚠️ 信息缺失` 列出 1-3 个必须补充的具体问题。宁可少说，不可在关键假设上猜错。
 
+### Step 7: 分流归档（严禁混流）
+
+审美评审**本质上是主观判断**，绝大部分产出应进 `to-discuss.md`，只有客观偏离规范的才能直接入 TODO：
+
+#### 7a. 客观规范偏离 → TODO.md
+截图与 `docs/ui/UI_SHOWCASE.md` / `theme.md` 定义的 Token 明显偏离（如主题色误用、阴影参数与规范不符）→ 调用 `todo-write` 写入 `TODO.md`。
+这类是**规范执行问题**，不是审美判断。
+
+#### 7b. 审美判断 → to-discuss.md（默认路径）
+Phase 3 的 🔴 强烈建议 / 🟡 可选优化 **全部**进 `to-discuss.md`。审美建议哪怕 AI 再自信也是一个观点，必须让设计师拍板：
+
+```markdown
+## [Aesthetic|Signature|Refinement] 简短标题 (Ref: ui-vision-advance 报告 Phase 3)
+- **事实前提**: [Phase 2 中的客观观察，带维度（Typography/Color/...）]
+- **AI 观点**: [具体的设计方向建议 + 精确规格]
+- **反面检验**: [当前设计可能的合理性 / 改动的破坏性风险 / 是否偏离 PRODUCT_SOUL]
+- **决策选项**:
+  - [ ] Approve → 转 TODO.md（或 /ui-redesign）
+  - [ ] Discuss → /think 或 /feat-discuss-local-gemini (design)
+  - [ ] Reject → 维持现状，记录理由
+```
+
+**关键铁律**：
+- 即使是 🔴 "强烈建议" 级别，也默认进 to-discuss.md —— 灵魂级建议恰恰最需要设计师判断
+- 只有**规范明确定义、AI 只是在对账**的才算 TODO（如 Token 用错、阴影参数不符）
+- Phase 4 的"设计简报"在**被 Approve 后**才进 TODO.md，否则只是提案
+
 ## 约束
 
 - **Visual Ground Truth**：评审必须基于当前实际截图。截图中未出现的元素等同于不存在。禁止用"通用 App 设计惯例"脑补界面中不存在的入口或功能。

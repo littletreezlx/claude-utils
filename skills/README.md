@@ -39,10 +39,15 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `prompt-craft` | 编写/审查/优化项目中的 AI-facing prompt（system prompt、API 调用指令） | — (自动触发) |
 | `ai-cli-design` | 编写/优化 CLI 工具或 Python 脚本时，确保对 AI Agent 友好 | — (自动触发) |
 | `update-from-stitch` | 从 Stitch 拉取设计稿到本地，对比差异并更新代码 | `/update-from-stitch` |
-| `ai-qa-stories` | AI 自主闭环：按 user-stories 文档验证 App（回归测试） | `/ai-qa-stories` |
-| `ai-explore` | AI 自主闭环：启发式探索 App 发现未知问题（自动先跑 stories） | `/ai-explore` |
+| `ai-qa-stories` | Flutter/Android App：纯验证不修，按 user-stories 逐步 curl 验证 | `/ai-qa-stories` |
+| `ai-explore` | Flutter/Android App：角色扮演式自主探索，人设驱动发现问题 | `/ai-explore` |
+| `android-qa-stories` | 原生 Android App：纯验证不修，adb + Debug Server 验证 | `/android-qa-stories` |
+| `android-explore` | 原生 Android App：角色扮演式自主探索 | `/android-explore` |
+| `godot-qa-stories` | Godot 游戏：纯验证不修，通过 DebugPlayServer 验证 | `/godot-qa-stories` |
+| `godot-explore` | Godot 游戏：角色扮演式自主探索，玩家人设驱动 | `/godot-explore` |
 | `generate-stories` | 从现有文档生成 user-stories 初稿（需人工审核） | `/generate-stories` |
 | `init-debug-server` | 为 Flutter 项目搭建 Debug State Server 基建 | `/init-debug-server` |
+| `ai-self-audit` | 用户请求"项目自省"/"AI 维护性"/"怎么让你更好维护"时，审计 AI 自主维护能力 | — (用户主动触发) |
 
 ---
 

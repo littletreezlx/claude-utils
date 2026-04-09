@@ -1,6 +1,6 @@
 # [项目名] 测试补齐计划
 
-> ⚠️ **此文件是入口文件，必须放在项目根目录，命名为 `task-add-test`**（不是 `.test-tasks/task-add-test.md`）
+> ⚠️ **此文件是入口文件，必须放在项目根目录，命名为 `task-test-plan`**（不是 `.task-test-plan/task-test-plan.md`）
 
 > **🏠 项目宏观目标**：
 > [描述项目的测试补齐目标，为什么要这样做]
@@ -9,7 +9,7 @@
 
 ## TASK ##
 Stage 1: 测试分类（已完成）
-详见 `.test-tasks/stage-1-triage.md`
+详见 `.task-test-plan/stage-1-triage.md`
 
 **✅ 完成标志**：
 - [x] 现有测试已分类
@@ -18,7 +18,7 @@ Stage 1: 测试分类（已完成）
 
 ## TASK ##
 Stage 2: 清理任务（如有）
-详见 `.test-tasks/stage-2-cleanup.md`
+详见 `.task-test-plan/stage-2-cleanup.md`
 
 **✅ 完成标志**：
 - [x] 无需清理（或已清理）
@@ -71,10 +71,12 @@ T4-1: 全量测试验证
 2. 评估测试覆盖度：关键路径是否都覆盖？
 3. 记录关键决策和背景
 4. 自问：还有什么测试缺口？还有什么可以进一步优化？
-5. 调用 /todo-write 写入 TODO.md
+5. **直接写入项目根目录 TODO.md**（不依赖 /todo-write），包含测试覆盖摘要、遗留缺口、下一步行动项
+
+**⚠️ 重要**：你没有前序任务的会话历史，必须通过 `git log`、`git diff --stat` 和文件系统自行发现前序产出。
 
 **完成标志**：
-- [ ] TODO.md 已通过 /todo-write 更新
+- [ ] TODO.md 已写入项目根目录且包含遗留事项和下一步行动
 
 文件: TODO.md
-验证: test -f TODO.md
+验证: test -f TODO.md && grep -c "\- \[ \]" TODO.md

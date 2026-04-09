@@ -15,7 +15,7 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 /todo-huge-task "实现完整的用户管理系统"
 /todo-huge-task $ARGUMENTS
 
-# 产出文件命名为 task-{用户指定名}，如 task-user-system
+# 产出文件命名为 task-{用户指定名}，如 task-user-system；细节目录为 .task-{用户指定名}/
 batchcc task-user-system            # 执行
 ```
 
@@ -53,7 +53,7 @@ batchcc task-user-system            # 执行
 | 前端页面 | 各功能模块的 UI（可用 mock） | **并行** |
 | 集成测试 | 模块间集成、API 联调 | 部分串行 |
 | E2E 测试 | 完整业务流程验证 | **并行** |
-| 收尾 | 全局审视 + /todo-write | 串行 |
+| 收尾 | 全局审视 + 直接写入 TODO.md | 串行 |
 
 ### 3. 任务拆分原则
 
@@ -145,7 +145,7 @@ batchcc task-user-system            # 执行
 - 总阶段数: [N] / 总任务数: [M]
 - 可并行任务: [Y] ([Y/M]%)
 - 宏观目标: [已提取]
-- 收尾阶段: review（全局审视 + /todo-write）
+- 收尾阶段: review（全局审视 + 直接写入 TODO.md）
 
 🚀 下一步:
 batchcc task-{名称}            # 执行

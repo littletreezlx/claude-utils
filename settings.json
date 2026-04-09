@@ -14,7 +14,8 @@
       "Bash(mv:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "mcp__pencil"
     ],
     "deny": [],
     "defaultMode": "dontAsk"
@@ -35,6 +36,21 @@
   "statusLine": {
     "type": "command",
     "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+  },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "pencil": {
+      "command": "/Users/zhanglingxiao/.pencil/mcp/visual_studio_code/out/mcp-server-darwin-arm64",
+      "args": [
+        "--app",
+        "visual_studio_code"
+      ]
+    }
   },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true

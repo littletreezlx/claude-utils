@@ -144,11 +144,28 @@ version: 3.0.0
 ```markdown
 ## 建议操作
 1. 🔴 修复 Soul-breaking 问题 (回复 1 开始修改)
-2. 🟡 处理 Refinement 建议 (回复 2 逐项处理)
+2. 🟡 Refinement 建议归档到 to-discuss.md (回复 2，让设计师逐条拍板)
 3. 🔄 确认演进方向并更新文档 (回复 3，更新 UI_SHOWCASE.md)
 4. 📸 重新截图验证 (回复 4，修改后再跑一次)
-5. 📋 保存到 TODO (回复 5，调用 /todo-write)
+5. 📋 Soul-breaking 归档到 TODO.md (回复 5，作为硬修复任务)
 6. ✅ 确认无需修改 (回复 6)
+```
+
+**归档分流原则**（严禁混流）：
+- 🔴 **Soul-breaking = 客观偏离设计规范**（纯黑阴影、生硬直线、主题色误用等）→ 选项 5 → `TODO.md`，这是硬修复
+- 🟡 **Refinement = 审美观察和改进建议**（呼吸感、焦点层级等主观判断）→ 选项 2 → `to-discuss.md`，让设计师判断
+- 🔄 **Evolution Dialogue = 代码演进 vs. 文档过时**（选项 3）→ 直接更新 UI_SHOWCASE.md
+
+**to-discuss.md 模板**（选项 2 触发时使用）：
+```markdown
+## [Aesthetic|Refinement] 简短标题 (Ref: ui-vision-check 报告)
+- **事实前提**: [Step 3 中的 4 维度观察，带截图来源]
+- **AI 观点**: [方向性改进建议]
+- **反面检验**: [当前设计可能的合理性 / 是否是 AI 审美偏见]
+- **决策选项**:
+  - [ ] Approve → 转 TODO.md（或 /ui-redesign）
+  - [ ] Discuss → /think 或 /feat-discuss-local-gemini (design)
+  - [ ] Reject → 维持现状
 ```
 
 **Evolution Dialogue 闭环**：如果 Founder 选择 3（确认演进），Claude Code 应更新 `UI_SHOWCASE.md` 和相关 Spec 中的对应描述，实现代码倒推文档的自动修正。

@@ -4,7 +4,9 @@
 
 - [user_preferences.md](user_preferences.md) — 用户角色、技术偏好、决策风格
 - [feedback_autonomous_verification.md](feedback_autonomous_verification.md) — 运行时验证是默认行为，不要问用户去手动测试
+- [feedback_ai_only_paradigm.md](feedback_ai_only_paradigm.md) — AI-Only 前提：工作流不假设人类程序员存在，决策按影响半径升级
 - [feedback_screenshot_platform.md](feedback_screenshot_platform.md) — 截图时不要自作主张选平台，macOS 应用优先于后台模拟器
+- [feedback_no_theoretical_problems.md](feedback_no_theoretical_problems.md) — to-discuss.md 只记录有实际痛点的议题，不写理论推导出的假设性问题
 
 ## 项目状态
 
@@ -23,9 +25,10 @@
 
 - [methodology_autonomous_dev.md](methodology_autonomous_dev.md) — AI 自主开发闭环：Debug State Server + 截图 + 日志（首发 flametree_pick）
 
-## 新项目
+## AI 图片生态
 
-- [project_ai_image_studio.md](project_ai_image_studio.md) — AI Image Studio: 独立文生图 App（2026-03-28 立项），后端直连 ai-image-engine
+- [project_ai_image_ecosystem.md](project_ai_image_ecosystem.md) — 三项目协作拓扑：engine(底层) → studio(家庭创作) + game-mvp(游戏资产管线)
+- [project_ai_image_studio.md](project_ai_image_studio.md) — AI Image Studio: 独立文生图 App（V1 完成），后端直连 ai-image-engine
 
 # currentDate
-Today's date is 2026-03-28.
+Today's date is 2026-04-07.

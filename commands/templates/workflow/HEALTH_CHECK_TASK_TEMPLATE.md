@@ -1,6 +1,6 @@
 # 项目健康检查任务模板
 
-> 生成 `task-health-check` 的参考骨架。基于项目实际情况调整模块和工具。
+> 生成 `task-comprehensive-health-check` 的参考骨架。基于项目实际情况调整模块和工具。
 
 ## 主任务文件结构
 
@@ -12,23 +12,23 @@
 
 ## STAGE ## name="test-health" mode="parallel" max_workers="4"
 # 阶段1：测试健康检查 - 每个模块一个 TASK
-@.health-check-tasks/stage-1-test-health.md
+@.task-comprehensive-health-check/stage-1-test-health.md
 
 ## STAGE ## name="code-quality" mode="parallel" max_workers="4"
 # 阶段2：代码质量检查 - 每个模块一个 TASK
-@.health-check-tasks/stage-2-code-quality.md
+@.task-comprehensive-health-check/stage-2-code-quality.md
 
 ## STAGE ## name="architecture" mode="serial"
 # 阶段3：架构一致性 + 循环依赖检查
-@.health-check-tasks/stage-3-architecture.md
+@.task-comprehensive-health-check/stage-3-architecture.md
 
 ## STAGE ## name="documentation" mode="parallel" max_workers="2"
 # 阶段4：文档一致性检查
-@.health-check-tasks/stage-4-documentation.md
+@.task-comprehensive-health-check/stage-4-documentation.md
 
 ## STAGE ## name="summary" mode="serial"
 # 阶段5：汇总报告 + 自动生成 task-refactor
-@.health-check-tasks/stage-5-summary.md
+@.task-comprehensive-health-check/stage-5-summary.md
 
 ## STAGE ## name="review" mode="serial"
 
@@ -42,13 +42,15 @@
 2. 评估诊断覆盖度：有没有遗漏的模块或维度？
 3. 记录关键发现和背景
 4. 自问：还有什么没检查到？还有什么可以进一步优化？
-5. 调用 /todo-write 写入 TODO.md
+5. **直接写入项目根目录 TODO.md**（不依赖 /todo-write），包含诊断摘要、遗留问题、下一步行动项
+
+**⚠️ 重要**：你没有前序任务的会话历史，必须通过 `git log`、`git diff --stat` 和文件系统自行发现前序产出。
 
 **完成标志**：
-- [ ] TODO.md 已通过 /todo-write 更新
+- [ ] TODO.md 已写入项目根目录且包含遗留事项和下一步行动
 
 文件: TODO.md
-验证: test -f TODO.md
+验证: test -f TODO.md && grep -c "\- \[ \]" TODO.md
 ```
 
 ## 各阶段 TASK 骨架
@@ -85,7 +87,7 @@
 
 ### Stage 6: 收尾审视
 
-按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估覆盖度 → /todo-write 留痕
+按 DAG_FORMAT 收尾模式执行：回顾诊断结果 → 评估覆盖度 → 直接写入 TODO.md 留痕
 
 ## 关键规则
 
