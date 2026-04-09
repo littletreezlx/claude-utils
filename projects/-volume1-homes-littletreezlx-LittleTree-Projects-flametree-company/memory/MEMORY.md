@@ -25,6 +25,16 @@
 - Rclone RC：`127.0.0.1:5572`
 - 代理端口：`7899`（clash-download）
 
+## 媒体自动化 (autolink)
+
+- 脚本位置：`~/LittleTree_Projects/flametree_company/pikpak-sync/scripts/autolink-watch.sh`
+- 日志文件：`/volume1/video/autolink.log`
+- 进程：inotifywait 监控 `/volume1/video/PikPak_Sync`
+- **开机自启动**：已通过 systemd 配置 (`/etc/systemd/system/autolink-watch.service`)
+  - `sudo systemctl enable autolink-watch.service` 已执行
+  - `sudo systemctl start autolink-watch.service` 启动服务
+  - `sudo systemctl stop autolink-watch.service` 停止服务
+
 ## 注意事项
 
 1. NAS 上所有 Docker 命令必须用：`sudo /usr/local/bin/docker <command>`
