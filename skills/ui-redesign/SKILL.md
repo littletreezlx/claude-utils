@@ -139,15 +139,13 @@ GestureDetector(
 - **有偏离 / 有模糊地带** → 在输出末尾追加**灵魂对齐待决策**段落，**不要直接让用户执行**：
 
 ```markdown
-## ⚠️ 灵魂对齐待决策（追加到项目根 to-discuss.md）
+## ⚠️ 灵魂对齐待决策（先调 /think 决策，无法拍板才追加到 to-discuss.md）
 
 ## [Design-Direction] 重塑方案的灵魂偏离点 (Ref: 本次 ui-redesign 输出)
 - **事实前提**: [具体偏离点，如"本方案使用了 glassmorphism，但 PRODUCT_SOUL 的质感隐喻是'施釉陶艺'"]
-- **AI 观点**: [我认为这次偏离是必要的 / 不必要的，理由...]
-- **反面检验**: [这次偏离是否意味着产品灵魂该升级？或者应该退回原风格？]
+- **/think 结论**: [/think 给出了什么判断，为什么无法拍板]
 - **决策选项**:
   - [ ] Approve → 方案落地，同时更新 PRODUCT_SOUL / UI_SHOWCASE（灵魂演进）
-  - [ ] Discuss → /feat-discuss-local-gemini (design)
   - [ ] Reject → 放弃本次重塑方向，回炉
 ```
 

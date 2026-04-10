@@ -153,18 +153,16 @@ version: 3.0.0
 
 **归档分流原则**（严禁混流）：
 - 🔴 **Soul-breaking = 客观偏离设计规范**（纯黑阴影、生硬直线、主题色误用等）→ 选项 5 → `TODO.md`，这是硬修复
-- 🟡 **Refinement = 审美观察和改进建议**（呼吸感、焦点层级等主观判断）→ 选项 2 → `to-discuss.md`，让设计师判断
+- 🟡 **Refinement = 审美观察和改进建议**（呼吸感、焦点层级等主观判断）→ 选项 2 → 先调 `/think --quick` 决策，能拍板则转 TODO 或丢弃，无法决策才进 `to-discuss.md`
 - 🔄 **Evolution Dialogue = 代码演进 vs. 文档过时**（选项 3）→ 直接更新 UI_SHOWCASE.md
 
-**to-discuss.md 模板**（选项 2 触发时使用）：
+**to-discuss.md 模板**（仅 `/think` 无法决策时使用）：
 ```markdown
 ## [Aesthetic|Refinement] 简短标题 (Ref: ui-vision-check 报告)
 - **事实前提**: [Step 3 中的 4 维度观察，带截图来源]
-- **AI 观点**: [方向性改进建议]
-- **反面检验**: [当前设计可能的合理性 / 是否是 AI 审美偏见]
+- **/think 结论**: [/think 给出了什么判断，为什么无法拍板]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md（或 /ui-redesign）
-  - [ ] Discuss → /think 或 /feat-discuss-local-gemini (design)
   - [ ] Reject → 维持现状
 ```
 

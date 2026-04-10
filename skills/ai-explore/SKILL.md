@@ -93,11 +93,15 @@ curl -s 'localhost:$PORT/cyborg/tap?nodeId=0' | python3 -c "import sys,json; pri
 
 > /cyborg/dom 返回 0 nodes → semantics 未启用，需要重启 App（`start-dev.sh --force-reset`）
 
-获取 Simulator 窗口参数（仅截图用，tap 不需要）：
+获取 Simulator 截图（支持后台）：
 
 ```bash
-osascript -e 'tell application "System Events" to tell process "Simulator" to get {position, size} of front window'
-# 返回示例: {393, 30}, {237, 558}
+# 使用通用脚本（推荐）
+../scripts/screenshot-simulator.sh /tmp/cyborg-poc/step_N.png
+
+# 或使用 Swift 命令（需要手动获取 Window ID）
+SIMULATOR_WINDOW_ID=$(swift -e "..." 2>/dev/null)
+screencapture -l $SIMULATOR_WINDOW_ID /tmp/cyborg-poc/step_N.png
 ```
 
 ### Step 1: 建立用户认知
@@ -178,12 +182,12 @@ curl -s localhost:$PORT/cyborg/dom | python3 -m json.tool
 **截图仅用于视觉确认**（当语义树不足以判断 UI 状态时）：
 
 ```bash
-# 激活 Simulator 窗口
-osascript -e 'tell application "Simulator" to activate'
-sleep 0.3
+# 方法 1: 使用通用脚本（推荐，支持后台截图）
+../scripts/screenshot-simulator.sh /tmp/cyborg-poc/step_N.png
 
-# 截取 Simulator 窗口（-R = region, macOS 屏幕点坐标）
-screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/cyborg-poc/step_N.png
+# 方法 2: 手动指定 Window ID
+# SIMULATOR_WINDOW_ID=8301
+# screencapture -l $SIMULATOR_WINDOW_ID /tmp/cyborg-poc/step_N.png
 ```
 
 **辅助定位**：结合 State Oracle 缩小搜索范围：
@@ -358,9 +362,9 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 - [建议] — 基于 [哪个人设的体验]
 ```
 
-### Step 4.5: /think 评估（质量关卡）
+### Step 4.5: /think 评估+决策（质量关卡）
 
-报告写完后、分流归档前，调用 `/think --quick` 对发现进行 sanity check：
+报告写完后、分流归档前，调用 `/think --quick` **同时做技术判断和产品决策**：
 
 **输入给 /think 的内容**：
 - 报告中的技术问题清单（含证据链）
@@ -368,41 +372,41 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 - 设计建议
 - 探索模式（Cyborg / Fallback）和实际覆盖范围
 
-**要求 /think 评估**：
+**要求 /think 评估并决策**：
 1. **Bug 真实性** — 证据链是否完整？是真 bug 还是 debug server 限制？
 2. **建议合理性** — 建议是否过度设计？维持现状的成本有多高？
-3. **Filing 决策** — 哪些进 TODO（事实型 bug）、哪些进 to-discuss（需判断）、哪些直接丢弃（噪音）
-4. **Skill 自检** — 本次执行中 skill 本身是否暴露了系统性问题？（如有 → 作为 to-discuss 条目输出，不自动改 skill）
+3. **产品+技术决策** — 对每个发现直接给出决策：进 TODO（需修复）、直接丢弃（噪音）、还是无法决策（极少数情况）
+4. **Skill 自检** — 本次执行中 skill 本身是否暴露了系统性问题？（如有 → 写入 TODO 由 AI 自行修复，不自动改 skill）
 
-**输出**：过滤后的 filing 清单，Step 5 按此清单执行。
+**输出**：带决策的 filing 清单，Step 5 按此清单执行。`/think` 能拍板的直接转 TODO 或丢弃，**只有 `/think` 明确表示无法决策的才进 to-discuss.md**。
 
 > 用 `--quick`（DeepSeek）而非默认 Gemini — 这是自主调用的 sanity check，不需要最高质量。
 > 如果 /think 不可用（API 故障等），跳过此步直接进 Step 5，但在报告中标注"未经 /think 评估"。
 
-### Step 5: 分流归档（严禁混流）
+### Step 5: 分流归档
 
-#### 5a. 事实型 bug → TODO.md
-触发条件：有证据链的技术问题（操作 + State Oracle 异常）。
-用 `todo-write` skill 写入，带 `_scratch/explore-YYYY-MM-DD.md § 章节` 引用。
-**盲区观察不进 TODO.md**。
+#### 5a. /think 已决策 → TODO.md 或丢弃
+- 有证据链的技术问题 + `/think` 确认的产品/架构决策 → 用 `todo-write` skill 写入 TODO.md
+- `/think` 判定为噪音的 → 直接丢弃
+- **盲区观察不进 TODO.md**
 
-#### 5b. 观点/判断型 → to-discuss.md
-追加到 `to-discuss.md`，格式：
+#### 5b. /think 无法决策 → to-discuss.md（极少数情况）
+
+仅当 `/think` 明确表示无法拍板时才写入：
 
 ```markdown
 ## [UX|Product|Arch|Workflow] 简短标题 (Ref: _scratch/explore-YYYY-MM-DD.md § 章节)
 - **事实前提**: [一句话客观现象 + Ref 引用，不重复展开]
-- **AI 观点**: [我认为应该...]
-- **反面检验**: [可能错在哪 / 维持现状的理由]
+- **/think 结论**: [/think 给出了什么判断，为什么它认为无法拍板]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md
-  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
   - [ ] Reject → 直接删
 ```
 
 **绝对禁止**：
 - 把观点伪装成 bug 塞进 TODO.md
 - 把盲区观察伪装成 bug（没有 State Oracle 证据 → 不是 bug）
+- 跳过 `/think` 直接往 to-discuss.md 塞条目
 - 从截图脑补因果
 - 给 AI 观点加置信度字段
 - TODO.md 与 to-discuss.md 之间设指针
@@ -444,4 +448,4 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 4. **保持人设一致** — 新手不会精确计算，效率达人不会慢慢浏览
 5. **nodeId 点击精度 100%** — 但 DOM 中未暴露的 UI 元素无法操作，需结合截图发现盲区
 6. **探索后必须恢复数据** — 运行 seed 脚本或提醒用户
-7. **报告落盘** — 完整报告写入 `_scratch/`；有证据链的 bug → `TODO.md`；观点 → `to-discuss.md`；盲区留在报告
+7. **报告落盘** — 完整报告写入 `_scratch/`；`/think` 已决策的 → `TODO.md` 或丢弃；`/think` 无法决策的 → `to-discuss.md`；盲区留在报告
