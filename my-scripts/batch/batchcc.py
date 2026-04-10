@@ -42,9 +42,10 @@ import argparse
 import os
 import signal
 import shutil
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from pathlib import Path
-from batch_executor_base import BaseBatchExecutor, TaskResult
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from batch_executor_base import BaseBatchExecutor, TaskResult, ProgressMonitor
 from dag_parser import DAGParser, TaskNode
 from dag_executor import DAGExecutor
 
@@ -58,29 +59,29 @@ def _signal_handler(signum, frame):
     """
     处理 Ctrl+C 信号
 
-    优雅退出：
-    1. 终止当前运行的 Claude 子进程
-    2. 保留状态文件（任务标记为 interrupted）
-    3. 打印友好提示
+    策略：不直接 sys.exit，而是 terminate 当前子进程 + 抛 KeyboardInterrupt，
+    让主循环有机会 graceful shutdown 并持久化已收集的结果。
+
+    第二次 Ctrl+C 时直接硬退出。
     """
     global _interrupted, _current_process
-    _interrupted = True
 
-    print("\n\n⚠️  收到中断信号 (Ctrl+C)")
+    if _interrupted:
+        print("\n💀 再次收到 Ctrl+C，强制退出", flush=True)
+        os._exit(130)
+
+    _interrupted = True
+    print("\n\n⚠️  收到中断信号 (Ctrl+C)", flush=True)
 
     if _current_process and _current_process.poll() is None:
-        print("🛑 正在终止当前任务...")
+        print("🛑 正在终止当前任务...", flush=True)
         try:
             _current_process.terminate()
-            _current_process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            _current_process.kill()
         except Exception:
             pass
 
-    print("💾 状态已保存，下次运行将从断点继续")
-    print("💡 使用 --restart 可以重新开始\n")
-    sys.exit(130)  # 标准的 Ctrl+C 退出码
+    print("💾 正在保存已完成任务的状态，再次 Ctrl+C 可强制退出\n", flush=True)
+    raise KeyboardInterrupt()
 
 
 # 注册信号处理器
@@ -447,45 +448,70 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
 
     def execute_dag_batch_parallel(self, tasks: List[TaskNode], max_workers: int) -> List[TaskResult]:
         """
-        并行执行一批 DAG 任务（自动管理状态）
+        并行执行一批 DAG 任务（per-task 状态持久化）
 
-        这个方法封装了完整的批量任务执行流程：
-        1. 自动标记所有任务开始
-        2. 并行执行任务
-        3. 自动标记所有任务完成
-
-        Args:
-            tasks: 任务列表
-            max_workers: 最大并发数
-
-        Returns:
-            执行结果列表
+        设计要点：
+        - 不预写 in_progress：只在拿到 result 那一刻才 complete_task
+        - ProcessPoolExecutor 在主线程单线程收 future 结果，git commit 天然无竞态
+        - Ctrl+C 时 already-completed 的任务状态已落盘，不会丢失
+        - 捕获 KeyboardInterrupt 后 cancel_futures 并 re-raise 给顶层 main
         """
-        # 1. 自动标记所有任务开始
-        if self.state_manager and self.current_stage_id is not None:
-            for task in tasks:
-                self.state_manager.start_task(self.current_stage_id, task.task_id)
-
-        # 2. 构建命令列表并并行执行
-        commands = [self.build_command(task.description) for task in tasks]
         working_dir = os.getcwd()
-        results = self.execute_parallel(commands, working_dir, max_workers)
+        commands = [self.build_command(task.description) for task in tasks]
+        total = len(tasks)
 
-        # 3. 自动标记所有任务完成
-        if self.state_manager and self.current_stage_id is not None:
-            for i, result in enumerate(results):
-                task = tasks[i]
-                error_msg = result.error_msg if not result.success else None
-                self.state_manager.complete_task(self.current_stage_id, task.task_id, result.success, error_msg)
+        print(f"\n🚀 并行执行 {total} 个任务 (最大 {max_workers} 并发)\n")
 
-        # 4. 并行批次完成后统一提交一次（避免逐任务 commit 的竞态风险）
-        success_tasks = [tasks[i] for i, r in enumerate(results) if r.success]
-        if success_tasks:
-            descriptions = [t.description.replace('\n', ' ').strip()[:50] for t in success_tasks]
-            summary = f"并行批次完成 ({len(success_tasks)} 任务): {', '.join(descriptions)}"
-            self._auto_commit_if_needed(summary)
+        monitor = ProgressMonitor(total)
+        results: List[Optional[TaskResult]] = [None] * total
+        executor = ProcessPoolExecutor(max_workers=max_workers)
+        shutdown_done = False
 
-        return results
+        try:
+            future_to_index = {}
+            for idx, (task, cmd) in enumerate(zip(tasks, commands)):
+                args = (task.task_id, cmd, working_dir)
+                future = executor.submit(self.execute_command_parallel, args)
+                future_to_index[future] = idx
+                monitor.start_task(task.task_id, cmd)
+
+            for future in as_completed(future_to_index):
+                idx = future_to_index[future]
+                task = tasks[idx]
+                try:
+                    result = future.result()
+                except Exception as e:
+                    result = TaskResult(
+                        task_id=task.task_id,
+                        command=commands[idx],
+                        success=False,
+                        duration=0,
+                        error_msg=f"任务执行异常: {e}"
+                    )
+
+                results[idx] = result
+                monitor.complete_task(task.task_id, result.success)
+
+                # 立即持久化 + 单任务 commit（主线程串行，无 git lock 竞态）
+                if self.state_manager and self.current_stage_id is not None:
+                    err = result.error_msg if not result.success else None
+                    self.state_manager.complete_task(
+                        self.current_stage_id, task.task_id, result.success, err
+                    )
+                if result.success:
+                    self._auto_commit_if_needed(task.description, task.task_id)
+
+        except KeyboardInterrupt:
+            done = sum(1 for r in results if r is not None)
+            print(f"\n⚠️  批次被中断：已持久化 {done}/{total} 任务的状态", flush=True)
+            executor.shutdown(wait=False, cancel_futures=True)
+            shutdown_done = True
+            raise
+        finally:
+            if not shutdown_done:
+                executor.shutdown(wait=True)
+
+        return [r for r in results if r is not None]
 
 
 def is_dag_format(file_path: str) -> bool:
@@ -580,6 +606,10 @@ def main():
                 )
                 return 0 if success else 1
 
+        except KeyboardInterrupt:
+            print("\n⚠️  任务被用户中断")
+            print("💡 下次运行将从断点继续，或使用 --restart 重新开始\n")
+            return 130
         except Exception as e:
             print(f"❌ DAG 执行失败: {e}")
             import traceback
