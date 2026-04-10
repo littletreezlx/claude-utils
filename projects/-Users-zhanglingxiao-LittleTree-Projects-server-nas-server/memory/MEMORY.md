@@ -1,6 +1,7 @@
 # NAS Server 项目记忆
 
 ## 工作流与规范
+- [CLAUDE.md 拆分决策](feedback_claudemd_split.md) — 1+3 拆分：根(纯总览)+src/(前端)+pythonapi+nodejs-service
 - [flywheel-workflow](feedback_flywheel_workflow.md) — 维护飞轮闭环：brief → check → debrief
 - [DAG 任务格式](project_dag_format.md) — batchcc.py 的 STAGE/TASK 声明格式
 - [禁用 git hooks](feedback_no_pre_commit_check.md) — 不要安装 pre-commit/post-commit hooks
