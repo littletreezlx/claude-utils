@@ -8,6 +8,7 @@
 - [文档元数据 sed bug](feedback_doc_metadata_hook.md) — sed 日期正则必须匹配 YYYY-MM-DD 全格式
 - [记忆纪律](feedback_memory_discipline.md) — 禁止存可从代码/文档推导的信息（架构、文件路径等）
 - [禁止远程热修改](feedback_no_remote_hotfix.md) — 不要 docker cp/sed 改容器产物，走正常部署
+- [AI自验证能力](feedback_self_verification.md) — 禁止依赖人工手动测试，优先代码级自验
 
 ## 外部服务与参考
 - [Gotify 通知中心](reference_gotify.md) — 自建 Gotify 推送通知，NAS Server 关键告警
