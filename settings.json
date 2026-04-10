@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/zhanglingxiao/.claude/hooks/pre-tool-call.sh"
+            "command": "/home/littletreezlx/.claude/hooks/pre-tool-call.sh"
           }
         ]
       }
@@ -35,7 +35,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+    "command": "bash /home/littletreezlx/.claude/statusline-command.sh"
   },
   "mcpServers": {
     "playwright": {
