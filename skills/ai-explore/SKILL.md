@@ -362,9 +362,11 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 - [建议] — 基于 [哪个人设的体验]
 ```
 
-### Step 4.5: /think 评估+决策（质量关卡）
+### Step 4.5: 借助 /think 评估+决策（质量关卡）
 
-报告写完后、分流归档前，调用 `/think --quick` **同时做技术判断和产品决策**：
+报告写完后、分流归档前，调用 `/think --quick` 获取外部独立视角，然后 **Claude Code 自己综合判断**做最终决策（技术+产品）：
+
+> `/think` 的价值是引入独立视角打破自我确认偏差，不是让渡决策权。外部 AI 返回的是参考意见，Claude Code 结合项目上下文、PRODUCT_SOUL、代码现状做最终拍板。
 
 **输入给 /think 的内容**：
 - 报告中的技术问题清单（含证据链）
@@ -372,13 +374,13 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 - 设计建议
 - 探索模式（Cyborg / Fallback）和实际覆盖范围
 
-**要求 /think 评估并决策**：
+**要求 /think 评估**：
 1. **Bug 真实性** — 证据链是否完整？是真 bug 还是 debug server 限制？
 2. **建议合理性** — 建议是否过度设计？维持现状的成本有多高？
-3. **产品+技术决策** — 对每个发现直接给出决策：进 TODO（需修复）、直接丢弃（噪音）、还是无法决策（极少数情况）
-4. **Skill 自检** — 本次执行中 skill 本身是否暴露了系统性问题？（如有 → 写入 TODO 由 AI 自行修复，不自动改 skill）
+3. **产品+技术判断** — 对每个发现给出意见：建议进 TODO / 建议丢弃 / 无法判断
+4. **Skill 自检** — 本次执行中 skill 本身是否暴露了系统性问题？
 
-**输出**：带决策的 filing 清单，Step 5 按此清单执行。`/think` 能拍板的直接转 TODO 或丢弃，**只有 `/think` 明确表示无法决策的才进 to-discuss.md**。
+**Claude Code 最终决策**：综合 /think 意见和项目上下文，对每个发现拍板：进 TODO、丢弃、或确认自己也无法决策才进 to-discuss.md。
 
 > 用 `--quick`（DeepSeek）而非默认 Gemini — 这是自主调用的 sanity check，不需要最高质量。
 > 如果 /think 不可用（API 故障等），跳过此步直接进 Step 5，但在报告中标注"未经 /think 评估"。

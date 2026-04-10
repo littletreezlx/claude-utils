@@ -22,9 +22,9 @@
 | `_scratch/*.md` | 原始材料、探索报告、调试日志 | AI 查阅上下文用 |
 
 **铁律**：
-- 事实型 bug → `TODO.md`；观点/产品/设计判断 → **先调 `/think` 决策**，能拍板则转 TODO 或丢弃，`/think` 也拿不准才进 `to-discuss.md`；原始材料 → `_scratch/`
+- 事实型 bug → `TODO.md`；观点/产品/设计判断 → **先借助 `/think` 获取外部视角，Claude Code 自己综合判断做最终决策**，能拍板则转 TODO 或丢弃，自己也拿不准才进 `to-discuss.md`；原始材料 → `_scratch/`
 - **严禁把 AI 的观点伪装成已决策任务塞进 TODO.md**（会污染 `/todo-doit` 的执行流）
-- **严禁跳过 `/think` 直接把观点丢进 `to-discuss.md`**（`/think` 能处理绝大部分产品+技术决策）
+- **严禁跳过 `/think` 直接把观点丢进 `to-discuss.md`**（`/think` 引入独立视角后，Claude Code 能处理绝大部分产品+技术决策）
 - TODO.md 与 to-discuss.md **物理独立，不设指针**（否则互相污染、变成视觉盲点）
 - `to-discuss.md` 不是 backlog 而是 **Last-Resort Queue**：只放 `/think` 明确表示无法决策的事项。每条要么转 TODO，要么被 Reject，不得无限积压
 
