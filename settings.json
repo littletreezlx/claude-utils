@@ -35,7 +35,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /home/littletreezlx/.claude/statusline-command.sh"
+    "command": "bash ~/.claude/statusline-command.sh"
   },
   "mcpServers": {
     "playwright": {
