@@ -172,36 +172,36 @@ curl -s -X POST localhost:9999/play/save_reset
 ### 💡 设计建议（可选）
 ```
 
-### Step 4.5: /think 评估（质量关卡）
+### Step 4.5: /think 评估+决策（质量关卡）
 
-报告写完后、分流归档前，调用 `/think --quick` 对发现进行 sanity check：
+报告写完后、分流归档前，调用 `/think --quick` **同时做技术判断和产品决策**：
 
 1. **Bug 真实性** — 证据链完整吗？是真 bug 还是 server 限制？
-2. **建议合理性** — 值得 filing 吗？
-3. **Filing 决策** — TODO / to-discuss / 丢弃
-4. **Skill 自检** — 执行中 skill 本身有问题吗？（有 → to-discuss）
+2. **建议合理性** — 值得修复吗？
+3. **产品+技术决策** — 对每个发现直接拍板：进 TODO / 丢弃 / 无法决策
+4. **Skill 自检** — 执行中 skill 本身有问题吗？（有 → TODO 由 AI 自行修复）
 
 > 用 `--quick`（DeepSeek）。不可用时跳过，标注"未经评估"。
+> `/think` 能拍板的直接转 TODO 或丢弃，**只有明确无法决策的才进 to-discuss.md**。
 
-### Step 5: 分流归档（严禁混流）
+### Step 5: 分流归档
 
-#### 5a. 事实型 bug → TODO.md
-有证据链的技术问题。带 Ref 引用。**盲区观察不进 TODO.md**。
+#### 5a. /think 已决策 → TODO.md 或丢弃
+有证据链的技术问题 + `/think` 确认的产品/架构决策 → TODO.md。噪音 → 丢弃。
+**盲区观察不进 TODO.md**。
 
-#### 5b. 观点/判断型 → to-discuss.md
+#### 5b. /think 无法决策 → to-discuss.md（极少数情况）
 
 ```markdown
 ## [UX|Gameplay|Economy|Workflow] 简短标题 (Ref: _scratch/explore-YYYY-MM-DD.md § 章节)
 - **事实前提**: [一句话客观现象 + Ref 引用，不重复展开]
-- **AI 观点**: [我认为应该...]
-- **反面检验**: [可能错在哪 / 维持现状的理由 / 是否人设偏见]
+- **/think 结论**: [/think 给出了什么判断，为什么无法拍板]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md
-  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
   - [ ] Reject → 直接删
 ```
 
-**绝对禁止**：观点伪装成 bug、盲区伪装成 bug、从截图脑补因果、加置信度、TODO/to-discuss 设指针。
+**绝对禁止**：观点伪装成 bug、盲区伪装成 bug、跳过 `/think` 直接塞 to-discuss、从截图脑补因果、加置信度、TODO/to-discuss 设指针。
 
 ---
 
@@ -211,4 +211,4 @@ curl -s -X POST localhost:9999/play/save_reset
 2. **不穷举边界、不跑故事** — 那是 godot-qa-stories 的事
 3. **保持人设一致** — 新手不会精确计算 DPS，经济玩家不会乱花钱
 4. **探索后必须恢复数据**
-5. **报告落盘** — `_scratch/` + TODO.md + to-discuss.md + 盲区留在报告
+5. **报告落盘** — `_scratch/` + TODO.md（/think 已决策）+ to-discuss.md（仅 /think 无法决策时）+ 盲区留在报告

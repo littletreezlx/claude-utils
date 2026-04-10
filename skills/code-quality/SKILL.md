@@ -87,26 +87,27 @@ version: 0.1.0
 客观 bug、崩溃风险、必现错误 → 调用 `todo-write` 写入 `TODO.md`，带 `docs/reviews/review-xxx.md § 章节` 引用。
 这些是**合并前必须修的硬关卡**，不需要讨论。
 
-#### 5b. 🟡 改进建议 / 🟢 最佳实践 → to-discuss.md
-可读性建议、规范偏好、"这样写更好"的判断 → 追加到项目根 `to-discuss.md`，严格模板：
+#### 5b. 🟡 改进建议 / 🟢 最佳实践 → 先 /think 决策
+可读性建议、规范偏好、"这样写更好"的判断 → 调用 `/think --quick` 做决策：
+
+- `/think` 能拍板 → 直接转 TODO.md 或丢弃
+- `/think` 无法决策 → 追加到项目根 `to-discuss.md`：
 
 ```markdown
 ## [Arch|Readability|Style|Maintenance] 简短标题 (Ref: docs/reviews/review-xxx.md § 章节)
 - **事实前提**: [代码中观察到的客观现象 + 文件:行号]
-- **AI 观点**: [我建议改成...]
-- **反面检验**: [当前写法的合理之处 / 改动的潜在成本 / 是否是主观偏好]
+- **/think 结论**: [/think 给出了什么判断，为什么无法拍板]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md（或 /refactor）
-  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
   - [ ] Reject → 直接删（接受当前写法）
 ```
 
 **关键区分**：
 - "这里有空指针风险" = 🔴 事实型 → TODO.md
-- "建议用策略模式代替 if-else" = 🟡 观点型 → to-discuss.md
-- "命名 `tmp` 不清晰" = 🟢 偏好型 → to-discuss.md（除非项目 linter 有明确规则）
+- "建议用策略模式代替 if-else" = 🟡 观点型 → 先 /think 决策
+- "命名 `tmp` 不清晰" = 🟢 偏好型 → 先 /think 决策（除非项目 linter 有明确规则）
 
-**绝对禁止**：把 🟡/🟢 建议伪装成 Blocker 塞进 TODO.md
+**绝对禁止**：把 🟡/🟢 建议伪装成 Blocker 塞进 TODO.md；跳过 /think 直接塞 to-discuss.md
 
 ## 审查红线
 

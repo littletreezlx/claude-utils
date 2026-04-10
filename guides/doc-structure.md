@@ -11,32 +11,33 @@
 - `README.md` — 人类入口
 - `CLAUDE.md` — AI 入口
 - `TODO.md` — 已决策行动队列（`/todo-doit` 消费）
-- `to-discuss.md` — AI 待决策事项队列（产品负责人决策 或 `/think` / `/feat-discuss-local-gemini` 代理消费）
+- `to-discuss.md` — `/think` 也无法决策的事项队列（产品负责人最终裁决）
 
 ## 三文件协作架构（行动/决策/材料 分离）
 
 | 文件 | 内容性质 | 谁来消费 |
 |------|---------|---------|
 | `TODO.md` | 已决策、可执行任务 | AI（`/todo-doit` 自动执行）|
-| `to-discuss.md` | 未决策、需产品负责人决策的 AI 建议 | 产品负责人（或触发 `/think` / `/feat-discuss-local-gemini`）|
+| `to-discuss.md` | `/think` 也无法决策的事项 | 产品负责人最终裁决 |
 | `_scratch/*.md` | 原始材料、探索报告、调试日志 | AI 查阅上下文用 |
 
 **铁律**：
-- 事实型 bug → `TODO.md`；观点/产品/设计判断 → `to-discuss.md`；原始材料 → `_scratch/`
+- 事实型 bug → `TODO.md`；观点/产品/设计判断 → **先借助 `/think` 获取外部视角，Claude Code 自己综合判断做最终决策**，能拍板则转 TODO 或丢弃，自己也拿不准才进 `to-discuss.md`；原始材料 → `_scratch/`
 - **严禁把 AI 的观点伪装成已决策任务塞进 TODO.md**（会污染 `/todo-doit` 的执行流）
+- **严禁跳过 `/think` 直接把观点丢进 `to-discuss.md`**（`/think` 引入独立视角后，Claude Code 能处理绝大部分产品+技术决策）
 - TODO.md 与 to-discuss.md **物理独立，不设指针**（否则互相污染、变成视觉盲点）
-- `to-discuss.md` 不是 backlog 而是 **Force-Decision Queue**：每条要么转 TODO，要么被 Reject，不得无限积压
+- `to-discuss.md` 不是 backlog 而是 **Last-Resort Queue**：只放 `/think` 明确表示无法决策的事项。每条要么转 TODO，要么被 Reject，不得无限积压
 
 ### to-discuss.md 条目模板
+
+> **前置条件**：写入 to-discuss.md 前必须已调用 `/think`，且 `/think` 明确表示无法决策。
 
 ```markdown
 ## [UX|Product|Arch|Workflow] 简短标题 (Ref: _scratch/xxx.md § 章节)
 - **事实前提**: [基于什么客观现象，禁止加主观修饰]
-- **AI 观点**: [我认为应该...]
-- **反面检验**: [这个建议可能错在哪 / 维持现状的理由]
+- **/think 结论**: [/think 给出了什么判断，为什么它认为自己无法拍板]
 - **决策选项**:
   - [ ] Approve → 转 TODO.md
-  - [ ] Discuss → /think 或 /feat-discuss-local-gemini
   - [ ] Reject → 直接删
 ```
 
