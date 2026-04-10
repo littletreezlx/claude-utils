@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/zhanglingxiao/.claude/hooks/pre-tool-call.sh"
+            "command": "/home/littletreezlx/.claude/hooks/pre-tool-call.sh"
           }
         ]
       }
@@ -35,7 +35,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /Users/zhanglingxiao/.claude/statusline-command.sh"
+    "command": "bash /home/littletreezlx/.claude/statusline-command.sh"
   },
   "mcpServers": {
     "playwright": {
@@ -50,6 +50,14 @@
         "--app",
         "visual_studio_code"
       ]
+    },
+    "MiniMax": {
+      "command": "uvx",
+      "args": ["minimax-coding-plan-mcp", "-y"],
+      "env": {
+        "MINIMAX_API_KEY": "sk-cp-74m9QxrVIY3s3cOOrflLcyAgyVv1IeM9ffzARalrFclsECUiHzdwUIjZ_jKGqfPcryqIcV2Rdjh492qSGNWdvzIIOecdMC5L0acnESWAbbMSEh91OABW1mU",
+        "MINIMAX_API_HOST": "https://api.minimaxi.com"
+      }
     }
   },
   "enabledPlugins": {
