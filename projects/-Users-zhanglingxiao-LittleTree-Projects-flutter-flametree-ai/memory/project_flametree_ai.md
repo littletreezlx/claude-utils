@@ -2,8 +2,8 @@
 name: project_flametree_ai
 description: flametree_ai 前后端分离项目，ai-qa-stories 时需 AI 自主启动后端
 type: project
+originSessionId: 9072f0a2-a8f8-47c7-b160-da9d7825e23b
 ---
-
 ## 项目架构
 
 - **前端**: `app/` (Flutter macOS/iOS/Android)
@@ -45,15 +45,32 @@ type: project
 - 导致 App 启动时崩溃：`Cannot use the Ref of roleSyncViewModelProvider after it has been disposed`
 - 出现在 App 启动阶段，影响 iOS Simulator
 
-## QA 验证记录 (2026-04-06)
+## QA 文件勘误 (2026-04-11)
 
-| 故事 | 结果 |
-|------|------|
-| 01-first-time-user | 🐛 AI 回复网络错误 |
-| 02-daily-chat | 🐛 AI 回复网络错误 |
-| 03-document-organization | ✅ 端点正常 |
-| 04-ai-drawing | 🐛 /data/images 端点缺失 |
-| 05-role-management | ✅ 端点正常（已知限制：/data/roles 不存在） |
+**QA 文件 jq 路径问题（已全部修正）：**
+- Debug Server 所有端点返回 `{ok: true, data: {...}}` envelope 格式
+- 所有 state/data 端点的 jq 路径必须加 `.data` 前缀（如 `jq '.data.isAuthenticated'`）
+- action 响应路径：`.ok` 在顶层，`.result.success` 在 `.result` 下
+
+**已修正的具体问题：**
+- Story 01: 所有 `.isAuthenticated` → `.data.isAuthenticated`；S4 改用 chatData state
+- Story 02: overlay/roles/quickAsk 路径均已修正
+- Story 03: organizeTasks 路径已修正
+- Story 04/06: `/data/images` 端点实际存在（之前 QA 文件说不存在，已更正）
+- Story 05: `.success` → `.result.success`
+- Story 07: providers 路径 `.actions` → `.data.actions`
+
+**新增 Debug 端点 (2026-04-11)：**
+- `roles/switch` — 调用 `globalRoleStateViewModelProvider.notifier.setActiveRole(roleId)`
+- `compareSessions/create|delete|select|exitCompareMode` — 对比会话 CRUD
+- `compareChat/load|sendMessage|stopGenerating` — 对比聊天消息
+- `state/compareSessions|compareChat` — 状态读取
+
+**其他 QA 场景说明：**
+- Story 01 S3: `/state/roles` 无 `selectedRoleId`，通过 `roles/switch` action 切换
+- Story 02 S1/S2/S4: 需要键盘输入，无法自动化
+- Story 05 S3/S4: `roles/sync` 和 `forceFullSync` 返回 `success: false` 是正常的（无 pending changes）
+- Story 07: 右侧 Claude 可能因 API 限流返回空内容，非端点 bug
 
 ## P3 审查发现 (2026-04-06)
 
@@ -65,3 +82,9 @@ type: project
 ## 如何应用
 
 执行 ai-qa-stories 时，先启动 server，再启动 app，最后执行验证。
+
+**启动命令（2026-04-11 确认）：**
+1. `pkill -9 -f "flametree" && pkill -9 -f "flutter"` 清理
+2. `cd server && pnpm dev > /tmp/server.log 2>&1 &`（端口 61003）
+3. 等待 10 秒后 `cd app && flutter run -d macos > /tmp/flutter.log 2>&1 &`（端口 8793）
+4. 等待 30 秒后 curl localhost:8793/providers 确认
