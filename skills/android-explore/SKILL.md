@@ -1,18 +1,17 @@
 ---
 name: android-explore
 description: >
-  AI autonomously explores a running native Android app as a user, discovering
-  bugs and UX issues through role-play. Supports two modes: Cyborg (Vision +
-  adb tap + State Oracle, default when emulator/device connected) and Fallback
-  (curl-only, when adb unavailable). Use when the user says "探索应用",
-  "自由探索", "用一下", "explore", "find bugs", or after qa-stories passed
-  and deeper exploration is needed. Requires Debug Server embedded in the app.
-version: 2.0.0
+  Use when the user says "探索应用", "自由探索", "用一下", "explore", "find bugs",
+  or after android-qa-stories passed and deeper exploration is needed. AI
+  role-plays as a user to discover bugs and UX issues in a running native Android
+  app. Supports Cyborg mode (Vision + adb tap + State Oracle) when an emulator/device
+  is connected, and Fallback mode (curl-only). Requires Debug Server embedded in the app.
+version: 3.0.0
 ---
 
 # Android Explore — Cyborg 自主探索
 
-AI 扮演用户自由使用���用。Cyborg 模式下通过**截图识别 + adb tap**真正操作 UI，State Oracle 验证状态变化。
+AI 扮演用户自由使用应用。Cyborg 模式下通过**截图识别 + adb tap**真正操作 UI，State Oracle 验证状态变化。
 
 ## 核心原则
 
@@ -21,17 +20,26 @@ AI 扮演用户自由使用���用。Cyborg 模式下通过**截图识别 +
 - **决策时是用户，报告时是工程师** — 用人设决定点哪里，但报告问题必须走证据链
 - **归因必须有证据链** — Bug = 操作 X → State Oracle 返回 Y → 与预期 Z 不符。缺任一环 → 盲区观察，不是 bug
 - **不做故事验证** — 那是 android-qa-stories 的职责
-- **只记录，不修复** — 发���问题记到报告，不在探索中改代码
+- **只记录，不修复** — 发现问题记到报告，不在探索中改代码
 
 ---
 
 ## 模式选择（自动判断）
 
 ```bash
-# 检测 Cyborg 模式前置条件
+# 发现端口（从源码读取，禁止硬编码）
+# 按优先级尝试常见位置：
+PORT=$(grep -rE 'const\s+(val\s+)?PORT\s*[:=]' app/src/main/java app/src/main/kotlin 2>/dev/null | grep -oE '[0-9]{4,5}' | head -1)
+[ -z "$PORT" ] && PORT=$(grep -rE 'port\s*=\s*[0-9]+' app/src/main 2>/dev/null | grep -i 'debug' | grep -oE '[0-9]{4,5}' | head -1)
+echo "Android debug port: ${PORT:-NOT_FOUND}"
+
+# 端口转发 + Cyborg 前置条件检测
+adb forward tcp:$PORT tcp:$PORT 2>/dev/null
 adb devices 2>/dev/null | grep -q 'device$' && \
   curl -s localhost:$PORT/providers >/dev/null 2>&1
 ```
+
+> 端口发现失败时，需在项目 CLAUDE.md 中声明 `DEBUG_SERVER_PORT`，或检查源码中 DebugServer 类的 port 常量命名。
 
 | 条件 | 模式 | 探索能力 |
 |------|------|---------|
@@ -50,7 +58,7 @@ adb devices 2>/dev/null | grep -q 'device$' && \
 3. `adb devices` 显示已连接设备/模拟器
 4. 端口转发已建立：`adb forward tcp:$PORT tcp:$PORT`
 
-**基线不足时，只做最小 seed**。想验证 stories 的用户应调�� `/android-qa-stories`。
+**基线不足时，只做最小 seed**。想验证 stories 的用户应调用 `/android-qa-stories`。
 
 ---
 
@@ -80,22 +88,39 @@ adb shell wm size
 curl localhost:$PORT/providers  → 可用的 state/data 端点（验证用）
 ```
 
-**选择本轮用户人设**（1-2 轮，每轮换人设）：
+**动态生成本轮用户人设**（每次探索 1 个，多次运行覆盖不同维度）：
 
-| 人设 | 行为倾向 | 自然覆盖 |
-|------|---------|---------|
-| 🐣 新手小白 | 不看引导，随手点 | 引导缺失、容错性 |
-| ⚡ 效率达人 | 最快完成目标 | 流程流畅度、冗余步骤 |
-| 🐒 混乱操作者 | 逆序操作、密集请求 | 状态一致性、竞态 |
-| 🔄 回归用户 | 隔很久回来 | 数据持久化、状态恢复 |
-| 🧹 洁癖用户 | 频繁整理删除 | 批量操作、删除级联、空状态 |
+调用 `/think --quick`，输入 PRODUCT_SOUL + PRODUCT_BEHAVIOR 摘要，要求生成 **1 个**贴合该 App 的用户人设：
 
-**每轮开头写 3-5 句使用计划**（替代逐步独白）：
-> "我��新手小白，刚装好这个 App。计划：先看首页 → 随便点几个 → 试试核心功能 → 加点东西试试。"
+```
+请根据以下产品信息，生成一个用户人设用于 App 探索测试。
+
+产品信息：
+[粘贴 PRODUCT_SOUL 核心段落 + PRODUCT_BEHAVIOR 核心交互]
+
+要求输出格式：
+- 人设名称：[emoji + 2-4字名称]
+- 背景故事：[1句话，这个人是谁、为什么会用这个App]
+- 行为倾向：[2-3个关键词，如"急躁、目标导向、不看说明"]
+- 自然覆盖：[这个人设天然会测到的维度]
+- 使用计划：[3-5句，以第一人称描述这次打开App要干什么]
+
+要求：
+- 人设必须贴合这个 App 的目标用户群，不要通用角色
+- 行为倾向要具体到能指导"点哪里、跳过什么"
+- 随机发挥，不要每次都生成类似的角色
+```
+
+> **不做去重** — 靠 DeepSeek 自身随机性 + 产品文档上下文自然分散。
+>
+> **/think 不可用时**，回退到默认人设：
+> 🐣 新手小白 | ⚡ 效率达人 | 🐒 混乱操作者 | 🔄 回归用户 | 🧹 洁癖用户
+
+收到 /think 返回后，**在探索开头写出完整人设信息**，然后进入 PAV 循环。
 
 ### Step 2: 感知-行动-验证循环
 
-每步操作遵循 **PAV 循��**（Perceive → Act → Verify）：
+每步操作遵循 **PAV 循环**（Perceive → Act → Verify）：
 
 #### P — 感知（截图 + 读状态）
 
@@ -153,7 +178,7 @@ adb logcat -d -t 30 *:E
 ### 使用规则
 
 1. **破坏性操作放到每轮末尾**
-2. **遇到异常时**：技术异常→记录（附截图+curl+Logcat）；UI 不确定→盲区观察；体验困��→体验报告
+2. **遇到异常时**：技术异常→记录（附截图+curl+Logcat）；UI 不确定→盲区观察；体验困惑→体验报告
 3. **过程中只在遇到意外时写反应**
 
 ### Step 3: 数据恢复
@@ -177,7 +202,7 @@ adb logcat -d -t 30 *:E
 - 本轮人设: 🐣 新手小白
 
 ### 🎮 用户体验
-#### ���一轮: [人设名]
+#### [人设名]: [背景故事一句话]
 > [使用计划 3-5 句]
 > [2-3 段体验描述，只在意外处详写]
 

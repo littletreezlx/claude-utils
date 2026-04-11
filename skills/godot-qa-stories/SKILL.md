@@ -1,14 +1,11 @@
 ---
 name: godot-qa-stories
 description: >
-  This skill should be used when AI should autonomously verify user stories
-  against a running Godot game via DebugPlayServer. A true AI-autonomous
-  loop: reads QA verification files from docs/user-stories/qa/, executes curl
-  sequences, validates assertions, reports failures. Use when the user says
-  "验证故事", "跑用户故事", "regression", "run stories", "qa stories", or after
-  a batch of code changes needs holistic verification beyond unit tests.
-  Requires DebugPlayServer running (port 9999) and docs/user-stories/qa/ to exist.
-version: 0.2.0
+  Use when the user says "验证故事", "跑用户故事", "regression", "run stories",
+  "qa stories", or after a batch of Godot code changes needs holistic verification
+  beyond unit tests. Verifies user stories against a running Godot game via
+  DebugPlayServer. Requires DebugPlayServer embedded and docs/user-stories/qa/ to exist.
+version: 0.3.0
 ---
 
 # Godot QA Stories — 用户故事自主验证
@@ -33,10 +30,20 @@ AI 自主闭环：读取 `docs/user-stories/qa/*.qa.md` 中的验证脚本，通
 
 ## 执行流程
 
-### Step 0: 确认 Server 运行
+### Step 0: 发现端口 + 确认 Server
+
+**端口从源码动态读取**（禁止硬编码）：
 
 ```bash
-curl -s --connect-timeout 3 localhost:9999/ping
+# 从 DebugPlayServer.gd 读取 PORT 常量
+PORT=$(grep -E '^const PORT' Core/Autoloads/DebugPlayServer.gd | grep -oE '[0-9]+' | head -1)
+echo "Godot debug port: $PORT"
+```
+
+**检查 Server**：
+
+```bash
+curl -s --connect-timeout 3 localhost:$PORT/ping
 ```
 
 - ✅ 有响应 → 跳到 Step 1
@@ -48,19 +55,30 @@ curl -s --connect-timeout 3 localhost:9999/ping
 
 **如果 qa/ 目录不存在**：提示用户先运行 `/generate-stories` 迁移到双文件架构。
 
-同时读 `Core/Autoloads/DebugPlayServer.gd` 的 `_route` 函数，获取实际可用端点列表（不硬编码）。
+### Step 1.5: 端点对账（实际调用验证）
 
-对比 QA 文件末尾的端点依赖表与实际端点，输出简要对账：
+不能只看 `/providers` 列表——端点可能在列表中但实际调用返回 error。**对每个 QA 引用的端点发真实请求**：
+
+```bash
+# 1. 获取声明的端点列表
+curl -s localhost:$PORT/providers
+
+# 2. 对每个 QA 引用的端点发空调用，检查返回是否非 error
+curl -s localhost:$PORT/state/game | grep -q '"ok":true' && echo "OK" || echo "MISSING"
+curl -s -X POST localhost:$PORT/play/goto_camp | grep -q '"ok":true' && echo "OK" || echo "MISSING"
+```
+
+输出对账结果：
 
 ```
 端点对账: 12/12 匹配 ✅
 ```
 
-或：
+或（端点缺失标跳过而非失败）：
 
 ```
 端点对账: 10/12 匹配
-  ⚠️ /play/xxx — 故事引用但 Server 无此端点
+  ⏭️ /play/xxx — 端点不存在，跳过相关 Scenario
 ```
 
 ### Step 2: 快照初始状态
@@ -68,22 +86,25 @@ curl -s --connect-timeout 3 localhost:9999/ping
 并行查询，记录为初始快照：
 
 ```bash
-curl -s localhost:9999/state/game   # gold, population
-curl -s localhost:9999/state/save   # save data
+curl -s localhost:$PORT/state/game   # gold, population
+curl -s localhost:$PORT/state/save   # save data
 ```
 
 ### Step 3: 逐条执行验证
 
 对每个 QA 文件的每个 Scenario：
 
-1. 读 Intent → 执行 curl → 校验 Assert
-2. 判定结果（三种）：
+1. **读 Intent** — 理解这步在验证什么
+2. **检查端点是否存在** — 如果 Step 1.5 标记为缺失，直接跳过
+3. **执行 curl** — 按 QA 中的 bash 顺序
+4. **校验 Assert** — 比对实际返回与断言
+5. 判定结果：
 
 | 结果 | 处理 |
 |------|------|
 | ✅ 通过 | 继续 |
-| 🐛 失败 | 记录（curl 命令 + 实际返回 + 期望值），继续执行后续步骤 |
-| ⏭️ 跳过 | 端点缺失或需要人工操作，记录原因，继续 |
+| 🐛 失败 | 记录（curl + 实际返回 + 期望值 + Intent），继续 |
+| ⏭️ 跳过 | 端点缺失 / 外部依赖 / 需人工操作，记录原因，继续 |
 
 **效率要求**：同一故事内独立的状态查询可以并行 curl。
 
@@ -93,7 +114,7 @@ curl -s localhost:9999/state/save   # save data
 ## User Stories 验证报告
 
 ### 环境
-- 项目: Barracks Clash | 端口: 9999 | 时间: xxx
+- 项目: xxx | 端口: xxxx | 时间: xxx
 
 ### 结果总览
 | 故事 | 状态 | 通过/总数 |
@@ -102,13 +123,18 @@ curl -s localhost:9999/state/save   # save data
 | 02-xxx | 🐛 | 5/7 |
 
 ### 失败详情
-#### 02-xxx Step 3: [描述]
-- curl: `curl -s -X POST localhost:9999/play/xxx -d '...'`
-- 期望: `success == true`
-- 实际: `{"error":"..."}`
+#### 02-xxx Scenario 3: {Intent 描述}
+- **Intent**: {验证意图}
+- **curl**: `curl -s -X POST localhost:$PORT/play/xxx -d '...'`
+- **期望**: `success == true`
+- **实际**: `{"error":"..."}`
+- **初步判断**: {代码 bug / 测试过期 / 环境问题}
 
 ### 跳过项
-- 02-xxx Step 5: 端点 /play/yyy 不存在
+- 02-xxx Scenario 5: 端点 /play/yyy 不存在
+
+### 端点对账不匹配项
+- /play/zzz → 端点不存在
 ```
 
 ---
@@ -118,12 +144,25 @@ curl -s localhost:9999/state/save   # save data
 ### 自动启动（仅 Server 未运行时）
 
 1. **杀残留**：`pkill -9 -f "Godot" 2>/dev/null`
-2. **后台启动**（`run_in_background: true`）：
+2. **检测 Godot 可执行路径**（按优先级）：
    ```bash
-   /Applications/Godot.app/Contents/MacOS/Godot --path /Users/zhanglingxiao/LittleTree_Projects/game-mvp &
+   GODOT_BIN=""
+   for candidate in \
+     "/Applications/Godot.app/Contents/MacOS/Godot" \
+     "/Applications/Godot_mono.app/Contents/MacOS/Godot" \
+     "$(which godot 2>/dev/null)"; do
+     [ -x "$candidate" ] && GODOT_BIN="$candidate" && break
+   done
+   echo "Godot binary: $GODOT_BIN"
    ```
-3. **同时并行加载故事**（Step 1），不傻等
-4. 等后台启动完成通知后 `curl ping` 确认就绪
+3. **项目路径用 `$PWD`**（禁止在 skill 中写死）：
+   ```bash
+   # 假设当前在项目根目录运行
+   "$GODOT_BIN" --path "$PWD" &
+   ```
+   使用 `run_in_background: true` 启动。
+4. **同时并行加载故事**（Step 1），不傻等
+5. 等后台启动完成通知后 `curl localhost:$PORT/ping` 确认就绪
 
 ### 禁止行为
 
@@ -141,3 +180,4 @@ curl -s localhost:9999/state/save   # save data
 3. **响应含截图** — `_screenshot` 字段可用 Read 工具查看
 4. **战斗状态** — `/state/battle` 仅在 DEPLOY/COMBAT 时有意义
 5. **单任务锁** — Server 同一时刻只处理一个请求，429 = 忙，稍后重试
+6. **必须在项目根目录执行** — `$PWD` 必须包含 `project.godot` 文件

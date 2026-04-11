@@ -1,14 +1,12 @@
 ---
 name: ai-qa-stories
 description: >
-  This skill should be used when AI should autonomously verify user stories
-  against a running Flutter/Android app via Debug State Server. A true AI-autonomous
-  loop: reads QA verification files from docs/user-stories/qa/, executes curl
-  sequences, validates assertions, reports failures. Use when the user says
-  "验证故事", "跑用户故事", "regression", "run stories", "qa stories", or after
-  a batch of code changes needs holistic verification beyond unit tests. Requires
-  Debug State Server running and docs/user-stories/qa/ to exist.
-version: 2.2.0
+  Use when the user says "验证故事", "跑用户故事", "regression", "run stories",
+  "qa stories", or after a batch of Flutter code changes needs holistic verification
+  beyond unit tests. Verifies user stories against a running Flutter app via
+  Debug State Server. Requires Debug State Server running and docs/user-stories/qa/
+  to exist.
+version: 2.3.0
 ---
 
 # AI QA Stories — 用户故事自主验证
@@ -218,20 +216,6 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 - ❌ 重复调用 start-dev.sh（每次调用都会启动新窗口！）
 
 ---
-
-## 重要修复说明
-
-### v2.2.0 修复
-
-1. **删除硬编码端口表**：常见端口表已移除，不再依赖静态配置。端口统一从 `debug_server.dart` 源码读取，确保与实际运行状态一致。
-
-2. **端口冲突主动检测**：Step 1 中增加了 `lsof` 检测逻辑，能在启动前发现端口被其他项目占用的情况，并给出明确警告。
-
-3. **清空所有 Flutter 进程**：进程管理从只杀 `<app_binary>` 改为杀 `pkill -9 -f "flutter"` + `pkill -9 -f "fvm"`，确保 Simulator 上只有一个目标 App 在跑。
-
-4. **端点验证方式改为实际调用**：不能只看 `/providers` 列表，因为端点可能在列表中但实际调用返回 error（如 `/state/articles` 列在 states 中但返回 `Unknown state`）。
-
-5. **不存在的端点标记为跳过而非失败**：端点缺失是环境/配置问题，不算测试失败。
 
 ## 注意事项
 

@@ -1,14 +1,12 @@
 ---
 name: android-qa-stories
 description: >
-  This skill should be used when AI should autonomously verify user stories
-  against a running native Android app via embedded Debug Server. A true
-  AI-autonomous loop: reads QA verification files from docs/user-stories/qa/,
-  executes curl sequences, validates assertions, reports failures. Use when
-  the user says "验证故事", "跑用户故事", "regression", "run stories", "qa stories",
-  or after a batch of code changes needs holistic verification beyond unit tests.
-  Requires Debug Server embedded in the app and docs/user-stories/qa/ to exist.
-version: 1.0.0
+  Use when the user says "验证故事", "跑用户故事", "regression", "run stories",
+  "qa stories", or after a batch of Android code changes needs holistic verification
+  beyond unit tests. Verifies user stories against a running native Android app
+  via embedded Debug Server. Requires Debug Server embedded in the app and
+  docs/user-stories/qa/ to exist.
+version: 2.0.0
 ---
 
 # Android QA Stories — 用户故事自主验证
@@ -41,17 +39,31 @@ adb devices  # 确认有且仅有一个设备/模拟器在线
 ```
 
 **2. 获取包名**（从源码读取，按优先级）：
-1. `grep 'applicationId' app/build.gradle*` → 取值
-2. `grep 'package=' app/src/main/AndroidManifest.xml` → 取值
-
-**3. 端口转发 + 验证**：
 ```bash
-# 端口从 CLAUDE.md 或源码中读取（通常在 DebugServer.kt/java 中硬编码）
+# 优先 build.gradle
+PACKAGE=$(grep -hE 'applicationId\s+["'"'"']' app/build.gradle* 2>/dev/null \
+          | grep -oE '"[^"]+"' | head -1 | tr -d '"')
+# 回退到 Manifest
+[ -z "$PACKAGE" ] && PACKAGE=$(grep -oE 'package="[^"]+"' app/src/main/AndroidManifest.xml 2>/dev/null | head -1 | cut -d'"' -f2)
+echo "Package: $PACKAGE"
+```
+
+**3. 动态发现端口**（禁止硬编码）：
+```bash
+PORT=$(grep -rE 'const\s+(val\s+)?PORT\s*[:=]' app/src/main/java app/src/main/kotlin 2>/dev/null | grep -oE '[0-9]{4,5}' | head -1)
+[ -z "$PORT" ] && PORT=$(grep -rE 'port\s*=\s*[0-9]+' app/src/main 2>/dev/null | grep -i 'debug' | grep -oE '[0-9]{4,5}' | head -1)
+echo "Android debug port: ${PORT:-NOT_FOUND}"
+```
+
+> 发现失败时，要求项目 CLAUDE.md 声明 `DEBUG_SERVER_PORT` 或在 DebugServer 类里用 `const val PORT`/`int PORT` 命名。
+
+**4. 端口转发 + 验证**：
+```bash
 adb forward tcp:$PORT tcp:$PORT
 curl -s --connect-timeout 3 localhost:$PORT/providers
 ```
 
-- ✅ 有响应 → 检查 actions 是否匹配当前项目，跳到 Step 1
+- ✅ 有响应 → 跳到 Step 1
 - ❌ 无响应 → 自动启动（见下方"进程管理"）
 
 ### Step 1: 加载 QA 文件
@@ -60,17 +72,30 @@ curl -s --connect-timeout 3 localhost:$PORT/providers
 
 **如果 qa/ 目录不存在**：提示用户先运行 `/generate-stories` 迁移到双文件架构。
 
-同时读取 `/providers` 响应，与 QA 文件末尾的端点依赖表做对账：
+### Step 1.5: 端点对账（实际调用验证）
+
+端点对账必须**实际调用**验证，不能只看 `/providers` 列表。列表中存在的端点可能返回 error（如 `Unknown state`），必须对每个引用端点发请求：
+
+```bash
+# 1. 获取声明的端点列表
+curl -s localhost:$PORT/providers
+
+# 2. 对每个 QA 引用的端点发真实请求，检查返回非 error
+curl -s localhost:$PORT/state/auth | grep -q '"ok":true' && echo "OK" || echo "MISSING"
+curl -s -X POST localhost:$PORT/action/xxx/yyy | grep -q '"ok":true' && echo "OK" || echo "MISSING"
+```
+
+输出对账结果：
 
 ```
 端点对账: 12/12 匹配 ✅
 ```
 
-或：
+或（缺失端点标跳过而非失败）：
 
 ```
 端点对账: 10/12 匹配
-  ⚠️ /action/xxx — 故事引用但 Server 无此端点
+  ⏭️ /state/articles — 端点不存在，跳过相关 Scenario
 ```
 
 ### Step 2: 快照初始状态
@@ -86,14 +111,17 @@ curl -s localhost:$PORT/data/items    # 项目核心数据
 
 对每个 QA 文件的每个 Scenario：
 
-1. 读 Intent → 执行 curl → 校验 Assert
-2. 判定结果（三种）：
+1. **读 Intent** — 理解这步在验证什么
+2. **检查端点是否存在** — Step 1.5 标记为缺失的直接跳过
+3. **执行 curl** — 按 QA 中的 bash 顺序
+4. **校验 Assert** — 比对实际返回与断言
+5. 判定结果：
 
 | 结果 | 处理 |
 |------|------|
 | ✅ 通过 | 继续 |
-| 🐛 失败 | 记录（curl 命令 + 实际返回 + 期望值），继续执行后续步骤 |
-| ⏭️ 跳过 | 端点缺失 / 外部依赖 / 需要人工操作，记录原因，继续 |
+| 🐛 失败 | 记录（curl + 实际返回 + 期望值 + Intent），继续 |
+| ⏭️ 跳过 | 端点缺失 / 外部依赖 / 需人工操作，记录原因，继续 |
 
 **效率要求**：同一故事内独立的状态查询可以并行 curl。
 

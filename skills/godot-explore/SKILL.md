@@ -1,13 +1,12 @@
 ---
 name: godot-explore
 description: >
-  AI autonomously explores a running Godot game as a player, discovering bugs
-  and UX issues through role-play. Primary mode: curl-driven exploration via
-  DebugPlayServer's rich endpoint set. Optional Cyborg mode (Vision + cliclick)
-  for UI-heavy scenes. Use when the user says "探索游戏", "自由探索", "��一下",
-  "explore", "playtest", or after qa-stories passed and deeper exploration
-  is needed. Requires DebugPlayServer running (port 9999).
-version: 2.0.0
+  Use when the user says "探索游戏", "自由探索", "用一下", "explore", "playtest",
+  or after godot-qa-stories passed and deeper exploration is needed. AI
+  role-plays as a player to discover bugs and UX issues via DebugPlayServer.
+  Primary mode: curl-driven exploration. Optional Cyborg mode (Vision + cliclick)
+  for UI-heavy scenes. Requires DebugPlayServer embedded in the game.
+version: 3.0.0
 ---
 
 # Godot Explore — 角色扮演式自主探索
@@ -41,7 +40,7 @@ AI 扮演玩家自由游玩游戏。通过 DebugPlayServer 的丰富端点驱动
 
 ## 前置条件
 
-1. DebugPlayServer 运行中（端口 9999）
+1. DebugPlayServer 运行中（端口从 `Core/Autoloads/DebugPlayServer.gd` 动态发现）
 2. 基线数据就绪（存档/关卡进度可用于游玩）
 
 **基线不足时，只做最小 seed**。想验证 stories 的用户应调用 `/godot-qa-stories`。
@@ -50,25 +49,54 @@ AI 扮演玩家自由游玩游戏。通过 DebugPlayServer 的丰富端点驱动
 
 ## 执行流程
 
+### Step 0: 发现端口
+
+```bash
+# 从源码读取 PORT 常量（禁止硬编码）
+PORT=$(grep -E '^const PORT' Core/Autoloads/DebugPlayServer.gd | grep -oE '[0-9]+' | head -1)
+echo "Godot debug port: $PORT"
+
+# 检查 Server 可达
+curl -s --connect-timeout 3 localhost:$PORT/ping
+```
+
 ### Step 1: 建立玩家认知
 
 ```
 读 docs/PRODUCT_SOUL.md    → 产品愿景、情感目标
 读 docs/PRODUCT_BEHAVIOR.md → 我能做什么、系统规则
-读 Core/Autoloads/DebugPlayServer.gd 的 _route 函数 → 可用操作
+curl localhost:$PORT/providers → 可用端点（验证用）
 ```
 
-**选择本轮玩家人设**（1-2 轮，每轮换人设）：
+**动态生成本轮玩家人设**（每次探索 1 个人设，多次运行覆盖不同维度）：
 
-| 人设 | 行为倾向 | 自然覆盖 |
-|------|---------|---------|
-| 🐣 新手小白 | 不看教程，乱点，金币乱花 | 引导缺失、容错性 |
-| 💰 经济运营玩家 | 精打细算，攒钱升级 | 经济平���、升级体验 |
-| ⚡ 速攻玩家 | 最快速度推完 | 流程流畅度、跳过逻辑 |
-| 🌱 养成玩家 | 反复刷关卡，关注成长 | 存档、跨局养成、重复体验 |
+调用 `/think --quick`，输入 PRODUCT_SOUL + PRODUCT_BEHAVIOR 摘要，要求生成 **1 个**贴合该游戏的玩家人设：
 
-**每轮开头写 3-5 句游玩计划**：
-> "我是新手小白，第一次打开游戏。计划：看看营地有什么 → 随便选个指挥官 → 打第一关试试 → 看看钱够不够升级。"
+```
+请根据以下游戏信息，生成一个玩家人设用于游戏探索测试。
+
+游戏信息：
+[粘贴 PRODUCT_SOUL 核心段落 + PRODUCT_BEHAVIOR 核心玩法]
+
+要求输出格式：
+- 人设名称：[emoji + 2-4字名称]
+- 背景故事：[1句话，这个玩家是谁、为什么会玩这个游戏]
+- 行为倾向：[2-3个关键词，如"急躁、目标导向、乱花钱"]
+- 自然覆盖：[这个人设天然会测到的维度]
+- 游玩计划：[3-5句，以第一人称描述这次打开游戏要干什么]
+
+要求：
+- 人设必须贴合这个游戏的目标玩家群，不要通用角色
+- 行为倾向要具体到能指导"打什么关、升什么、跳过什么"
+- 随机发挥，不要每次都生成类似的角色
+```
+
+> **不做去重** — 靠 DeepSeek 随机性 + 产品上下文自然分散，用户多次运行覆盖。
+>
+> **/think 不可用时**，回退到以下任一默认人设：
+> 🐣 新手小白 | 💰 经济运营玩家 | ⚡ 速攻玩家 | 🌱 养成玩家
+
+收到 /think 返回后，**在探索开头写出完整人设信息**，然后进入 PAV 循环。
 
 ### Step 2: 自由游玩
 
@@ -78,8 +106,8 @@ AI 扮演玩家自由游玩游戏。通过 DebugPlayServer 的丰富端点驱动
 
 ```bash
 # 通过 DebugPlayServer 的截图端点（如有）或直接查看游戏窗口
-curl -s localhost:9999/state/game    # 当前经济/进度
-curl -s localhost:9999/state/battle  # 战斗中状态
+curl -s localhost:$PORT/state/game    # 当前经济/进度
+curl -s localhost:$PORT/state/battle  # 战斗中状态
 ```
 
 如需视觉确认（Cyborg 可选）：
@@ -92,17 +120,17 @@ screencapture -R {win_x},{win_y},{win_w},{win_h} /tmp/godot_screen_N.png
 
 ```bash
 # 导航
-curl -s -X POST localhost:9999/play/goto_camp
-curl -s -X POST localhost:9999/play/goto_battle -d '{"level":1}'
+curl -s -X POST localhost:$PORT/play/goto_camp
+curl -s -X POST localhost:$PORT/play/goto_battle -d '{"level":1}'
 
 # 战斗
-curl -s -X POST localhost:9999/play/confirm_commander
-curl -s -X POST localhost:9999/play/deploy_unit -d '{"unit_index":0,"grid_x":3,"grid_y":10}'
-curl -s -X POST localhost:9999/play/start_battle -d '{"speed":8}'
-curl -s localhost:9999/play/wait_battle_end
+curl -s -X POST localhost:$PORT/play/confirm_commander
+curl -s -X POST localhost:$PORT/play/deploy_unit -d '{"unit_index":0,"grid_x":3,"grid_y":10}'
+curl -s -X POST localhost:$PORT/play/start_battle -d '{"speed":8}'
+curl -s localhost:$PORT/play/wait_battle_end
 
 # 经济（谨慎使用 — 调试类操作破坏真实体验）
-curl -s -X POST localhost:9999/play/add_gold -d '{"amount":500}'
+curl -s -X POST localhost:$PORT/play/add_gold -d '{"amount":500}'
 ```
 
 > 调试类操作（add_gold 等）新手/速攻人设不该用；经济/养成人设也应尽量少用。
@@ -110,9 +138,9 @@ curl -s -X POST localhost:9999/play/add_gold -d '{"amount":500}'
 #### V — 验证
 
 ```bash
-curl -s localhost:9999/state/game      # 金币/人口变化
-curl -s localhost:9999/state/save      # 存档状态
-curl -s localhost:9999/state/units     # 兵种状态
+curl -s localhost:$PORT/state/game      # 金币/人口变化
+curl -s localhost:$PORT/state/save      # 存档状态
+curl -s localhost:$PORT/state/units     # 兵种状态
 ```
 
 **异常处理**：
@@ -136,7 +164,7 @@ curl -s localhost:9999/state/units     # 兵种状态
 
 ```bash
 # 如有存档重置端点
-curl -s -X POST localhost:9999/play/save_reset
+curl -s -X POST localhost:$PORT/play/save_reset
 ```
 
 无重置端点时提醒用户存档已被修改。
@@ -149,13 +177,16 @@ curl -s -X POST localhost:9999/play/save_reset
 ## 探索报告
 
 ### 环境
-- 项目: xxx | 端口: 9999 | 时间: xxx
+- 项目: xxx | 端口: xxxx | 时间: xxx
 - 模式: curl 驱动 / Cyborg 辅助
 - 基线: [seed 数据 / 用户提供存档]
 - 本轮人设: 🐣 新手小白
 
 ### 🎮 玩家体验
-#### 第一轮: [人设名]
+
+#### [人设名]: [背景故事一句话]
+> 行为倾向: [关键词]
+> 自然覆盖: [维度]
 > [游玩计划 3-5 句]
 > [2-3 段体验描述，只在意外处详写]
 

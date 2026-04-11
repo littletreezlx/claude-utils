@@ -1,13 +1,12 @@
 ---
 name: ai-explore
 description: >
-  AI autonomously explores a running Flutter app as a user, discovering bugs
-  and UX issues through role-play. Supports two modes: Cyborg (Vision + OS Tap
-  + State Oracle, default when Simulator available) and Fallback (curl-only,
-  when no Simulator). Use when the user says "探索应用", "自由探索", "用一下",
-  "explore", "find bugs", or after qa-stories passed and deeper exploration
-  is needed. Requires Debug State Server running.
-version: 3.1.0
+  Use when the user says "探索应用", "自由探索", "用一下", "explore", "find bugs",
+  or after ai-qa-stories passed and deeper exploration is needed. AI role-plays
+  as a user to discover bugs and UX issues in a running Flutter app. Supports
+  Cyborg mode (Vision + OS Tap + State Oracle) when Simulator is available, and
+  Fallback mode (curl-only). Requires Debug State Server running.
+version: 3.2.0
 ---
 
 # AI Explore — Cyborg 自主探索
@@ -269,14 +268,10 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 - State Oracle 返回异常 → 记录为技术问题（含操作截图 + curl 响应）
 - UI 变化与 State 不一致 → 记录为可疑 bug，需人工确认
 
-### 截图黑暗降级策略
-
-如果 macOS screencapture 截图全黑或模糊：
-1. **主要依赖**：`/cyborg/dom` 语义树获取坐标
-2. **截图降级**：截图仅作为辅助验证，不作为主要感知手段
-3. **端点不可用时**：Fallback 模式降级，诚实声明探索范围受限
-
 ### 截图策略（节省 token）
+
+如果 macOS screencapture 截图全黑或模糊，主要依赖 `/cyborg/dom` 语义树获取坐标，截图仅作辅助验证；端点完全不可用时 Fallback 模式降级并声明范围受限。
+
 
 **必须截图的时机**：
 - 每轮探索的起始状态
@@ -432,13 +427,6 @@ curl -s localhost:$PORT/data/groups      # DB 层数据验证（如适用）
 - 无法验证导航流程、手势交互、动画效果
 - 操作绕过 UI 层（不经过确认弹窗、不触发动画）
 - 发现的问题可能是 Debug Server 限制而非真实 bug
-
----
-
-### v3.1.0 修复
-
-1. **删除硬编码端口**：所有 `localhost:8788` 替换为 `localhost:$PORT`，端口从 `debug_server.dart` 动态发现。
-2. **共同条件端口描述更新**：不再写死端口号。
 
 ---
 
