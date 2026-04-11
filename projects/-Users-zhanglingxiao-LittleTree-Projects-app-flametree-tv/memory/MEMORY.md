@@ -1,3 +1,4 @@
 - [User Profile](user_profile.md) — 8 yr Android eng, personal TV player project
 - [Project Goal](project_goal.md) — FlameTree TV: observation-to-insight capture workflow via HA
 - [Architecture Decisions](architecture_decisions.md) — Media3+SurfaceView+Ktor+PixelCopy, reviewed with Gemini
+- [SmbDataSource prefetch](smb_datasource_prefetch.md) — 256KB buffer needed because Media3 peek() forwards length=1 straight to DataSource.read
