@@ -7,3 +7,4 @@
 - [Cyborg 探索前确认代码已编译](feedback_cyborg_fresh_build.md) — force-reset≠新代码生效，需验证关键端点
 - [探索前确认实际行为非文档](feedback_explore_verify_behavior.md) — 不能用文档预期当验证标准，先观察实际行为
 - [原则关注结果而非机制](feedback_principle_vs_mechanism.md) — 产品原则应基于用户体验结果评估，不能机械套用到实现机制
+- [AI-Only 测试数量不算负担](feedback_test_count_in_ai_only.md) — 不要用"测试通胀"要求 Code Freeze，测试是 AI 写的无人类维护成本
