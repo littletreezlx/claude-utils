@@ -6,7 +6,7 @@ description: >
   Use PROACTIVELY after significant UI changes, after a batch of visual modifications,
   or when the user says "check UI", "视觉检查", "UI 看看", "截图分析", "design check",
   "UI 审计", "审视整体 UI", "设计债务". Also use when another workflow (like delivery
-  or ui-redesign) needs visual verification. Reads screenshots + design docs, then
+  or feat-done) needs visual verification. Reads screenshots + design docs, then
   provides observations and suggestions — NOT pass/fail judgments.
 version: 3.0.0
 ---
@@ -31,7 +31,7 @@ version: 3.0.0
 
 根据输入自动判断模式：
 - **单页模式**（默认）：分析 1-2 张截图，聚焦单个页面的质感细节
-- **全局审计模式**：用户说"整体看看"/"UI 审计"/"设计债务"时，分析多张截图，输出跨页面的设计一致性诊断 + P0/P1/P2 优先级排序 + 直接可用的 `ui-redesign` 触发建议
+- **全局审计模式**：用户说"整体看看"/"UI 审计"/"设计债务"时，分析多张截图，输出跨页面的设计一致性诊断 + P0/P1/P2 优先级排序 + P0 页面的具体重塑方向
 
 两种模式共用同一套分析维度，区别仅在输出粒度和是否包含优先级排序。
 
@@ -153,7 +153,7 @@ version: 3.0.0
 
 **归档分流原则**（严禁混流）：
 - 🔴 **Soul-breaking = 客观偏离设计规范**（纯黑阴影、生硬直线、主题色误用等）→ 选项 5 → `TODO.md`，这是硬修复
-- 🟡 **Refinement = 审美观察和改进建议**（呼吸感、焦点层级等主观判断）→ 选项 2 → 先调 `/think --quick` 决策，能拍板则转 TODO 或丢弃，无法决策才进 `to-discuss.md`
+- 🟡 **Refinement = 审美观察和改进建议**（呼吸感、焦点层级等主观判断）→ 选项 2 → 先调 `/think` 决策，**必须透传当前截图**让 Gemini 以独立第二视角审视（`node think.mjs --image <screenshot> "<prompt>"`；`--quick` DeepSeek 分支不支持图片，本场景强制走 Gemini 默认分支）。能拍板则转 TODO 或丢弃，无法决策才进 `to-discuss.md`
 - 🔄 **Evolution Dialogue = 代码演进 vs. 文档过时**（选项 3）→ 直接更新 UI_SHOWCASE.md
 
 **to-discuss.md 模板**（仅 `/think` 无法决策时使用）：
@@ -162,7 +162,7 @@ version: 3.0.0
 - **事实前提**: [Step 3 中的 4 维度观察，带截图来源]
 - **/think 结论**: [/think 给出了什么判断，为什么无法拍板]
 - **决策选项**:
-  - [ ] Approve → 转 TODO.md（或 /ui-redesign）
+  - [ ] Approve → 转 TODO.md
   - [ ] Reject → 维持现状
 ```
 
@@ -184,7 +184,7 @@ version: 3.0.0
 3. **P2 - 可以打磨**：{页面名称}
 
 ### 重塑建议
-对 P0 页面，建议触发 `ui-redesign` 进行重塑。
+对 P0 页面，给出具体的重塑方向和 Signature Moment 建议，由 Claude Code 接力实现。
 ```
 
 ## 约束

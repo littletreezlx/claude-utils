@@ -41,7 +41,6 @@
 ├─ UI 工程
 │  ├─ 逆向生成 Spec ────────── /ui-spec
 │  ├─ 全局 UI 审计 ────────── /ui-audit
-│  ├─ 视觉重塑 ────────────── /ui-redesign
 │  ├─ 截图转 Gemini ────────── /ui-to-gemini
 │  └─ UI 文档初始化 ────────── /init-ui-showcase
 │
@@ -99,7 +98,6 @@
 |------|------|------|
 | `/ui-spec` | 即时 | 逆向生成功能规范文档 |
 | `/ui-audit` | 即时 | 全局 UI 设计审计 |
-| `/ui-redesign` | 即时 | 视觉重塑 + Flutter 落地 |
 | `/ui-to-gemini` | 即时 | UI 截图转 Gemini 素材 |
 | `/init-ui-showcase` | 即时 | Flutter UI 文档系统初始化 |
 

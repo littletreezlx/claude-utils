@@ -105,12 +105,12 @@ FEATURE_CODE_MAP.md  → 功能-代码映射（AI 导航）
 |----------|-----|------|------|------|
 | **`/ui-spec`** | **Technical PM** | 逆向分析代码，提取逻辑 | 代码文件 / 截图 | `docs/ui/specs/xxx_spec.md` |
 | **`/feat-discuss`** | **Tech Lead** | 澄清需求，同步文档 | 用户讨论 | 更新 `xxx_spec.md` |
-| **`/ui-redesign`** | **Lead Designer** | 基于逻辑文档进行视觉重塑 | Spec 文档 + 截图 | 设计图 + `implementation_plan.md` |
+| **`ui-vision-advance`** | **Lead Designer** | 深度审美评审 + 设计方向 | 截图 + Spec 文档 | 评审报告 + Phase 4 设计简报 |
 
 ### 最佳实践循环
 1. **理解现状**: 使用 `/ui-spec` 扫描现有代码，生成基础 Spec。
 2. **讨论需求**: 使用 `/feat-discuss` 讨论新想法，AI 会自动更新 Spec。
-3. **视觉落地**: 使用 `/ui-redesign` 读取最新的 Spec，生成既美观又符合逻辑的设计。
+3. **视觉评审**: 使用 `ui-vision-advance` 对照截图给出评审报告和设计简报，由 Claude Code 接力实现。
 
 ### 命名规范 (Naming Convention)
 - 截图: `{base_name}.png` (例如: `ios_main_page.png`)

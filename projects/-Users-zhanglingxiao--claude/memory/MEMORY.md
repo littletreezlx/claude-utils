@@ -7,6 +7,7 @@
 - [feedback_batchcc_shortcut.md](feedback_batchcc_shortcut.md) — DAG 任务结尾用 `batchcc task-xxx`，不追问不解释
 - [feedback_think_handles_product_decisions.md](feedback_think_handles_product_decisions.md) — /think 应同时做产品+技术决策，只有真正拿不准的才进 to-discuss
 - [feedback_commit_vs_push.md](feedback_commit_vs_push.md) — commit 自动做、push 才需确认，别再问"现在 commit 吗"
+- [feedback_visual_workflow_gemini_second_eye.md](feedback_visual_workflow_gemini_second_eye.md) — 视觉类 skill 的 /think 调用必须透传截图让 Gemini 独立复核，禁用 --quick
 
 ## Reference
 - [reference_skills_taxonomy.md](reference_skills_taxonomy.md) — Anthropic 内部 Skills 9 类分类体系，规划新 Skill 时用作自检清单

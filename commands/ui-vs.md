@@ -46,6 +46,16 @@ description: 评审 AI 生成工具（Stitch/v0）的 UI 设计，输出迭代 P
 - **反 AI 味检测**：对照反面清单，标记所有 AI 默认审美的痕迹
 - **值得保留的**：AI 工具做对了什么？哪些创意突破值得保留甚至反向更新我们的设计体系？
 
+### Phase 1.5: 第二视角校验（透传截图给 Gemini）
+
+Phase 1 的判断本质上是审美主观判断，Claude 单一视角容易有盲区或过度批评。**必须**调用 `/think` 透传当前评审的截图，让 Gemini 以独立艺术指导视角复核。
+
+- **调用方式**：`node think.mjs --image <screenshot> "<prompt>"`
+- **Prompt 要点**：把 Phase 1 的四柱审视结论作为 Context 传给 Gemini，询问它是否认同、是否看到 Claude 漏掉的 anti-AI pattern 或值得保留的创意
+- **角色定位**：Gemini 是独立第二艺术指导，不是橡皮图章。它看到 Claude 漏掉的视觉问题或过度批评的误判，正是喂图的价值
+- **处理分歧**：Gemini 与 Claude 冲突的判断，在 Phase 2 策略中明确标注分歧点；Phase 3 的迭代 Prompt 应综合两方观点，而非单方立场
+- **禁用 `--quick`**：DeepSeek 分支不支持图片，本场景强制走 Gemini 默认分支
+
 ### Phase 2: 重塑策略 (Redesign Strategy)
 
 给出具体的视觉与交互调整方向：
