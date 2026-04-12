@@ -33,7 +33,6 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `ui-vision-advance` | 深度审美评审（五维评审+反 AI 味检测+设计简报）、用户说"审美评审"/"design critique" | `/ui-vision-advance` |
 | `ui-doctor` | UI 文档健康探针、Spec 覆盖率和腐烂度检测 | — (自动触发) |
 | `ui-spec` | UI 代码变更后 Spec 文档更新 | — (自动触发) |
-| `ui-redesign` | 视觉重塑、生成设计方案+Flutter 实现指南 | — (用户主动触发) |
 | `screen` | 截屏（Flutter 模拟器/adb/网页），为 UI 工作流提供视觉上下文 | `/screen` (已迁移) |
 | `skill-creator` | 创建新 Skill、改进现有 Skill、提炼工作流为 Skill | — (元技能，无对应 Command) |
 | `prompt-craft` | 编写/审查/优化项目中的 AI-facing prompt（system prompt、API 调用指令） | — (自动触发) |

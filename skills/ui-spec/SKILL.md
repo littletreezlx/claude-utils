@@ -4,7 +4,7 @@ description: >
   This skill should be used when UI code has been modified and the corresponding
   spec document may need updating, when a new page is created and needs a spec,
   when the user says "update spec", "生成 spec", "分析页面", or when another
-  workflow (like ui-redesign or feat-done) detects spec staleness.
+  workflow (like feat-done) detects spec staleness.
   Use PROACTIVELY after significant UI code changes to keep specs fresh.
   Analyzes page code to generate functional specification documents.
 version: 1.0.0
@@ -62,7 +62,7 @@ version: 1.0.0
 2. 在输出末尾附上联动提醒：
    ```
    ## 文档联动
-   - ⚠️ 本次 Spec 变更涉及 [具体变更]，建议后续 `/ui-redesign` 时参考更新后的 Spec
+   - ⚠️ 本次 Spec 变更涉及 [具体变更]，建议后续视觉评审/重塑时参考更新后的 Spec
    ```
 
 ## 执行参数

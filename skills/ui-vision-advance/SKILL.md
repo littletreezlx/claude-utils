@@ -1,13 +1,17 @@
 ---
 name: ui-vision-advance
 description: >
-  Deep aesthetic evaluation and design direction for UI screenshots.
+  Deep single-page aesthetic critique with precise design specs.
   Use when the user says "审美评审", "design critique", "aesthetic review",
-  "高级视觉检查", "设计审美", "美感分析", "审美", or when a page needs
-  creative design direction beyond compliance checking. Different from
-  ui-vision-check (compliance verification) — this skill evaluates aesthetic
-  quality with 5 dimensions, detects anti-AI patterns, and outputs precise
-  design specs with Signature Moment identification.
+  "设计审美", "美感分析", "审美", "给我设计方向", "这页质感不够",
+  "需要 Signature Moment", "反 AI 味", or when a single page needs creative
+  design direction with star ratings and precise Phase 4 specs (色值 Token /
+  间距 / 字阶 / 动效曲线). Evaluates with 5 dimensions (Typography / Color /
+  Spatial / Material / Motion), detects anti-AI patterns, and outputs a
+  Phase 4 design brief with Signature Moment identification. DO NOT use for
+  global UI audits, cross-page consistency, or code-vs-docs drift detection
+  — use ui-vision-check for those (it has Evolution Dialogue and full-project
+  audit mode).
 version: 1.0.0
 ---
 
@@ -104,15 +108,23 @@ version: 1.0.0
 截图与 `docs/ui/UI_SHOWCASE.md` / `theme.md` 定义的 Token 明显偏离（如主题色误用、阴影参数与规范不符）→ 调用 `todo-write` 写入 `TODO.md`。
 这类是**规范执行问题**，不是审美判断。
 
-#### 7b. 审美判断 → 先 /think 决策
-Phase 3 的 🔴 强烈建议 / 🟡 可选优化 → 调用 `/think --quick` 做产品+设计决策。`/think` 能拍板则直接转 TODO 或丢弃；**只有 `/think` 无法决策的才进 `to-discuss.md`**：
+#### 7b. 审美判断 → 先 /think 决策（透传截图）
+Phase 3 的 🔴 强烈建议 / 🟡 可选优化 → 调用 `/think` 做产品+设计决策，**必须透传当前评审的截图**让 Gemini 以独立第二视角审视。`/think` 能拍板则直接转 TODO 或丢弃；**只有 `/think` 无法决策的才进 `to-discuss.md`**。
+
+调用要点：
+- **默认 Gemini 分支**（支持多模态）：`node think.mjs --image <screenshot> "<prompt>"`
+- **`--quick` DeepSeek 分支禁用**：不支持图片，本场景强制走 Gemini
+- **多图场景**遵循 think skill 的交替绑定规范：`--text "页面 A：" --image a.png --text "页面 B：" --image b.png "<prompt>"`，禁止纯堆图
+- **角色定位**：Gemini 基于截图自由发挥，Claude Code 综合 Phase 2 评审 + Gemini 第二视角后拍板。不预设 Gemini 只能回答什么问题——它看到 Claude 漏掉的盲区正是喂图的价值
+
+to-discuss.md 条目格式（仅 /think 无法决策时使用）：
 
 ```markdown
 ## [Aesthetic|Signature|Refinement] 简短标题 (Ref: ui-vision-advance 报告 Phase 3)
 - **事实前提**: [Phase 2 中的客观观察，带维度（Typography/Color/...）]
 - **/think 结论**: [/think 给出了什么判断，为什么无法拍板]
 - **决策选项**:
-  - [ ] Approve → 转 TODO.md（或 /ui-redesign）
+  - [ ] Approve → 转 TODO.md
   - [ ] Reject → 维持现状，记录理由
 ```
 
