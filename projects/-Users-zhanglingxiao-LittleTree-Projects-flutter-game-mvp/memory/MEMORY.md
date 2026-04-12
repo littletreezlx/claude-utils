@@ -1,1 +1,2 @@
+- [godot-run-mode](godot-run-mode.md) — Godot --editor 不启动 DebugPlayServer
 - [godot-tscn-comment-trap](godot-tscn-comment-trap.md) — Godot 4.6 .tscn 文件禁止 # 注释分隔符
