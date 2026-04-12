@@ -1,13 +1,17 @@
 ---
 name: ui-vision-advance
 description: >
-  Deep aesthetic evaluation and design direction for UI screenshots.
+  Deep single-page aesthetic critique with precise design specs.
   Use when the user says "审美评审", "design critique", "aesthetic review",
-  "高级视觉检查", "设计审美", "美感分析", "审美", or when a page needs
-  creative design direction beyond compliance checking. Different from
-  ui-vision-check (compliance verification) — this skill evaluates aesthetic
-  quality with 5 dimensions, detects anti-AI patterns, and outputs precise
-  design specs with Signature Moment identification.
+  "设计审美", "美感分析", "审美", "给我设计方向", "这页质感不够",
+  "需要 Signature Moment", "反 AI 味", or when a single page needs creative
+  design direction with star ratings and precise Phase 4 specs (色值 Token /
+  间距 / 字阶 / 动效曲线). Evaluates with 5 dimensions (Typography / Color /
+  Spatial / Material / Motion), detects anti-AI patterns, and outputs a
+  Phase 4 design brief with Signature Moment identification. DO NOT use for
+  global UI audits, cross-page consistency, or code-vs-docs drift detection
+  — use ui-vision-check for those (it has Evolution Dialogue and full-project
+  audit mode).
 version: 1.0.0
 ---
 

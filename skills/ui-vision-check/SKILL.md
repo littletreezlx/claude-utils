@@ -1,13 +1,17 @@
 ---
 name: ui-vision-check
 description: >
-  This skill should be used to visually verify UI screenshots against the project's
-  design language. Supports both single-page checks and full-project UI audits.
-  Use PROACTIVELY after significant UI changes, after a batch of visual modifications,
-  or when the user says "check UI", "视觉检查", "UI 看看", "截图分析", "design check",
-  "UI 审计", "审视整体 UI", "设计债务". Also use when another workflow (like delivery
-  or feat-done) needs visual verification. Reads screenshots + design docs, then
-  provides observations and suggestions — NOT pass/fail judgments.
+  UI system-level health probe — for cross-page design consistency audits,
+  code-vs-docs drift detection, and Evolution Dialogue ("Bug or Evolution?")
+  when code diverges from UI_SHOWCASE. Two modes: (1) gentle single-page
+  verification after UI code changes, (2) global audit for design debt and
+  cross-page consistency. Use when the user says "UI 审计", "设计债务",
+  "整体看看 UI", "跨页一致性", "UI 健康检查", "Bug or Evolution",
+  "UI_SHOWCASE 过时了吗", "代码改了文档没改", or when another workflow
+  (like feat-done) needs visual verification after UI code changes.
+  DO NOT use for deep single-page aesthetic critique with star ratings and
+  precise specs — use ui-vision-advance for that. Outputs observations and
+  dialogue, NOT pass/fail or star ratings.
 version: 3.0.0
 ---
 
