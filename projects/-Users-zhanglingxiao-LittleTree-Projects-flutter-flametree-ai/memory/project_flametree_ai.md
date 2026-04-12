@@ -79,6 +79,23 @@ originSessionId: 9072f0a2-a8f8-47c7-b160-da9d7825e23b
 - `quickAsk` state 无 `isVisible` 字段，应用 `/state/overlay.isOverlayVisible` 替代
 - 响应结构无 `.data` 包裹层：`quickAsk` 直接 `.messages`，`organizeTasks` 直接 `.tasks`，`images` 直接 `.images`
 
+## Voice Agent (Phase 0A ✅, Phase 0B ⏳)
+
+**状态**: Phase 0A Server 端管线验证 100% 完成 (2026-04-12)
+**文档**: `docs/features/voice-agent/` 含完整文档体系
+**延迟基线**: TTFT p50=11.6s (macOS 本地测试，~5.76s 中文语音)
+
+**下一步**: Phase 0B - 用户可选 Android 手机测试（室内 WiFi）或比亚迪 DiLink 车机测试
+
+**快速启动 voice agent 测试**:
+```bash
+# 1. 启动后端
+cd server && pnpm dev > /tmp/server.log 2>&1 &
+
+# 2. 跑端到端延迟回归
+cd server && npx tsx scripts/smoke-cascade-latency.ts 3
+```
+
 ## 如何应用
 
 执行 ai-qa-stories 时，先启动 server，再启动 app，最后执行验证。
