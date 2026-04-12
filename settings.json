@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/littletreezlx/.claude/hooks/pre-tool-call.sh"
+            "command": "~/.claude/hooks/pre-tool-call.sh"
           }
         ]
       }
