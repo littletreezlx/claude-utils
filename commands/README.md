@@ -13,7 +13,8 @@
 │
 ├─ 代码库维护
 │  ├─ 生成/更新 CLAUDE.md ── /claudemd
-│  ├─ 文档审查 ──────────── /doc-update-context
+│  ├─ 文档审查（vs 代码）── /doc-update-context
+│  ├─ 文档质量（vs 标准）── /doc-quality-review
 │  └─ 全面体检（DAG）────── /comprehensive-health-check
 │
 ├─ 功能开发
@@ -116,7 +117,8 @@
 | `/todo-doit` | 串行 | 执行待办任务 |
 | `/todo-huge-task` | DAG | 大任务智能拆分 |
 | `/screen` | 即时 | 截图分析辅助 |
-| `/doc-update-context` | 串行 | docs/ 全量文档深度审查与修正 |
+| `/doc-update-context` | 串行 | docs/ 全量文档 vs 代码一致性审查 |
+| `/doc-quality-review` | DAG | docs/ 文档体系质量审查（Map-Reduce） |
 
 ---
 
