@@ -55,7 +55,6 @@
 | `docs/ARCHITECTURE.md` | 系统**怎么搭建** | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
 | `docs/ROADMAP.md` | 项目**去向哪** | 高频 | 当前阶段状态、Known Issues、Next Steps |
 | `docs/FEATURE_CODE_MAP.md` | 代码**在哪里** | 中频 | 功能→代码路径索引（GPS 导航） |
-| `docs/ui/UI_SHOWCASE.md` | 界面**长什么样** | 低频 | 设计系统工程参考手册 |
 
 ## 文档边界（易混淆的三者）
 
