@@ -9,3 +9,4 @@
 - [原则关注结果而非机制](feedback_principle_vs_mechanism.md) — 产品原则应基于用户体验结果评估，不能机械套用到实现机制
 - [AI-Only 测试数量不算负担](feedback_test_count_in_ai_only.md) — 不要用"测试通胀"要求 Code Freeze，测试是 AI 写的无人类维护成本
 - [AI Vision 对低对比度差异不可靠](feedback_ai_vision_low_contrast.md) — 2026-04-13 翻车：基于截图判定 Soul-breaking 前必须读源码，外部 AI 看同图不构成独立证据
+- [pick-server/.dev.vars 故意入仓](feedback_dev_vars_in_repo.md) — 私有仓库跨设备同步策略，禁止自动加回 gitignore

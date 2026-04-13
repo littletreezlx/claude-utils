@@ -6,7 +6,7 @@ description: >
   beyond unit tests. Verifies user stories against a running Flutter app via
   Debug State Server. Requires Debug State Server running and docs/user-stories/qa/
   to exist.
-version: 2.3.0
+version: 2.4.0
 ---
 
 # AI QA Stories — 用户故事自主验证
@@ -36,6 +36,27 @@ AI 自主闭环：读取 `docs/user-stories/qa/*.qa.md` 中的验证脚本，通
 **⚠️ 开始 QA 前，必须先运行 `prep-cyborg-env` Skill 或 `./scripts/prep-env.sh`**，确保环境干净。
 
 这防止"幽灵状态"导致的错误验证结论——Flutter 内存状态与 DB 不一致时，QA 会给出完全错误的通过/失败判断。
+
+### Step 0.5: 测试数据来源策略（关键）
+
+空库 App（0 feeds / 0 articles / unauthenticated）会让 80% 的 scenario 因前置缺失而 SKIP/FAIL，QA 失去意义。必须先确定测试数据从哪来，按以下三档决策：
+
+| 档位 | 判定条件 | 处理 |
+|------|---------|------|
+| **A. Seed 模式** | 项目有 `scripts/seed-test-data.sh` 或 `prep-env.sh` | 走 Step 0 标准路径，seed 脚本注入确定性数据 |
+| **B. Remote Prep 模式** | 无 seed 脚本，但项目 CLAUDE.md 提供测试账号（server + user + password）且支持 remote 同步 | **允许** QA 在 Step 4 之前主动 `auth/login` + `sync/fullSync` 获取测试数据。这属于"**准备**"不是"**修复**"，不违反"只验证不修改代码"原则 |
+| **C. 空库验证模式** | 以上皆无 | 照跑，但在报告开头明确标注「空库验证 — 预计大量 SKIP 属预期」，并建议 Founder 补 seed 脚本 |
+
+**准备操作的边界**（B 档允许做的事）：
+- ✅ 调用 `/action/auth/login`、`/action/sync/fullSync`、已知初始化性质的 action
+- ✅ 调用项目 CLAUDE.md 中明确列为"测试配置"的端点
+- ❌ 不改代码、不补端点、不重启 App、不清空已有用户数据
+- ❌ 不调用破坏性 action（delete、logout 等）作为准备步骤
+
+执行准备操作后，在报告「环境」小节记录：
+```
+测试数据来源: Remote Prep (login + fullSync) — feeds=N, articles=M
+```
 
 ### Step 1: 发现 Server 端口
 
@@ -85,36 +106,40 @@ fi
 - 如有旧格式 → 提示用户：「检测到旧格式故事文件，需要先运行 `/generate-stories` 迁移到双文件架构」
 - 如无故事 → 提示用户：「没有用户故事，需要先运行 `/generate-stories` 生成」
 
-### Step 3: 端点对账（实际调用验证）
+### Step 3: 端点对账（三态判定）
 
-端点对账必须**实际调用**验证，不能只看 `/providers` 列表。
+端点对账必须**实际调用**验证，不能只看 `/providers` 列表。对账结果分三态，区分"缺失"和"Server 自身不一致 Bug"：
 
-1. **获取实际端点列表**：
+1. **获取 providers 声明**：
    ```bash
    curl -s localhost:$PORT/providers
    ```
 
-2. **验证每个端点**（对每个引用的端点发请求，检查返回不是 error）：
-   ```bash
-   # 检查 /state/xxx 是否存在且返回非 error
-   curl -s localhost:$PORT/state/xxx | grep -q '"ok":true' && echo "OK" || echo "MISSING"
+2. **对每个引用的端点实际调用**，按返回决定状态：
 
-   # 检查 /data/xxx 是否存在且返回非 error
-   curl -s localhost:$PORT/data/xxx | grep -q '"ok":true' && echo "OK" || echo "MISSING"
+   | 状态 | 判定条件 | 报告处理 |
+   |------|---------|---------|
+   | ✅ **匹配** | providers 列表包含 + 实际调用返回 `"ok":true` | 相关 scenario 正常跑 |
+   | ⏭️ **缺失** | providers 列表不包含 | 相关 scenario 标 SKIP |
+   | 🔥 **Server Bug** | providers 列表**声明存在**，但实际调用返回 `"ok":false` 或 `Unknown state/action` | 相关 scenario 标 FAIL，**报告顶部单独红标**：Server 自身不一致 |
+
+   ```bash
+   # 示例判定
+   RESP=$(curl -s localhost:$PORT/state/xxx)
+   IN_PROVIDERS=$(echo "$PROVIDERS" | grep -q '"xxx"' && echo yes || echo no)
+   OK=$(echo "$RESP" | grep -q '"ok":true' && echo yes || echo no)
+
+   if [ "$IN_PROVIDERS" = "yes" ] && [ "$OK" = "yes" ]; then echo "MATCH"
+   elif [ "$IN_PROVIDERS" = "no" ]; then echo "MISSING"
+   else echo "SERVER_BUG"; fi
    ```
 
 3. **输出对账结果**：
 
-   全部存在：
    ```
-   端点对账: 12/12 匹配 ✅
-   ```
-
-   有缺失端点（标记为跳过而非失败）：
-   ```
-   端点对账: 10/12 匹配
-     ⏭️ /state/articles — 端点不存在，跳过相关 Scenario
-     ⏭️ /action/feeds/createCategory — 端点不存在，跳过相关 Scenario
+   端点对账: 10/12 匹配 | 1 缺失 | 1 Server Bug
+     ⏭️ /action/auth/startLocalMode — 端点不存在（providers 未声明）
+     🔥 /state/ai-processing — providers 声明但 handler 返回 Unknown（Server Bug，非测试缺陷）
    ```
 
 ### Step 4: 快照初始状态
@@ -166,7 +191,12 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 - **curl**: `curl -s -X POST localhost:$PORT/action/xxx -d '...'`
 - **期望**: `success == true`
 - **实际**: `{"error":"..."}`
-- **初步判断**: {基于 Intent 的快速判断：代码 bug / 测试过期 / 环境问题}
+- **归因**: {四选一}
+  - `server-handler-bug` — Debug Server 端 handler 问题（如 action 返回 success 但 state 不同步、providers 声明但 handler 未注册）
+  - `code-business-bug` — 业务代码实际 bug
+  - `prereq-missing` — 测试前置数据/配置缺失（非代码问题）
+  - `scenario-outdated` — 故事脚本过时（端点改名、断言字段改动）
+- **Blocked by**（可选）: {如果此 FAIL 是其他 FAIL 的连带效应，填前置 scenario ID，便于报告聚合根因}
 
 ### 跳过项
 - 03-xxx Scenario 5: 端点 /action/yyy 不存在，跳过
@@ -201,10 +231,35 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
    |---------|---------|
    | 无参数 | `open -a Simulator && ./scripts/start-dev.sh --background` |
    | `macos` | `./scripts/start-dev.sh --background --device macos` |
-   | 指定设备 | `./scripts/start-dev.sh --background --device <设备>` |
+   | `ios` | `./scripts/start-dev.sh --background --device ios` |
+   | `android` | 见下方「Android 专属」小节 |
 
 3. **同时并行加载 QA 文件**（Step 2），不傻等
 4. 等后台启动完成通知后 `curl providers` 确认就绪
+
+### Android 专属（经验积累）
+
+Android 路径有几个宿主机不透明的坑，必须单独处理：
+
+1. **start-dev.sh `--device android` 可能失败** — 部分项目脚本把 `android` 字面量直接传给 `flutter run -d android`，在多设备或设备名不匹配时会报 "No supported devices found"。**回退策略**：
+
+   ```bash
+   DEV_ID=$(flutter devices 2>/dev/null | awk '/android-arm/{print $3; exit}')  # 取设备 ID
+   [ -n "$DEV_ID" ] && nohup flutter run -d "$DEV_ID" > /tmp/flutter_run.log 2>&1 &
+   ```
+
+2. **必须配置 adb forward**（App 内 Debug Server 监听设备 localhost，宿主机 curl 进不去）：
+
+   ```bash
+   adb forward tcp:$PORT tcp:$PORT
+   adb forward --list  # 验证
+   ```
+
+   大多数 Flutter 项目的 `scripts/start-dev.sh` 会自动调用 `setup_android_port_forward`，但若绕过脚本手动 `flutter run`，必须手工执行。
+
+3. **首次安装可能被设备端拦截** — `adb: failed to install ... INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`。需要在设备上开启「USB 安装」或在系统弹窗确认。遇到此错误 → 停止、提示 Founder、等待确认后重试。
+
+4. **冷启动耗时** — 首次 Gradle 构建 + APK 安装约 **2-3 分钟**。用 `ScheduleWakeup(delaySeconds=180)` 等待，别用 sleep/轮询。
 
 ### 禁止行为
 
