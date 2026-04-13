@@ -37,6 +37,11 @@
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
   },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
   "mcpServers": {
     "playwright": {
       "command": "npx",
@@ -53,18 +58,15 @@
     },
     "MiniMax": {
       "command": "uvx",
-      "args": ["minimax-coding-plan-mcp", "-y"],
+      "args": [
+        "minimax-coding-plan-mcp",
+        "-y"
+      ],
       "env": {
         "MINIMAX_API_KEY": "sk-cp-74m9QxrVIY3s3cOOrflLcyAgyVv1IeM9ffzARalrFclsECUiHzdwUIjZ_jKGqfPcryqIcV2Rdjh492qSGNWdvzIIOecdMC5L0acnESWAbbMSEh91OABW1mU",
         "MINIMAX_API_HOST": "https://api.minimaxi.com"
       }
     }
   },
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
-  },
-  "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true,
   "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
 }

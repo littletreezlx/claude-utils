@@ -1,15 +1,14 @@
 ---
-name: feat-discuss-local-gemini
+name: think-gem-project
 description: >
-  This skill should be used when the user wants to discuss with Gemini on any topic:
-  features, product direction, design, methodology, engineering philosophy, AI collaboration
-  paradigms, or strategic thinking. Trigger when the user says "discuss with Gemini",
-  "ask Gemini", "consult Gemini", "跟 Gemini 聊聊", "问问 Gemini", "找 Gemini 讨论",
-  or when a discussion needs the Gemini co-founder's perspective. Also use PROACTIVELY
-  when Claude Code encounters product direction decisions, architectural trade-offs,
-  UI/UX design choices, or methodology questions that would benefit from external input.
-  Supports three roles: product (features/architecture), design (UI/UX), think (methodology/philosophy).
-version: 0.6.0
+  Use when the user wants to discuss project-level product/design/architecture decisions
+  with Gemini (features, UI/UX choices, game design, visual规范). Trigger when the user
+  says "discuss with Gemini", "ask Gemini", "consult Gemini", "跟 Gemini 聊聊",
+  "问问 Gemini", "找 Gemini 讨论", or when Claude Code encounters product/architecture/UI
+  decisions that would benefit from external input. Supports roles: product, design,
+  game-product, game-design, think. For cross-project methodology / philosophy /
+  strategy (no project context needed), use the lighter `think` skill instead.
+version: 0.7.0
 ---
 
 # 与 Gemini 自动化协作
@@ -50,7 +49,7 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 **不触发**：
 - 纯代码实现问题（Claude Code 自己能解决）
 - 轻量级工具依赖（如 `path_provider`、`url_launcher`、`share_plus`）
-- 用户说"提交到 Gemini Web"（→ 用 `/feat-discuss-web-gemini`）
+- 用户说"提交到 Gemini Web"（→ 用 `/web-think`，已建 Gem 用 `/web-gem-project`）
 
 ## 执行流程
 
@@ -65,11 +64,11 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 用户选 "先处理" → 逐条拉锯：
   - **Approve** → 转入 `TODO.md`，从 `to-discuss.md` **硬删除**该条目
   - **Reject** → 从 `to-discuss.md` **硬删除**该条目
-  - **Discuss** → 用该条目作为本轮 /feat-discuss 的讨论话题（照常走 Step 1-4）
+  - **Discuss** → 用该条目作为本轮 think-gem-project 的讨论话题（照常走 Step 1-4）
 
 用户选 "直接讨论原话题" → 跳过 Inbox Zero，按原计划进入 Step 1。
 
-**设计原则**：`to-discuss.md` 是 Force-Decision Queue，不是 backlog。每次调用 /feat-discuss 都是一次清空机会，防止它变成坟墓。
+**设计原则**：`to-discuss.md` 是 Force-Decision Queue，不是 backlog。每次调用 think-gem-project 都是一次清空机会，防止它变成坟墓。
 
 ---
 

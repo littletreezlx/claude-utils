@@ -8,3 +8,4 @@
 - [探索前确认实际行为非文档](feedback_explore_verify_behavior.md) — 不能用文档预期当验证标准，先观察实际行为
 - [原则关注结果而非机制](feedback_principle_vs_mechanism.md) — 产品原则应基于用户体验结果评估，不能机械套用到实现机制
 - [AI-Only 测试数量不算负担](feedback_test_count_in_ai_only.md) — 不要用"测试通胀"要求 Code Freeze，测试是 AI 写的无人类维护成本
+- [AI Vision 对低对比度差异不可靠](feedback_ai_vision_low_contrast.md) — 2026-04-13 翻车：基于截图判定 Soul-breaking 前必须读源码，外部 AI 看同图不构成独立证据

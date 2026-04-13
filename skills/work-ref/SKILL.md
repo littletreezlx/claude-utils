@@ -1,20 +1,20 @@
 ---
 name: work-ref
 description: >
-  Competitive analysis workflow for Android POS project. Launches 3 parallel subagents
-  to explore decompiled source code across Qmai/Keruyun/Meituan, writes per-project
-  analysis docs, then consolidates a cross-project comparison document.
-  Trigger when: user says "分析 [功能] 三家怎么实现的", "对比 [功能]", "竞品分析 [功能]",
-  "三家的 [功能]", "work-ref [功能]", or similar requests to compare how competitors
-  implement a feature.
-version: 0.1.0
+  Competitive analysis workflow for Android POS project. Launches 4 parallel subagents:
+  1 for our own Shiheng (real source, as baseline) + 3 for decompiled competitors
+  (Qmai/Keruyun/Meituan). Writes per-project analysis docs, then consolidates a
+  cross-project comparison document with Shiheng as the first column baseline.
+  Trigger when: user says "分析 [功能] 四家怎么实现的", "对比 [功能]", "竞品分析 [功能]",
+  "work-ref [功能]", or similar requests to compare how we and competitors implement a feature.
+version: 0.2.0
 ---
 
 # 竞品功能对比工作流 (work-ref)
 
 ## 目的
 
-在 Android POS 竞品分析项目中，高效分析三家竞品（企迈 Qmai、客如云 Keruyun、美团 Meituan）对某功能的实现方式，产出结构化对比文档。
+以**食亨自研基线**为参照，对比三家 Android POS 竞品（企迈 Qmai、客如云 Keruyun、美团 Meituan）对某功能的实现方式，产出结构化四方对比文档。
 
 ## 适用项目
 
@@ -42,11 +42,75 @@ version: 0.1.0
 3. 如果 Qmai 有 FEATURE_CODE_MAP，查找相关条目作为线索
 ```
 
-### Step 2: 启动 3 个并行 Explore Subagent
+### Step 2: 启动 4 个并行 Explore Subagent
 
-使用 Agent 工具，**在同一条消息中**发出 3 个并行调用。
+使用 Agent 工具，**在同一条消息中**发出 4 个并行调用：
+- **1 个食亨 subagent**（真实源码，用「模板 A」）
+- **3 个竞品 subagent**（Qmai/Keruyun/Meituan，用「模板 B」共享反编译搜索协议）
 
-每个 subagent 的 prompt 使用以下模板（替换 `{变量}`）：
+---
+
+#### 模板 A：食亨（真实源码，无反编译启发式）
+
+```
+你正在分析食亨（Shiheng）自研 Android POS 的真实源码，作为竞品对比的我方基线。
+
+## 任务
+分析食亨中「{功能名称}」的实现方式。
+
+## 项目信息
+- 项目根：~/AndroidStudioProjects/Work_Projects/android-pos/packages/pos/android
+- 业务包名：com/shiheng/
+- 主模块：app/src/main/java/com/shiheng/
+- 多模块目录：packages/（可能有拆分子模块）
+- 资源目录：app/src/main/res/
+- AndroidManifest：app/src/main/AndroidManifest.xml
+{如果有已知线索，列出}
+
+## 搜索协议
+
+这是**真实源码**（未混淆、未反编译），按正常 Android 项目的方式探索：
+
+1. **UI/字符串锚点**：Grep strings.xml 找中文关键词 → 反查布局和代码引用
+2. **网络/数据锚点**：Grep API endpoint、@SerializedName、Retrofit 接口
+3. **组件锚点**：AndroidManifest.xml 找 Activity/Service
+4. **包名搜索**：直接在 com/shiheng/ 下 Grep 功能关键词（类名清晰，无需正则兜底）
+5. **模块结构**：检查 packages/ 下是否有相关独立模块
+6. **Git 信息**：可用 git log/blame 了解实现演进与决策时间线
+
+## 搜索边界
+- 不需要排除三方库（源码结构清晰，直接搜业务包即可）
+- 不需要熔断（无混淆代码）
+- 未找到时大方承认，不要编造
+
+## 输出格式
+
+### 1. 功能概述
+- 食亨中是否实现了该功能？
+- 功能定位、面向什么业务场景
+
+### 2. 核心技术栈
+- 关键技术/框架/SDK/自研组件
+
+### 3. 架构组件
+| 组件 | 路径（从 app/src/main/java/ 起或相对模块根） | 说明 |
+
+### 4. 核心流程
+- 数据流 / 调用链 / 状态机
+
+### 5. 关键代码片段
+- 关键方法签名或核心逻辑（点到为止）
+
+### 6. 设计决策与权衡
+- 自研 vs 三方选型、踩过的坑、遗留问题
+- 对比竞品时值得突出的亮点或短板
+```
+
+---
+
+#### 模板 B：竞品（反编译源码）
+
+每个竞品 subagent 的 prompt 使用以下模板（替换 `{变量}`）：
 
 ```
 你正在分析 Android POS 竞品的反编译源码。
@@ -121,13 +185,14 @@ version: 0.1.0
 - 独特的设计选择、有趣的实现细节、踩过的坑
 ```
 
-**三家业务包名速查**：
+**四家项目速查**：
 
-| 项目 | 业务包名前缀 | 备注 |
-|------|------------|------|
-| Qmai | `com/qmai/android/` | 模块化：pos_module/, pos_export/ 等 |
-| Keruyun | `com/keruyun/` | 阿里系：含 alipay/iot 相关 |
-| Meituan | `com/sankuai/sjst/rms/` | 最大（8万文件），混淆严重 |
+| 项目 | 源码类型 | 根目录 | 业务包名前缀 | 备注 |
+|------|---------|--------|------------|------|
+| Shiheng | 真实源码 | `~/AndroidStudioProjects/Work_Projects/android-pos/packages/pos/android` | `com/shiheng/` | 自研基线，未混淆 |
+| Qmai | 反编译 | `{pos项目}/Qmai` | `com/qmai/android/` | 模块化：pos_module/, pos_export/ |
+| Keruyun | 反编译 | `{pos项目}/Keruyun` | `com/keruyun/` | 阿里系：含 alipay/iot |
+| Meituan | 反编译 | `{pos项目}/Meituan` | `com/sankuai/sjst/rms/` | 最大（8万文件），混淆严重 |
 
 ### Step 3: 整合结果，写入两层文档
 
@@ -135,11 +200,12 @@ version: 0.1.0
 
 为每个**有实质发现**的项目写入分析文档：
 
+- `Shiheng/docs/{功能中文}.md`（食亨基线 —— 写入本竞品项目镜像目录，**不**写入食亨外部仓库）
 - `Qmai/docs/{功能中文}.md`
 - `Keruyun/docs/{功能中文}.md`
 - `Meituan/docs/{功能中文}.md`
 
-**命名统一**：三家使用相同的文件名。
+**命名统一**：四家使用相同的文件名。
 
 **内容定位**：面向 AI 跨会话检索，包含：
 - 完整组件清单（类名 + 代码路径 + 职责）
@@ -159,38 +225,45 @@ version: 0.1.0
 # {功能中文名}对比分析
 
 > 分析时间：{YYYY-MM-DD}
-> 详细代码分析：[Qmai](../Qmai/docs/{功能中文}.md) | [Keruyun](../Keruyun/docs/{功能中文}.md) | [Meituan](../Meituan/docs/{功能中文}.md)
+> 详细代码分析：[Shiheng（我方）](../Shiheng/docs/{功能中文}.md) | [Qmai](../Qmai/docs/{功能中文}.md) | [Keruyun](../Keruyun/docs/{功能中文}.md) | [Meituan](../Meituan/docs/{功能中文}.md)
 
 ---
 
 ## 一、方案对比总览
 
-| 维度 | Qmai (企迈) | Keruyun (客如云) | Meituan (美团) |
-|------|-------------|-----------------|----------------|
-| **方案类型** | | | |
-| **核心技术** | | | |
-| **功能定位** | | | |
-| **自研程度** | | | |
+| 维度 | **Shiheng（我方基线）** | Qmai (企迈) | Keruyun (客如云) | Meituan (美团) |
+|------|-------------------------|-------------|-----------------|----------------|
+| **方案类型** | | | | |
+| **核心技术** | | | | |
+| **功能定位** | | | | |
+| **自研程度** | | | | |
 
 ---
 
 ## 二、技术架构
 
-### 2.1 Qmai — {方案概括}
+### 2.1 Shiheng（我方基线） — {方案概括}
 
 （mermaid 架构图）
 
 **技术要点**：
 - ...
 
-### 2.2 Keruyun — {方案概括}
+### 2.2 Qmai — {方案概括}
 
 （mermaid 架构图）
 
 **技术要点**：
 - ...
 
-### 2.3 Meituan — {方案概括}
+### 2.3 Keruyun — {方案概括}
+
+（mermaid 架构图）
+
+**技术要点**：
+- ...
+
+### 2.4 Meituan — {方案概括}
 
 （mermaid 架构图）
 
@@ -201,9 +274,17 @@ version: 0.1.0
 
 ## 三、能力矩阵
 
-| 能力 | Qmai | Keruyun | Meituan |
-|------|:----:|:-------:|:-------:|
-| ... | ✅/❌/⚠️ | | |
+| 能力 | Shiheng | Qmai | Keruyun | Meituan |
+|------|:-------:|:----:|:-------:|:-------:|
+| ... | ✅/❌/⚠️ | | | |
+
+---
+
+## 四、本质差异与我方定位
+
+- **对比三家，我方强在哪**：...
+- **对比三家，我方弱在哪**：...
+- **可借鉴的竞品设计**：...
 
 ---
 

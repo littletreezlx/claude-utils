@@ -16,7 +16,7 @@ description: PRD 转客户端需求 ultrathink
 ## 与其他命令的区别
 | 命令 | 输入 | 核心动作 | 输出 |
 |------|------|----------|------|
-| `feat-discuss-local-gemini` skill | 模糊想法 | 讨论澄清 | 功能方案 |
+| `think-gem-project` skill | 模糊想法 | 讨论澄清 | 功能方案 |
 | `/prd-to-doc` | 全栈 PRD | 提取+澄清客户端部分 | 客户端需求文档 |
 
 ## 执行方式

@@ -1,4 +1,4 @@
-# feat-discuss-local-gemini 设计决策
+# think-gem-project 设计决策
 
 本文件记录 Skill 设计中的关键决策和背后的推理，供维护时参考。
 
@@ -38,7 +38,7 @@ v0.4.0 的首轮 Prompt 包含"协作简况"（团队构成和工作方式）。
 
 ## 为什么 Prompt 结构与 Web 模式对齐？
 
-v0.5.0 统一采用 `Context & Soul → Current State → The Problem → Constraints → Expected Brief` 结构。Web 模式（`/feat-discuss-web-gemini`）先验证了这个结构的有效性——信息密度高、层次清晰、自包含。Local 模式没有理由用不同的结构。
+v0.5.0 统一采用 `Context & Soul → Current State → The Problem → Constraints → Expected Brief` 结构。Web 模式（已合并进 `/web-think`）先验证了这个结构的有效性——信息密度高、层次清晰、自包含。Local 模式没有理由用不同的结构。
 
 ## 为什么 Engineering Handshake 改为条件分流？
 

@@ -12,7 +12,7 @@ description: >
   DO NOT use for deep single-page aesthetic critique with star ratings and
   precise specs — use ui-vision-advance for that. Outputs observations and
   dialogue, NOT pass/fail or star ratings.
-version: 3.0.0
+version: 3.1.0
 ---
 
 # UI Vision Check — AI 视觉灵魂验证
@@ -30,6 +30,7 @@ version: 3.0.0
 **AI 能力边界**：
 - **禁止像素级丈量** — AI 不擅长精确 dp 测量。用定性描述（"显得局促"、"呼吸感充分"），不要输出 "左边距是 12dp 而规范是 16dp"
 - **状态意识** — 截图可能捕获动画中间帧或非 idle 状态，分析前先判断截图属于什么状态
+- **低对比度差异不可靠** — AI Vision 对以下差异容易幻觉：透明度 <20% 的色底（例：#E06D06 @ 8% 淡底在暖米背景上可能被判成实色填充）、相近色值的双层结构（例：#F2E8E0 米色托盘 vs #FFFFFF 白卡片）、小位移的 3D 错层（例：6.h 素胎层偏移）。**凡涉及这类细节的 Soul-breaking / P0 / P1 判定，必须走 Step 2.5 源码对照护栏**
 
 ## 工作模式
 
@@ -81,6 +82,29 @@ version: 3.0.0
 
 > 不需要全部读完，根据截图涉及的页面按需加载。
 
+### Step 2.5: 源码对照护栏（Anti-Hallucination Guardrail）
+
+> **为何存在**：2026-04-13 翻车现场——AI Vision 把代码中严格符合 Spec 的"8% 淡底 Chip"误判为"实色橙色胶囊"、把有暖米色圆形托盘的 Emoji Avatar 误判为"裸贴"、把 Stack 双层 CeramicCard 误判为"扁平 Material 卡片"。三项 Soul-breaking 全部是 AI Vision 幻觉。详见 `~/.claude/docs/decisions/2026-04-13-01-ui-vision-check-code-anchor.md`。
+
+**触发条件**：Step 3 分析后，**只要**你准备把某项观察标记为 🔴 Soul-breaking、P0、或 P1，在写入报告之前**必须**执行本步骤。Refinement / P2 / Blind Spots 级别可跳过。
+
+**执行步骤**：
+
+1. **定位组件源码**：用 Glob/Grep 找到截图中涉嫌偏离的组件实现文件
+   - 例：怀疑 GroupChipBar → `lib/presentation/**/group_chip*.dart`
+   - 例：怀疑 CeramicCard → `lib/presentation/**/ceramic_card*.dart`
+   - 例：怀疑通用阴影/色值 → `lib/presentation/**/*tokens*.dart` / `theme*.dart`
+2. **读源码并摘取关键字段**：提取实际的 color / width / offset / shadow / Stack 结构等具体字段，带行号
+3. **与 Spec 字段逐项对照**：Spec 说 "8% 淡底"，源码里是不是 `Color(0x14...)`（= 8% 透明度）？Spec 说 "32px 圆形米色托盘"，源码里是不是 `width: 32.w + color: 0xFFF2E8E0 + shape: circle`？
+4. **三分支判定**：
+   - **✅ 源码 ≡ Spec** → 这是 **AI Vision 幻觉**，该项**不得**标记为 Soul-breaking / P0 / P1。降级为 Blind Spots（"需要真机/高分辨率截图人工验证"）或直接撤回。在报告里显式注明"源码已验证符合 Spec（文件:行号），判定撤回"
+   - **❌ 源码 ≠ Spec** → 维持 Soul-breaking 判定，**报告里必须附源码行号 + 实际字段值**作为证据
+   - **❓ 源码引用了 token/常量，token 值与 Spec 不一致** → 判定为 Soul-breaking，同时 Evolution Dialogue 问"token 值是 Bug 还是 Spec 过时"
+
+**硬约束**：
+- 本步骤**不可跳过**。任何 Soul-breaking / P0 / P1 判定若缺失源码引用（文件路径 + 行号），视为违反 skill，等同于未完成
+- 本步骤**不可伪造**。必须通过 Read/Grep 工具真实读取源码，禁止凭记忆或猜测写"源码应该是 xxx"
+
 ### Step 3: AI Vision 分析 (Warm Ceramic 专属维度)
 
 对每张截图进行以下 4 个维度的感知分析：
@@ -123,7 +147,14 @@ version: 3.0.0
 
 #### 🔴 Soul-breaking (破坏灵魂的异味)
 - [必须修复的严重偏离，如：纯灰底色、黑阴影、生硬直线等]
+- **每条必须附 🔗 Code Anchor**：`<file_path>:<line_range>` + 源码实际字段值（e.g., `color: Color(0xFF...)`）
+- 若 Step 2.5 判定为"源码 ≡ Spec"（AI Vision 幻觉）→ 该项不得出现在此处
 - （无则写"未发现灵魂级问题"）
+
+#### 🪞 Vision Hallucination Reversals (幻觉撤回)
+- [Step 2.5 中被源码证据推翻的"疑似偏离"，带源码行号]
+- 例：`疑似: Chip 实色橙色 → 源码 group_chip_bar.dart:344-350 实际为 Color(0x14E06D06) @ 8% 淡底，符合 Spec，判定撤回`
+- （无则省略此 section）
 
 #### 🟡 Refinement (打磨建议)
 | # | 维度 | 观察 | 改进方向 |
@@ -199,3 +230,25 @@ version: 3.0.0
 - **不修改任何文件** — 纯分析，修改由用户确认后在 Action Menu 中触发
 - **不做"政治正确但无灵魂"的评价** — 如果整体缺乏质感，即使组件都对也要如实指出
 - **偏差即对话** — 文档与截图不一致时，问"Bug or Evolution?"而非直接判错
+- **Soul-breaking 必须附源码证据** — 任何 🔴/P0/P1 判定必须走 Step 2.5 源码对照，报告中带 `<file>:<line>` + 实际字段值。仅凭截图观察不足以支持 Soul-breaking 级别判定（防 AI Vision 幻觉）
+
+- **AI 视觉打磨边界（Refinement Scope）** — 为防止 AI 基于截图做像素级或饱和度微调幻觉（详见 2026-04-13 flametree_rss_reader `/think` 决策：Gemini Filter C 相对空间 & 色彩幻觉），Refinement 输出**必须**按下列边界切分：
+
+  **🚫 禁止区（AI 基于截图无法可靠判断，禁止输出）**：
+  - 间距的定量建议：`间距 +Npx`、`padding 调整为 N`、`左边距改成 16dp` 等
+  - 饱和度/亮度的定量或相对调整：`饱和度 -15%`、`降低一些饱和度`、`颜色再暗一点`
+  - 字号/行高的定量微调：`字号 +2px`、`line-height 改 1.6`
+  - 任何"相对视觉重量"判断引发的像素级调整建议（例：`这个元素看起来太重，字号减 1`）
+  - 原因：截图是 PNG 像素渲染，跨 P3/sRGB 色域、dpr、抗锯齿存在不可控误差；AI 的视觉重量判断在像素层不可靠，易产生"Death by Special Cases"的硬编码分支
+
+  **✅ 允许区（AI 能基于设计隐喻/语义稳定判断，可输出）**：
+  - **隐喻违背**：冷色 vs 暖色调（纯灰 #E4E2DE vs 暖奶油 #F5F3EE）、硬线条 vs Organic Corners、锐利阴影 vs 弥散焦糖阴影
+  - **语义破碎**：图标被边缘裁切、icon 家族混用（Cupertino 与 Material 混杂）、字体双轨越界（Editorial 轨用于按钮、Functional 轨用于大标题）
+  - **品牌色 Tier 违反 (Brand Color Tier Violation)** — **替代此前"红色泛滥"检查范式**：项目若在 `docs/DESIGN_PHILOSOPHY.md` 中定义了 Active State Tier Rules（或同类"品牌色分层"规则），检查品牌色（如 `primaryContainer`）是否被用于 Tier 2 局部状态（bookmark、toggle、switch、local selection active）。违反表达为 Token 语言：「X 组件属于 Tier 2 (局部状态)，应通过形态切换 outlined→filled + `surfaceContainerHigh` 底色表达激活，不应使用 `primaryContainer`」。**禁止**基于"红色元素数量超过 N 个""视觉太红"等单屏计数/主观强度判断。
+  - **语义过载**：品牌色被非品牌组件误用（与上一条"品牌色 Tier 违反"在有 Tier 规则的项目里合并；无 Tier 规则的项目沿用此旧标签）
+  - **铁律违反**：纯白 #FFFFFF 大面积背景、纯黑 #000000 阴影、1px solid border 分隔内容区（违反设计系统头部声明的硬约束）
+  - **响应式 Bug**：`<600px` 出现大面积空白（右白区）、溢出裁切、导航退化失败
+
+  **修建建议的表达方式**：允许区内的建议必须用 Token 语言（`把 accent 换成 tertiary`、`从 primary→primaryContainer 渐变降到单色 primaryContainer`），**不得**用定量描述（`饱和度 -20%`）。所有定量调整只能在代码层由 Token 值的变更驱动，肉眼回归验证。
+
+  **同类理念引用**：本规则与 flutter 项目 ADR-007 "工程约束 > 文档规范" 一脉相承——能编码进 Token/Lint/脚本的规则不依赖 AI 主观解读，AI 的职责是识别**语义/隐喻层面的违背**，把**定量决策**交给设计 Token 系统。

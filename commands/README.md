@@ -17,7 +17,7 @@
 │  └─ 全面体检（DAG）────── /comprehensive-health-check
 │
 ├─ 功能开发
-│  ├─ 方案讨论（手动）────── /feat-discuss-web-gemini → 复制到 Gemini Web
+│  ├─ 方案讨论（手动）────── /web-think → 复制到 Gemini Web
 │  ├─ PRD 转需求 ─────────── /prd-to-doc
 │  └─ 学习新项目 ─────────── /learn-new-project
 │
@@ -67,7 +67,8 @@
 ### 功能开发 & 方案设计
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/feat-discuss-web-gemini` | 即时 | 生成 Prompt 供手动转发 Gemini Web |
+| `/web-think` | 即时 | 生成 Prompt 供手动转发 Gemini Web（通用话题 + 功能设计） |
+| `/web-gem-project` | 即时 | 生成增量 Prompt 给已建 Gem 的 Gemini Web |
 | `/feat-done` | 即时 | 文档同步 + 静态分析 + 提交 |
 | `/prd-to-doc` | 即时 | PRD 转客户端需求文档 |
 | `/learn-new-project` | 即时 | 快速学习陌生项目 |
@@ -167,7 +168,7 @@ batchcc task-xxx
 | `test-workflow` | 代码修改后自动验证、测试失败自动修复 |
 | `consistency-check` | 开始新功能时自动检查代码库自洽性 |
 | `code-quality` | 提交前自动代码审查 |
-| `feat-discuss-local-gemini` | 遇到产品/架构/UI 决策时自动调用 Gemini API |
+| `think-gem-project` | 遇到产品/架构/UI 决策时自动调用 Gemini API（项目级） |
 | `think` | 方法论/策略讨论时调用 Gemini Think |
 | `test-verify` | AI 大量生成测试时自动红队验证 |
 

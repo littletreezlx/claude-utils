@@ -88,7 +88,7 @@
 | 一个完整功能开发完毕 | `/feat-done` | 文档同步 + 提交 + 验收报告 |
 | 测试失败需要修复 | `test-workflow` skill | 自动诊断修复 |
 | 用户说"项目状态不好"或开始陌生项目 | `consistency-check` skill | 快速诊断对齐 |
-| 遇到产品/架构/UI 决策需要外部意见 | `feat-discuss-local-gemini` skill | 调用 Gemini API 咨询 |
+| 遇到产品/架构/UI 决策需要外部意见 | `think-gem-project` skill | 调用 Gemini API 咨询（项目级） |
 | AI 生成大量测试（>20），或用户质疑测试质量 | `test-verify` skill | 红队对抗验证 |
 | 改完业务逻辑/UI，项目有 Debug State Server | curl + 截图自主验证 | 详见项目级 CLAUDE.md |
 | 面临无明确最优解的策略/架构选择 | `think` skill (Gemini) | 获取外部视角再决策 |

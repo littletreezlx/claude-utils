@@ -28,7 +28,7 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `consistency-check` | 开始新功能、首次进入项目 | — (自动触发) |
 | `code-quality` | 提交前质量关卡、准备 merge | — (自动触发) |
 | `think` | 方法论/策略/哲学讨论 | — (自动触发) |
-| `feat-discuss-local-gemini` | 讨论新功能、咨询 Gemini 产品/设计意见 | `/feat-discuss-local-gemini` |
+| `think-gem-project` | 讨论新功能、咨询 Gemini 产品/设计意见（项目级，调 Gemini API） | — (自动触发) |
 | `ui-vision-check` | UI 视觉验证（单页/全局审计）、用户说"视觉检查"/"UI 审计" | — (纯分析，无对应 Command) |
 | `ui-vision-advance` | 深度审美评审（五维评审+反 AI 味检测+设计简报）、用户说"审美评审"/"design critique" | `/ui-vision-advance` |
 | `ui-doctor` | UI 文档健康探针、Spec 覆盖率和腐烂度检测 | — (自动触发) |
