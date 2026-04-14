@@ -68,5 +68,6 @@
       }
     }
   },
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
+  "effortLevel": "high"
 }

@@ -1,12 +1,12 @@
 ---
-description: 项目文档质量审查（Map-Reduce：全局诊断 + 机械执行）ultrathink
+description: 项目文档质量审查（DAG：Trunk-Centric 分批诊断 + 机械执行）ultrathink
 ---
 
 # 项目文档质量审查
 
 ## 目标
 
-审查 `docs/` 下所有文档**本身的写作质量**，判断每份文档是否履行了它在文档体系中的职责。
+审查 `docs/` 下所有文档是否履行了它在文档体系中的职责。
 
 **与 `/doc-update-context` 的区别**：
 
@@ -17,164 +17,171 @@ description: 项目文档质量审查（Map-Reduce：全局诊断 + 机械执行
 
 **本命令基本不读代码**。参照物是 `~/.claude/guides/doc-structure.md` 定义的文档职责和边界。
 
+> **格式规范**：@templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 > **前置建议**：先跑 `/doc-update-context` 保证"说的是真的"，再跑本命令保证"说得好"。
 
 ---
 
-## 架构原则：Map-Reduce（集中诊断 + 分散治疗）
+## 架构原则：Trunk-Centric 分批诊断
 
-**核心信念**：文档质量问题里最值钱的那类是**关系型约束**——跨文档冗余、边界越界、全局结构失衡。这类问题无法从单文档视角发现。
+**核心信念**：跨文档冗余 90% 发生在**主干 ↔ 叶子**之间（叶子 ↔ 叶子若有大量冗余，说明该合并）。因此 Trunk 常驻每批次的 context，叶子按目录分批——跨批次盲区由 Trunk 间接填平。
 
-因此本命令拒绝"per-doc 独立审查"模式，采用：
-
-1. **Phase 2 诊断节点**：一次性读入 `doc-structure.md` + 所有待审文档骨架 → 产出全局 `review-action-plan.md`
-2. **Phase 3 执行节点**：每个文档一个 TASK，**只执行 action plan 中属于自己的处方**，禁止延伸判断
-
----
-
-## 审查维度（三条硬指标，无软指标）
-
-删除人类中心的"文笔优雅/结构清晰/表达精确"等软概念，代之以 AI 消费视角的可验证指标：
-
-| 维度 | 操作定义 |
-|------|---------|
-| **唯一性 (Uniqueness)** | 任何一条信息是否只在一个文档中定义？违反例：BEHAVIOR 和 features/X 都描述同一个状态机 |
-| **可预测性 (Predictability)** | 按 `doc-structure.md` 的职责定义，AI 闭着眼睛能否猜到某类信息在哪个文档里？违反例：产品愿景一半在 SOUL 一半在 BEHAVIOR |
-| **信噪比 (Signal-to-Noise)** | 文档中是否存在不属于本文档职责的长篇内容，稀释核心信息？违反例：ARCHITECTURE 里写了 5 段用户流程叙事 |
-
-**不再检查**：章节是否漂亮、段落是否流畅、表格是否好看。这些是人类读者关心的,AI 不关心。
+**拒绝的替代方案**（见 `~/.claude/to-discuss.md` 历史讨论）：
+- ❌ 一次性全读（50+ 文档会触发静默截断，违反铁律 5）
+- ❌ 骨架聚类（"归簇判断"本质仍需读内容，节省有限）
+- ❌ 下沉到 per-doc 独立审查（丧失跨文档视角）
 
 ---
 
-## 状态记忆：JSON state 文件
+## 审查维度（四条硬指标）
 
-放弃"文档末尾埋 HTML 注释"的方案（在 AI 高频改写的项目里会被意外清洗，且无法捕捉"审查标准升级"）。
+| 维度 | 操作定义 | 处方动作 |
+|------|---------|---------|
+| **唯一性 (Uniqueness)** | 任何一条信息是否只在一个文档中定义？ | 保留权威处、其他处改为引用 |
+| **可预测性 (Predictability)** | 按 `doc-structure.md` 职责，AI 闭眼能否猜到某类信息在哪？ | 越界内容迁移到正确文档 |
+| **信噪比 (Signal-to-Noise)** | 文档中是否有不属于本文档职责的长篇内容？ | 删除或迁移 |
+| **价值 (Value)** | 文档是否仍被引用 / 仍有读者 / 未被新版本取代？ | 归档到 `docs/archive/YYYY-MM/` |
 
-改用集中式 state 文件：`.claude/quality-review-state.json`
+**Value 维度的信号**（满足任一触发归档处方）：
+- ≥ 90 天未更新 **且** 内容已被其他文档覆盖 → `[归档] git mv`
+- 引用的代码路径失效占比 > 50% → `[归档]`
+- 整份文档被其他文档完全引用/重述 → `[合并] 删 A，在 B 中补充吸收说明`
+- 单节孤立无被引 → `[瘦身] 删除该节`
+
+阈值可在 state 文件 `archive_staleness_days` 字段覆盖（默认 90）。
+
+**不再检查**：章节是否漂亮、段落是否流畅——这些是人类读者关心的。
+
+---
+
+## 状态文件：`docs/.quality-review-state.json`
+
+> **位置说明**：不放在 `.claude/` 下（避免权限围栏，自动化模式下每次写都要审批）。`docs/.` 前缀隐藏且与所审对象就近。
 
 ```json
 {
   "standard_hash": "<doc-structure.md 的 sha256>",
+  "trunk_docs": [
+    "docs/PRODUCT_SOUL.md",
+    "docs/PRODUCT_BEHAVIOR.md",
+    "docs/ARCHITECTURE.md"
+  ],
+  "archive_staleness_days": 90,
+  "batch_size_limit": 10,
   "docs": {
-    "docs/PRODUCT_BEHAVIOR.md": {
-      "doc_hash": "<文档当前 sha256>",
-      "reviewed_at": "2026-04-13",
+    "docs/features/random.md": {
+      "doc_hash": "<sha256>",
+      "reviewed_at": "2026-04-15",
       "reviewed_commit": "abc123"
     }
   }
 }
 ```
 
-**重审触发规则**（满足任一即需重审）：
-- 文档 `doc_hash` 变化 → 内容改了
-- 全局 `standard_hash` 变化 → 审查标准升级，所有文档需重审
-- 文档未出现在 state 中 → 新增文档
+**重审触发**（任一即需重审）：`doc_hash` 变 / `standard_hash` 变 / 文档未在 state 中。
 
-**豁免**：`--force` 参数全量重审。state 文件丢失只会触发一次全量，无破坏性。
+**Trunk 默认集**（首次运行自动写入）：`PRODUCT_SOUL` + `PRODUCT_BEHAVIOR` + `ARCHITECTURE` + `doc-structure.md`（全局）。不加 ROADMAP（高频变化会触发全量重审）和 FEATURE_CODE_MAP（索引非规则）。用户可手动改 state 覆盖。
+
+**豁免**：`--force` 全量重审。state 丢失只触发一次全量。
 
 ---
 
-## 执行流程
+## 执行策略
 
-### Phase 1: 扫描与筛选
+### 第一步：扫描 + 分批（命令自身执行，非 DAG 节点）
 
-1. 扫描 `docs/` 完整目录树，收集所有 `.md` 文件
-2. 计算每个文档的 `doc_hash` 和 `doc-structure.md` 的 `standard_hash`
-3. 对比 `.claude/quality-review-state.json`，按重审触发规则筛选出待审清单
-4. 输出「待审清单」：待审文档数、跳过数（近期已审且标准未变）
+1. 扫描 `docs/` 所有 `.md`，计算 hash
+2. 读 state，按重审规则筛出待审文档集
+3. **按目录聚合 + 切片**：同目录下文档归一批，单批 ≤ `batch_size_limit`（默认 10）。超过 10 的目录切片命名 `<dir>-a` / `<dir>-b`
+4. Trunk 文档**不参与**分批——它们作为每个诊断批次的常驻输入
 
-### Phase 2: 全局诊断节点（Map 阶段）
+### 第二步：Fatal Error 拦截（Phase 1.5）
 
-**这是本命令的核心节点。** 单个 TASK，横向视角。
+扫描完成后，以下任一命中 → 直接终止，打印切批建议：
 
-**输入**：
-- `~/.claude/guides/doc-structure.md` 全文
-- 所有待审文档的完整内容（本命令不读代码，Context 额度充足）
+- 单批切片后仍 > `batch_size_limit` × 1.5（即 15 份）— 切批逻辑失效
+- Trunk 文档合计行数 > 3000（Trunk 本身已超重，需先瘦身）
+- 总待审批次数 > 20（项目文档数已失控，应先触发文档归并）
 
-**产出**：`./review-action-plan.md`，结构化的处方清单：
+> **这是对铁律 5 的守门员**：宁可罢工也不静默处理不完的诊断。
+
+### 第三步：生成 DAG 任务文件
+
+入口文件 `task-doc-quality-review` + 细节目录 `.task-doc-quality-review/`。
+
+| STAGE | 内容 | 模式 |
+|-------|------|------|
+| Stage 1 `diagnose` | 每批一个 TASK：输入 Trunk 全文 + 该批叶子 → 产出 `action-plan.{batch_id}.md` 片段 | **parallel** max_workers=4 |
+| Stage 2 `merge` | 合并所有片段为 `review-action-plan.md` + 跨批次冲突检测（同一 Trunk 规则被多个叶子违反→去重 / 成对处方配对） | serial |
+| Stage 3 `execute` | 每份有处方的文档一个 TASK，机械执行处方，禁止延伸判断 | **parallel** max_workers=4 |
+| Stage 4 `review` | **收尾审视**，见下文 | serial |
+
+### Stage 4 收尾（按 DAG_FORMAT 规范）
+
+> **⚠️** 收尾 TASK 没有前序会话历史，靠 git diff/log + 文件系统自行发现产出。
+
+**执行步骤**：
+1. `git log --oneline -20` + `git diff --stat HEAD~N` 了解本轮全貌
+2. 读 `review-action-plan.md` 对比计划 vs 实际执行
+3. 读 state 确认 `reviewed_commit` 已更新
+4. 自问：
+   - 哪些处方未执行或标注"需用户决策"？
+   - 发现的系统性问题（如 `doc-structure.md` 职责定义有缺陷）？
+   - 归档到 `docs/archive/` 的文档是否都成对有吸收说明？
+   - 是否触及 Fatal Error 边界警戒（批次数接近上限 → 建议发起文档归并）？
+5. **直接写入项目根 `TODO.md`**，包含：
+   - 本轮执行摘要（已审批次数、处方执行数、归档数）
+   - 未执行/标注"需用户决策"的处方清单（每条含目标文档路径 + 决策点描述）
+   - 系统性问题建议（如建议修订 `doc-structure.md` 或发起文档归并）
+   - 下一步行动项（自包含：目标、核心文件、完成标志）
+
+---
+
+## 诊断 TASK 的输出契约
+
+每个 Stage 1 的 TASK 产出 `action-plan.{batch_id}.md` 片段：
 
 ```markdown
-# 文档质量修复清单
+# Batch: <batch_id> (<dir>)
 
-## 按文档组织的处方
+## docs/features/random.md
+- [越界] 第 X-Y 行「全局状态管理规则」属于 PRODUCT_BEHAVIOR.md 职责，迁移到 BEHAVIOR.md §状态机 章节；本文档对应位置改为引用
+- [归档] 本文档最后更新 2024-08-12，内容已被 features/random_v2.md 完全覆盖，`git mv docs/features/random.md docs/archive/2026-04/`，在 random_v2.md 开头补充"吸收自 random.md"引用
 
-### docs/PRODUCT_BEHAVIOR.md
-- [越界] 第 X-Y 行「随机选择算法实现」属于 features/random.md 职责，删除并在 features/random.md 中确认有对应内容
-- [冗余] 第 A-B 行与 docs/ARCHITECTURE.md 第 C-D 行重复描述路由表，保留 ARCHITECTURE 版本，此处改为引用
-- [缺失] 按 doc-structure.md，本文档应包含「全局状态策略」章节，当前缺失
-
-### docs/ARCHITECTURE.md
-- [信噪比] 第 M-N 行用户流程叙事稀释技术架构主题，迁移到 PRODUCT_BEHAVIOR.md
-
-### docs/features/random.md
+## docs/features/share.md
 - （无修改，职责清晰）
 
-## 全局观察
-- 整体健康度评分：🟢/🟡/🔴
-- 系统性问题（如存在）：例如「发现 3 处 BEHAVIOR→features 的越界，可能说明 BEHAVIOR 职责定义过宽」
+## 本批次跨文档观察
+- share.md 与 random.md 都提到"结果页面布局"——候选冗余，Stage 2 合并时与其他批次交叉检查
 ```
 
-**TASK 完成标志**：`review-action-plan.md` 生成，包含每份待审文档的处方（即使是"无修改"）。
-
-### Phase 3: 执行节点（Reduce 阶段）
-
-生成 DAG 任务文件 `./task-doc-quality-review`，每个有处方的文档一个 TASK：
-
-```markdown
-## STAGE ## name="执行 action plan" mode="serial"
-
-## TASK ##
-执行 docs/PRODUCT_BEHAVIOR.md 的修复处方
-
-**🎯 目标**：按 review-action-plan.md 中针对本文档的处方机械执行，禁止延伸判断
-
-**📁 核心文件**：
-- `docs/PRODUCT_BEHAVIOR.md` - [修改]
-- `./review-action-plan.md` - [只读]
-
-**🔨 执行步骤**：
-1. 读取 action plan 中 `### docs/PRODUCT_BEHAVIOR.md` 段落
-2. 对每条处方执行对应操作（删除/迁移/引用化/补充缺失章节）
-3. **禁止超出处方的额外改动**——发现新问题只记录到 TODO.md，不在本 TASK 中处理
-4. 更新 `.claude/quality-review-state.json` 中本文档的 doc_hash / reviewed_at / reviewed_commit
-
-**✅ 完成标志**：
-- [ ] 处方条目全部执行或标注为"需用户决策"
-- [ ] state 文件已更新
-
-验证: jq '.docs["docs/PRODUCT_BEHAVIOR.md"].reviewed_commit' .claude/quality-review-state.json
-
----
-
-## STAGE ## name="review" mode="serial"
-
-## TASK ##
-全局收尾
-- 更新 state 文件的 standard_hash
-- 输出本轮修改统计（按文档/按处方类型）
-- 检查是否有跨文档迁移导致的新冲突
-```
-
-执行方式：
-
-```bash
-batchcc task-doc-quality-review
-```
+Stage 2 合并时消除重复处方、配对"删 + 补"成对约束。
 
 ---
 
 ## 关键约束
 
-1. **Phase 2 必须先于 Phase 3**：不允许跳过诊断直接逐文档审查
-2. **Phase 3 TASK 只执行处方**：禁止 AI 在单文档 TASK 中"顺手优化"——新问题一律进 TODO
-3. **跨文档迁移在处方中成对出现**：处方 A 删除的内容,必须在处方 B 中对应补充，避免信息丢失
-4. **本命令不读源码**：发现疑似代码不一致时只记录到 TODO，由 `/doc-update-context` 处理
-5. **state 文件是单一事实源**：不再用 HTML 注释、git log、文档 frontmatter 等其他信号
+1. **Stage 1 并行各批次只看 Trunk + 本批叶子**——不读全部文档，杜绝 context 爆炸
+2. **Stage 3 TASK 只执行处方**——发现新问题一律进 TODO，不在本 TASK 中延伸处理
+3. **归档走 `git mv` 不 rm**——保留 git 历史，符合"破坏性方案但可逆"
+4. **成对处方**——删 A 必须在 B 中有对应"已吸收 X 章节"的补充处方
+5. **本命令不读源码**——疑似代码不一致只记 TODO，由 `/doc-update-context` 处理
+6. **state 是单一事实源**——不再用 HTML 注释、git log、frontmatter 等
 
 ---
 
-## 质量底线
+## 严格禁止
 
-- 不生成"一切 OK"的走过场报告，也不为凑数制造伪问题
-- action plan 中每条处方必须**可机械执行**（指定行号、操作类型、目标位置）
-- 发现系统性问题（如 doc-structure.md 本身职责定义有缺陷）→ 写入 TODO.md 供下次讨论，本命令不尝试修订标准
+1. **Fatal Error 拦截中不许 --force 绕过**（这是守门员，绕过会退化回静默失败）
+2. **诊断批次不允许跨目录混编**（破坏"同目录语义相关度高"的假设）
+3. **不生成"一切 OK"走过场报告**，也不凑数制造伪问题
+4. **不把自主判断的产品方向决策直接 execute**（如"这整个 features 目录该删了"——进 TODO 而非直接 rm）
+
+---
+
+## 相关文档
+
+- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- `~/.claude/guides/doc-structure.md` - 文档体系职责定义（Trunk 默认成员）
+- `/doc-update-context` - 文档 vs 代码一致性（互补命令）
+- 历史决策：`~/.claude/to-discuss.md` → Trunk-Centric 重构的讨论
