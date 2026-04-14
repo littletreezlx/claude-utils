@@ -171,5 +171,20 @@ Gemini 的核心反构（见 `_scratch/2026-04-14-think-gemini-cross-session-hyg
 
 - TODO（remote-control）：第二条"到 LiveKit Cloud 控制台 revoke 已泄露的测试 Key" 仍待处理
 - TODO（remote-control）：UX 改进——auto-start MediaProjection 应等无障碍授权确认后才弹出（user 今天提的）
-- 可选：在 `git-workflow` 或 `feat-done` skill 内部加一步"检查本次提交的流式代码是否符合 §5 的活性日志规范"
 - 监测：累计 3 次"读完本 guide 无影响"应主动报告 Founder 重审
+
+### 6.1 同次落地：`log-audit` skill
+
+User 在 guide/CLAUDE.md 落地后追问："是否应该给我一个检查整个项目日志的 skill？因为好多项目日志写的不好，AI 自闭环就实现的不好了"——指出 §5 只解决新代码，存量代码债务无人清。
+
+讨论后落地新 skill `~/.claude/skills/log-audit/SKILL.md`：
+- 项目级 sweep，仅显式触发（`/log-audit` 或 "审日志"等）
+- 锚定 `validation-hygiene.md §5`，识别流式/异步/管道代码
+- 三级严重性分级（🔴Critical / 🟡Warning / 🟢Minor / ✅Healthy）
+- 输出可塞 `TODO.md` 由 `/todo-doit` 消费；不自动改代码
+- 严格收敛 scope：只审"数据面活性"，不审业务/错误/性能日志
+- Action menu 给 5 个选项（全量/Critical/手动 top-3/细看/仅诊断）
+
+设计原则参考 `ui-doctor` skill（同类轻量诊断工具）。与 `feat-done` / `code-quality` / `comprehensive-health-check` 分工：前者管单功能交付前检查，后两者可调用本 skill 作为子节点。
+
+[验证凭证: 创建后下一轮 system-reminder 已在 skills 列表中显示 `log-audit: Use to audit data-plane logging coverage across an entire project...`，证明 skill 注册成功被自动发现]

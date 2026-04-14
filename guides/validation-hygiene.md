@@ -212,9 +212,10 @@ Log.i(TAG, "[Capture] stats: frames=$frames rate=$fps/s bitrate=$kbps kbps")
 ### 触发时机
 
 不在 CLAUDE.md 主文设触发，依赖以下机制激活：
-- `/feat-done` 检查"流式代码是否埋了活性日志"
-- `code-reviewer` skill 在 review 时核验
 - 写代码时 AI 自己识别"这段在做流式 / 异步" → 触发本节
+- `/feat-done` 检查"本次交付的流式代码是否埋了活性日志"
+- `code-reviewer` skill 在 review 时核验
+- **存量代码债务清理**：`/log-audit` skill（`~/.claude/skills/log-audit/`）项目级 sweep，输出按严重性分级的 TODO 清单
 
 ---
 
