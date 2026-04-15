@@ -6,26 +6,9 @@
 
 ```
 templates/
-├── docs/                           # 文档生成模板
-│   ├── README_TEMPLATE.md          # 功能文档模板（详细示例）
-│   └── TECHNICAL_TEMPLATE.md       # 技术文档模板（详细示例）
-├── workflow/                       # 工作流程模板
-│   ├── feature-planning.md         # 功能规划模板
-│   └── debug-workflow.md           # 调试流程模板
+├── workflow/                       # DAG / 任务工作流模板
 └── README.md                       # 本说明文档
 ```
-
-## 📄 文档模板 (docs/)
-
-### README_TEMPLATE.md
-**用途**: 功能文档模板，面向用户、测试、产品人员
-**内容**: 功能描述、使用流程、验证边界、用户场景
-**使用**: 由 `/create-page-doc` 命令引用，AI根据模板结构生成实际文档
-
-### TECHNICAL_TEMPLATE.md
-**用途**: 技术文档模板，面向开发者、架构师
-**内容**: 技术架构、组件职责、数据流转、扩展指南
-**使用**: 由 `/create-page-doc` 命令引用，AI根据模板结构生成实际文档
 
 ## 📋 工作流模板 (workflow/)
 
@@ -40,22 +23,6 @@ templates/
 **使用**: 用户复制模板到项目中填写，系统化解决问题
 
 ## 🎯 使用方式
-
-### AI命令引用
-Commands中的指令可以引用这些模板：
-
-```bash
-# /create-page-doc 会引用 docs/ 下的模板
-/create-page-doc src/components/UserProfile
-```
-
-### 用户直接引用
-在对话中使用 `@` 引用模板：
-
-```bash
-@templates/docs/README_TEMPLATE.md
-@templates/workflow/feature-planning.md
-```
 
 ### 复制到项目使用
 将workflow模板复制到项目中填写：
