@@ -12,6 +12,7 @@
 - [feedback_ancient_chinese_tags.md](feedback_ancient_chinese_tags.md) — 古装质感配方：hanfu + traditional_media + v3，不用现代服装词汇
 - [feedback_example_pollution.md](feedback_example_pollution.md) — Prompt 示例会被 LLM 当模板复制，必须加反例+多样性声明
 - [feedback_signature_traits_rarity.md](feedback_signature_traits_rarity.md) — 签名级特征 (heterochromia 等) 在 prompt 示例里必须显式标稀有度，否则集体撞特征
+- [feedback_secondary_collapse.md](feedback_secondary_collapse.md) — 锚点修主题塌陷后，角色发色/肤色出现次级塌陷（auburn 36%、olive+tan 22%），需放飞
 
 ## Project (项目状态)
 - [project_model_comparison.md](project_model_comparison.md) — 底模对比实验：MiaoMiao > Nova Anime3D > IlluQuaint > Flux
