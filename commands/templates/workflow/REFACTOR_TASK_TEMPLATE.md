@@ -1,6 +1,6 @@
 # 项目修复任务模板
 
-> 基于健康检查报告自动生成 `task-refactor` 的参考骨架。
+> 基于健康检查报告自动生成 `.task-refactor-project/dag.md` 的参考骨架（入口、阶段细节与 `state.json` 聚合在 `.task-refactor-project/` 目录内，清理时整刀切）。
 
 ## 主任务文件结构
 

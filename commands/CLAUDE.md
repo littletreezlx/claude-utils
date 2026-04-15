@@ -164,6 +164,19 @@ batchcc task-xxx      # 第二步：独立会话执行
 
 持久化的运行时缓存/state 应放在与服务对象就近的位置（如 `docs/`、项目根或 `.git/info/`），避免 `.claude/` 的权限围栏在自动化模式下每次写都触发审批。
 
+### 5. 强制 DAG 入口语法 + 生成后自检
+
+只说"生成 DAG 任务文件"会让 AI 退化为生成"看起来像 DAG 的扫描+分批说明文档"——用 `## Stage 1: diagnose (parallel)` 这种**人类可读标题**而非 `## STAGE ## name="..." mode="..."` 真语法。后果：batchcc 的 `is_dag_format()` 退化为"简单模式"，整份说明文档被当作 1 个 cc 任务喂给 Claude，污染整个项目（实战教训：`/doc-quality-review` 在 ai-image-studio 上的失败）。
+
+DAG 命令必须：
+
+- **内嵌完整可执行入口模板**（不少于一个完整 `## STAGE ## name="..." mode="..."` + `## TASK ##` 块），不能只用表格描述 STAGE 列表
+- **显式列出禁止形式**（如 `## Stage 1: diagnose (parallel)`、`### Batch 1: ...` 替代 `## TASK ##`）
+- **强制生成后 grep 自检**（`grep -c '^## STAGE ##' dag.md` ≥ N、`grep -c '^## TASK ##' dag.md` ≥ N），任一失败必须修正后才能宣告完成
+- **重跑前清理旧产物**（`rm -rf .task-xxx/`），避免新旧文件混合
+
+参考实现：`doc-quality-review.md` 第三步"入口文件硬约束"+"生成后自检"。
+
 ### 元原则
 
 **Skill/command 在 AI-Only 项目里是可执行约束，留白处必被保守派默认占据。** "机械执行"不是约束，"列出 8 类必做 + 3 类例外 + 5 条禁用借口"才是。

@@ -92,7 +92,9 @@ batch/
 - `completed` - 已完成
 - `failed` - 失败
 
-**文件位置**：`<任务文件>.state.json`
+**文件位置**：
+- 新格式（`.task-xxx/dag.md` 入口）→ `.task-xxx/state.json`（与 dag.md 同目录，随 `_cleanup()` 一并删）
+- 旧格式（裸文件入口，向后兼容）→ `<任务文件>.state.json`
 
 ### 5. batch_executor_base.py（基础执行器）
 **职责**：

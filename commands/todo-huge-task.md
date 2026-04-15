@@ -15,8 +15,8 @@ description: 大任务智能拆分与 DAG 编排 ultrathink
 /todo-huge-task "实现完整的用户管理系统"
 /todo-huge-task $ARGUMENTS
 
-# 产出文件命名为 task-{用户指定名}，如 task-user-system；细节目录为 .task-{用户指定名}/
-batchcc task-user-system            # 执行
+# 产出位置：.task-{用户指定名}/dag.md（目录聚合所有产物，如 .task-user-system/dag.md）
+batchcc task-user-system            # 执行（自动解析到 .task-user-system/dag.md）
 ```
 
 ---
@@ -70,7 +70,9 @@ batchcc task-user-system            # 执行
 
 ### 4. 📂 输出文件结构（必须遵守）
 
-生成的任务文件**必须包含文件头**（用于 `batchcc` 提取 Global Goal）：
+**产出位置：`.task-{用户指定名}/dag.md`**（目录聚合，清理时整个目录一刀切）。
+
+入口文件 `dag.md` **必须包含文件头**（用于 `batchcc` 提取 Global Goal）：
 
 ```markdown
 # [任务简名]
@@ -139,7 +141,7 @@ batchcc task-user-system            # 执行
 ## 执行前输出
 
 ```markdown
-✅ 任务文件已生成: ./task-{名称}
+✅ 任务文件已生成: ./.task-{名称}/dag.md
 
 📊 执行计划:
 - 总阶段数: [N] / 总任务数: [M]
@@ -148,7 +150,7 @@ batchcc task-user-system            # 执行
 - 收尾阶段: review（全局审视 + 直接写入 TODO.md）
 
 🚀 下一步:
-batchcc task-{名称}            # 执行
+batchcc task-{名称}            # 执行（自动解析到 .task-{名称}/dag.md）
 ```
 
 ---

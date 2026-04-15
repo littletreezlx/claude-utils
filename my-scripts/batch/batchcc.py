@@ -128,61 +128,88 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         self.global_goal = global_goal
         self.stage_context = stage_context
 
+    # 任务过程/进度产物的 pathspec 排除规则
+    # 这些文件是 batchcc 或 DAG 命令运行时的编排/状态/中间结果，本质是过程文件，
+    # 不应单独 commit（最后由 DAGExecutor._cleanup() 删除 .task-xxx/ 目录；
+    # 命令级 state 跨运行保留但每次 TASK 都改，作为业务 commit 没有回溯价值）
+    #
+    # 排除分两类：
+    # (a) batchcc 任务目录及裸入口文件
+    # (b) 命令级跨运行 state（命名约定：以 -state.json 或 .state.json 结尾的 JSON）
+    #     例：docs/quality-review-state.json、task-foo.state.json
+    _TASK_ARTIFACT_EXCLUDES = [
+        # (a) batchcc 任务产物
+        ":!.task-*",                            # 新格式：.task-xxx/ 任务目录（顶层）
+        ":!.task-*/**",                         # 新格式：目录内所有内容
+        ":!task-*",                             # 旧格式：项目根的裸入口文件
+        # (b) 命令级跨运行 state（实战教训：doc-quality-review 把进度写在 docs/
+        #     quality-review-state.json，每个 Stage 1 TASK 都改它，被当业务 commit）
+        ":(exclude,glob)**/*-state.json",       # 跨目录匹配：xxx-state.json
+        ":(exclude,glob)**/*.state.json",       # 跨目录匹配：xxx.state.json
+    ]
+
     def _auto_commit_if_needed(self, task_description: str, task_id: int = None):
         """
         任务执行成功后自动执行 git commit
+
+        规则（2026-04-15 修订，决策记录 docs/decisions/2026-04-15-03）：
+        - **排除 batchcc 任务过程产物**（.task-*/、task-* 裸文件、state.json）—
+          这些是 batchcc 运行时的临时编排/状态文件，不该形成独立 commit；
+          最后由 DAGExecutor._cleanup() 删除整个 .task-xxx/ 目录即可
+        - 只 commit 业务文件实质变更（代码/文档/配置/命令级 state）
+        - 暂存区为空（仅任务过程文件变化）→ 跳过 commit，避免产生空内容/
+          仅含进度状态的"任务 N: ..." commit 污染 git history
 
         Args:
             task_description: 任务描述
             task_id: 任务ID（可选）
         """
-
         try:
-            # 检查是否有未提交的更改
-            result = subprocess.run(
-                ["git", "status", "--porcelain"],
+            # 1. add 业务文件，显式排除 batchcc 任务过程产物
+            add_result = subprocess.run(
+                ["git", "add", "-A", "--", "."] + self._TASK_ARTIFACT_EXCLUDES,
                 capture_output=True,
                 text=True
             )
-
-            if result.returncode != 0:
-                print(f"⚠️ 检查 git status 失败，跳过自动提交")
+            if add_result.returncode != 0:
+                err = add_result.stderr.strip()[:200]
+                print(f"⚠️ git add 失败（{err}），跳过自动提交")
                 return
 
-            # 如果没有未提交的更改，则跳过
-            if not result.stdout.strip():
-                print(f"📝 无文件变更，跳过自动提交")
-                return
-
-            # 执行 git add
-            subprocess.run(
-                ["git", "add", "."],
+            # 2. 检查暂存区：只有业务变更才 commit
+            diff_result = subprocess.run(
+                ["git", "diff", "--cached", "--name-only"],
                 capture_output=True,
-                text=True,
-                check=True
+                text=True
             )
+            if diff_result.returncode != 0:
+                print(f"⚠️ 检查 git diff --cached 失败，跳过自动提交")
+                return
 
-            # 构建提交信息
+            staged_files = diff_result.stdout.strip()
+            if not staged_files:
+                print(f"📝 仅任务过程文件变化（无业务改动），跳过自动提交")
+                return
+
+            # 3. 构建提交信息
             task_desc = task_description.replace("\n", " ").strip()
             task_desc = task_desc[:80] + ("..." if len(task_desc) > 80 else "")
+            commit_message = f"任务 {task_id}: {task_desc}" if task_id else task_desc
 
-            if task_id:
-                commit_message = f"任务 {task_id}: {task_desc}"
-            else:
-                commit_message = task_desc
-
-            # 执行 git commit
-            subprocess.run(
+            # 4. 执行 git commit
+            commit_result = subprocess.run(
                 ["git", "commit", "-m", commit_message],
                 capture_output=True,
-                text=True,
-                check=True
+                text=True
             )
+            if commit_result.returncode != 0:
+                err = commit_result.stderr.strip()[:200]
+                print(f"⚠️ git commit 失败（{err}）")
+                return
 
-            print(f"✅ 自动提交成功: {task_desc[:50]}...")
+            file_count = len(staged_files.splitlines())
+            print(f"✅ 自动提交成功（{file_count} 个业务文件）: {task_desc[:50]}...")
 
-        except subprocess.CalledProcessError as e:
-            print(f"⚠️ 自动提交失败: {e}")
         except Exception as e:
             print(f"⚠️ 自动提交异常: {e}")
 
@@ -514,6 +541,48 @@ class ClaudeCodeBatchExecutor(BaseBatchExecutor):
         return [r for r in results if r is not None]
 
 
+def resolve_task_entry(arg: str) -> Optional[Path]:
+    """
+    解析任务入口，支持以下写法（按优先级）：
+
+    1. `batchcc task-xxx`          → 查找 `.task-xxx/dag.md`（新格式主路径）
+    2. `batchcc .task-xxx`         → 等价于 1
+    3. `batchcc .task-xxx/dag.md`  → 直接使用
+    4. `batchcc some-file.md`      → 简单 TASK 格式（向后兼容）
+    5. `batchcc some-file`         → 自动补 `.md`（向后兼容）
+
+    Returns:
+        入口文件的 Path；未找到则返回 None（调用方打印帮助）
+    """
+    p = Path(arg)
+
+    # 1. 传入目录：找 dag.md
+    if p.is_dir():
+        entry = p / "dag.md"
+        if entry.exists():
+            return entry
+        return None
+
+    # 2. `task-xxx`（无 . 前缀、不存在同名文件）→ 试 .task-xxx/dag.md
+    if not p.exists() and not p.name.startswith('.'):
+        hidden_dir = p.parent / f".{p.name}"
+        if hidden_dir.is_dir():
+            entry = hidden_dir / "dag.md"
+            if entry.exists():
+                return entry
+
+    # 3/4. 直接文件存在
+    if p.exists() and p.is_file():
+        return p
+
+    # 5. 补 .md 后缀
+    p_md = Path(str(p) + '.md')
+    if p_md.exists():
+        return p_md
+
+    return None
+
+
 def is_dag_format(file_path: str) -> bool:
     """
     检查文件是否是 DAG 格式
@@ -557,19 +626,21 @@ def main():
     # 创建执行器
     executor = ClaudeCodeBatchExecutor()
 
-    # 确定template文件路径
+    # 解析入口（支持 .task-xxx/ 目录入口 + 旧版裸文件）
     if args.template:
-        template_file = Path(args.template)
+        resolved = resolve_task_entry(args.template)
+        if resolved is None:
+            print(f"❌ 未找到任务入口: {args.template}")
+            print("支持的写法:")
+            print("  batchcc task-xxx            # 自动解析到 .task-xxx/dag.md")
+            print("  batchcc .task-xxx           # 等价")
+            print("  batchcc .task-xxx/dag.md    # 显式路径")
+            print("  batchcc some-file.md        # 简单 TASK 格式")
+            return 1
+        template_file = resolved
     else:
         template_file = executor.get_default_template_path()
-
-    # 检查template文件是否存在，支持自动补全 .md 后缀
-    if not template_file.exists():
-        # 尝试加 .md 后缀（很多 command 生成的文件带 .md）
-        template_file_with_md = Path(str(template_file) + '.md')
-        if template_file_with_md.exists():
-            template_file = template_file_with_md
-        else:
+        if not template_file.exists():
             executor.print_usage_help(template_file)
             return 1
 

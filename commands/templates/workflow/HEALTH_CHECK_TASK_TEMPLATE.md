@@ -1,6 +1,6 @@
 # 项目健康检查任务模板
 
-> 生成 `task-comprehensive-health-check` 的参考骨架。基于项目实际情况调整模块和工具。
+> 生成 `.task-comprehensive-health-check/dag.md` 的参考骨架（入口文件、阶段细节、`state.json` 全部聚合在 `.task-comprehensive-health-check/` 目录内，清理时整刀切）。基于项目实际情况调整模块和工具。
 
 ## 主任务文件结构
 
