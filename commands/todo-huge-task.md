@@ -23,7 +23,7 @@ batchcc task-user-system            # 执行（自动解析到 .task-user-system
 
 ## 🤖 自主执行原则
 
-> **格式规范**：@templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> **格式规范**：@~/.claude/commands/templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 >
 > 核心：自主分析 → 自主决策 → 直接执行 → 记录理由（不询问用户）
 >
@@ -156,6 +156,6 @@ batchcc task-{名称}            # 执行（自动解析到 .task-{名称}/dag.m
 ---
 
 ## 相关文档
-- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
-- @templates/workflow/DAG_TASK_TEMPLATE.md - 空白模板
+- @~/.claude/commands/templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @~/.claude/commands/templates/workflow/DAG_TASK_TEMPLATE.md - 空白模板
 - `/todo-write` - 简单串行任务

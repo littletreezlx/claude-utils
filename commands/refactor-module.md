@@ -20,7 +20,7 @@ batchcc task-refactor-module-[模块名]            # 执行
 ---
 
 > **格式规范**：
-> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> - @~/.claude/commands/templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 
 ## 自主执行原则
 
@@ -85,5 +85,5 @@ batchcc task-refactor-module-[模块名]            # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @~/.claude/commands/templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
 - `/refactor-project` - 项目级重构（多模块）

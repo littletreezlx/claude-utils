@@ -154,7 +154,7 @@ batchcc task-xxx
 | `/refactor-module` | 单模块重构 |
 | `/test-plan` | 测试规划与批量编写 |
 
-> 详细格式参见 @templates/workflow/DAG_FORMAT.md（DAG 统一规范）
+> 详细格式参见 @~/.claude/commands/templates/workflow/DAG_FORMAT.md（DAG 统一规范）
 
 ---
 
@@ -182,8 +182,8 @@ batchcc task-xxx
 |------|------|
 | @CLAUDE.md | 命令设计指南 |
 | ~/.claude/skills/README.md | Skill 编写指南 |
-| @templates/workflow/DAG_FORMAT.md | DAG 统一规范 |
-| @templates/workflow/DAG_EXAMPLE_*.md | DAG 任务示例 |
+| @~/.claude/commands/templates/workflow/DAG_FORMAT.md | DAG 统一规范 |
+| @~/.claude/commands/templates/workflow/DAG_EXAMPLE_*.md | DAG 任务示例 |
 | @templates/docs/ | 文档模板 |
 
 ---

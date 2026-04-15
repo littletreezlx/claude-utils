@@ -16,8 +16,8 @@ batchcc task-comprehensive-health-check            # 执行
 产出：`docs/health-check/{YYYY-MM-DD}/SUMMARY.md`（诊断报告 + 行动路线）
 
 > **格式规范**：
-> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
-> - @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查任务模板
+> - @~/.claude/commands/templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> - @~/.claude/commands/templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查任务模板
 
 ---
 
@@ -90,7 +90,7 @@ batchcc task-comprehensive-health-check            # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
-- @templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查模板
+- @~/.claude/commands/templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @~/.claude/commands/templates/workflow/HEALTH_CHECK_TASK_TEMPLATE.md - 健康检查模板
 - `consistency-check` skill - 快速对齐
 - `/refactor-project` - 项目级重构

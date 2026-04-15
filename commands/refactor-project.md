@@ -15,8 +15,8 @@ batchcc task-refactor-project            # 执行
 ```
 
 > **格式规范**：
-> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
-> - @templates/workflow/REFACTOR_TASK_TEMPLATE.md - 重构任务模板
+> - @~/.claude/commands/templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> - @~/.claude/commands/templates/workflow/REFACTOR_TASK_TEMPLATE.md - 重构任务模板
 
 ---
 
@@ -117,7 +117,7 @@ batchcc task-refactor-project            # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
-- @templates/workflow/REFACTOR_TASK_TEMPLATE.md - 重构任务模板
+- @~/.claude/commands/templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @~/.claude/commands/templates/workflow/REFACTOR_TASK_TEMPLATE.md - 重构任务模板
 - `/comprehensive-health-check` - 建议先运行健康检查
 - `/refactor-module` - 单模块重构

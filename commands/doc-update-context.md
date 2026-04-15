@@ -231,7 +231,7 @@ ls lib/path/to/<Name>.dart
 
 ## Phase 2: 生成 DAG 任务文件
 
-> **格式规范**：@templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> **格式规范**：@~/.claude/commands/templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
 
 将评估结果输出为 DAG 任务文件（`./.task-doc-update-context/dag.md`），**全部使用串行 STAGE**，按优先级排序，每个文档一个 TASK：
 

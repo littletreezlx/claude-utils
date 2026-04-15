@@ -26,8 +26,8 @@ batchcc task-test-plan               # 执行
 ```
 
 > **格式规范**：
-> - @templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
-> - @templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板（可直接使用）
+> - @~/.claude/commands/templates/workflow/DAG_FORMAT.md - DAG 统一规范（**必须遵循**）
+> - @~/.claude/commands/templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板（可直接使用）
 
 ---
 
@@ -109,6 +109,6 @@ batchcc task-test-plan               # 执行
 
 ## 相关文档
 
-- @templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
-- @templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板
+- @~/.claude/commands/templates/workflow/DAG_FORMAT.md - **DAG 统一规范**
+- @~/.claude/commands/templates/workflow/TEST_PLAN_TEMPLATE.md - 测试计划模板
 - `/test-run` - 运行测试并修复失败
