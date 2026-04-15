@@ -4,6 +4,19 @@ description: 项目文档深度审查与修正 ultrathink
 
 # 项目文档深度审查
 
+## 使用方式（强制两步走）
+
+```bash
+/doc-update-context              # 第一步：扫描 + Phase 0/0.5 预检 + 生成 DAG 任务文件，不执行
+batchcc task-doc-review          # 第二步：独立会话串行执行 DAG
+```
+
+> **⚠️ 严禁在 `/doc-update-context` 当前会话内起 background agent 并发执行 DAG TASK。**
+>
+> 原因：本命令的 STAGE 全部 serial 串行（文档间有强一致性依赖，BEHAVIOR 改了 → ARCH 可能要同步），并发会破坏依赖顺序。且子 agent 产出会通过 system-reminder 回填主会话 → 主 context 仍会爆，违背 DAG 设计前提。
+>
+> 唯一合法执行路径：用户（或自动化）在命令行显式运行 `batchcc task-doc-review`。
+
 ## 目标
 
 **深度审查**项目 `docs/` 目录下的**所有文档**，对比实际代码和项目状态，修正过时/错误/遗漏的内容。
@@ -356,3 +369,6 @@ batchcc task-doc-review            # 执行
 - 不要生成"一切 OK"的走过场报告
 - 子目录文档数量多时，优先审查变更风险高的，低风险的可以标记"跳过（无变更）"
 - **Phase 0 是必选项**，不可跳过。即使 Phase 1 判断某文档"低风险"，Phase 0 的存在性验证仍需执行
+- **禁止在 `/doc-update-context` 当前会话内起 background agent 执行 DAG TASK**——必须用 `batchcc task-doc-review` 独立会话。理由见开头"使用方式"段
+- **TASK 执行时激进修正**：发现幽灵引用、过时计数、AI-Only 不合规等可机械识别的问题 → **直接修正文档**，不得以"工作量大""涉及多文件""需要小心"为由转 TODO；真正需要决策的（产品方向、跨文档语义冲突无权威方）才标记 `failed` + 等用户决策
+- **禁止自创 P0/P1 分级把 P1 转 TODO**——审查维度表里所有维度都是必检项，不分级延迟

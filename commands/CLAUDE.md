@@ -56,10 +56,12 @@
 
 ### DAG 型（生成任务文件，无人值守执行）
 
-代表：`refactor-project`, `test-plan`, `todo-huge-task`
+代表：`refactor-project`, `test-plan`, `todo-huge-task`, `doc-quality-review`
 
 DAG 命令的产出是**任务文件**（非报告），通过 `batchcc` 自动化执行。
 编写规范参见 `@templates/workflow/DAG_FORMAT.md`（DAG 统一规范）。
+
+**DAG 命令必须满足下方"DAG 命令强制清单"。**
 
 ### 工具型（辅助操作，格式驱动）
 
@@ -127,6 +129,52 @@ commands/
 
 ---
 
+## DAG 命令强制清单
+
+DAG 型命令必须同时满足以下 4 条。源自 `doc-quality-review` 第一次实战的失败教训（决策记录：`docs/decisions/2026-04-15-01-doc-quality-review-trunk-centric.md`）。
+
+### 1. 显式两步走 + 禁止主会话起 background agent
+
+命令开头必须写明：
+
+```bash
+/xxx-command          # 第一步：只生成 DAG 任务文件，不执行
+batchcc task-xxx      # 第二步：独立会话执行
+```
+
+并显式禁止"在当前会话内用 Task tool 起 background agent 并发执行 DAG TASK"。后果：
+- 子 agent 产出会通过 system-reminder 回填主会话 → 主 context 仍会爆
+- 多 agent 同时冲 API 触发 529 超载
+- 丢失 batchcc 的独立会话隔离和断点续传
+
+### 2. 激进执行约束（防保守派默认）
+
+笼统的"机械执行"会被 AI 解读为"只做最安全的"，大量工作被悄悄塞进 TODO。每个执行节点必须显式列出：
+
+- **必做清单**：哪些处方/动作必须自动执行（如归档/删除/迁移/路径修正/字段补全）
+- **例外清单**：什么情况才允许转 TODO（如跨文档语义冲突、需源码验证、产品方向决策）
+- **禁用借口**：显式禁止"工作量大""涉及多文件""需要小心"等软借口
+- **禁止自创分级**：AI 会自创 P0/P1 把 P1 当延迟借口
+
+### 3. 静默失败拦截器（守门员）
+
+读多文件做诊断/汇总的命令必须加可量化的 Fatal Error 拦截（文件数 > N / token 估算超限 / 批次数超阈值），宁可罢工不静默截断。同时显式禁止 `--force` 绕过。
+
+### 4. State 文件位置避开 `.claude/`
+
+持久化的运行时缓存/state 应放在与服务对象就近的位置（如 `docs/`、项目根或 `.git/info/`），避免 `.claude/` 的权限围栏在自动化模式下每次写都触发审批。
+
+### 元原则
+
+**Skill/command 在 AI-Only 项目里是可执行约束，留白处必被保守派默认占据。** "机械执行"不是约束，"列出 8 类必做 + 3 类例外 + 5 条禁用借口"才是。
+
+---
+
 ## 质量标杆
 
-写得好的命令参考：`refactor.md`、`git-commit.md`、`claudemd.md`、`refactor-project.md`
+| 标杆 | 模式 | 学什么 |
+|------|------|--------|
+| `refactor.md` / `git-commit.md` / `claudemd.md` | 原子型 | 单一目标的简洁性 |
+| `refactor-project.md` | DAG 型 | 多 stage 的并行/串行编排 |
+| `doc-quality-review.md` | DAG + 全自动激进执行 | 必做清单 + 例外清单 + 禁用借口的写法（强制清单 §2）|
+| `skills/log-audit/SKILL.md` | 用户介入式激进执行 | Action menu 显式选项 + 默认 diagnosis-only + Anti-ritual 自检 + Volume control 60s 拦截 |
