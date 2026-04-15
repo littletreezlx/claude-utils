@@ -78,9 +78,13 @@ batchcc task-refactor-project            # 执行
 
 ### 第二步：生成任务编排文件
 
-**必须生成两个产出**：
-1. **入口文件** `task-refactor-project`（项目根目录）
-2. **任务细节目录** `.task-refactor-project/`
+**产出：`.task-refactor-project/` 目录**（聚合入口 + 细节 + 运行时 state）：
+
+- 入口文件 `.task-refactor-project/dag.md` — batchcc 的起点
+- 细节文件 `.task-refactor-project/stage-*.md` — 各阶段分解（按需拆分）
+- 运行时 `.task-refactor-project/state.json` — 执行中自动生成
+
+`batchcc task-refactor-project` 自动解析到目录内 `dag.md`。清理时整个目录一刀切。
 
 ### 第三步：各阶段设计
 

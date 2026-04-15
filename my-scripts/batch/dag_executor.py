@@ -375,10 +375,30 @@ class DAGExecutor:
         return None
 
     def _cleanup(self):
-        """清理任务文件和状态文件"""
-        import os
+        """清理任务产物
 
-        # 清理状态文件
+        新格式（.task-xxx/dag.md）→ 删整个 .task-xxx/ 目录（一刀切，聚合清理）
+        旧格式（裸文件）→ 分别删 task 文件和 state 文件（向后兼容）
+
+        安全护栏：目录清理仅在 `.task-` 前缀命中时执行，避免误删。
+        """
+        import os
+        import shutil
+        from pathlib import Path
+
+        task_path = Path(self.file_path)
+        parent_dir = task_path.parent
+
+        # 新格式：删整个 .task-xxx/ 目录
+        if parent_dir.name.startswith('.task-') and parent_dir.is_dir():
+            try:
+                shutil.rmtree(parent_dir)
+                print(f"🗑️  已清理任务目录: {parent_dir}")
+            except Exception as e:
+                print(f"⚠️  清理任务目录失败: {e}")
+            return
+
+        # 旧格式兼容：分别清理
         if self.state_manager and os.path.exists(self.state_manager.state_file):
             try:
                 os.remove(self.state_manager.state_file)
@@ -386,7 +406,6 @@ class DAGExecutor:
             except Exception as e:
                 print(f"⚠️  清理状态文件失败: {e}")
 
-        # 清理任务文件
         if os.path.exists(self.file_path):
             try:
                 os.remove(self.file_path)

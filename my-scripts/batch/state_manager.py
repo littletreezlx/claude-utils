@@ -58,10 +58,19 @@ class StateManager:
     def __init__(self, task_file: str):
         """
         Args:
-            task_file: 任务文件路径
+            task_file: 任务文件路径（新格式下为 .task-xxx/dag.md）
+
+        state 文件位置约定：
+        - 新格式（.task-xxx/dag.md）→ .task-xxx/state.json（与 dag.md 同目录，聚合清理）
+        - 旧格式（裸文件）→ <task_file>.state.json（同名附加后缀，向后兼容）
         """
         self.task_file = task_file
-        self.state_file = f"{task_file}.state.json"
+        task_path = Path(task_file)
+        parent_dir = task_path.parent
+        if parent_dir.name.startswith('.task-'):
+            self.state_file = str(parent_dir / "state.json")
+        else:
+            self.state_file = f"{task_file}.state.json"
         self.state: Dict[str, Any] = {
             'task_file': task_file,
             'start_time': None,
