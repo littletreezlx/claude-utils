@@ -256,11 +256,14 @@ grep -q '^## STAGE ## name="review" mode="serial"' dag.md || echo "❌ 缺 revie
    - 发现的系统性问题（如 `doc-structure.md` 职责定义有缺陷）？
    - 归档到 `docs/archive/` 的文档是否都成对有吸收说明？
    - 是否触及 Fatal Error 边界警戒（批次数接近上限 → 建议发起文档归并）？
-5. **直接写入项目根 `TODO.md`**，包含：
-   - 本轮执行摘要（已审批次数、处方执行数、归档数）
+5. **调用 `todo-write` skill 入队**（不要直接写 `TODO.md`，交由 skill 负责格式 / 去重 / 与现有条目合并），待入队内容包含：
+   - 本轮执行摘要（已审批次数、处方执行数、归档数）—— 作为上下文背景
    - 未执行/标注"需用户决策"的处方清单（每条含目标文档路径 + 决策点描述）
    - 系统性问题建议（如建议修订 `doc-structure.md` 或发起文档归并）
    - 下一步行动项（自包含：目标、核心文件、完成标志）
+   - 本轮未达标指标（如某文档行数超限、批次数接近 Fatal Error 边界）
+
+> **禁止**：Stage 4 TASK 直接用 Write/Edit 操作 `TODO.md`。必须通过 `todo-write` skill，让它决定合并策略。
 
 ---
 
