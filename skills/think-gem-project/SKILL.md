@@ -6,21 +6,23 @@ description: >
   says "discuss with Gemini", "ask Gemini", "consult Gemini", "跟 Gemini 聊聊",
   "问问 Gemini", "找 Gemini 讨论", or when Claude Code encounters product/architecture/UI
   decisions that would benefit from external input. Supports roles: product, design,
-  game-product, game-design, think. For cross-project methodology / philosophy /
-  strategy (no project context needed), use the lighter `think` skill instead.
-version: 0.7.0
+  game-product, game-design. For methodology / philosophy / strategy / cross-project
+  decisions (no project docs, no Feature Brief output needed), use the lighter
+  `think` skill instead — do NOT pass `think` as a role here.
+version: 0.8.0
 ---
 
 # 与 Gemini 自动化协作
 
 ## 目的
 
-与 Gemini 进行自动化协作。支持五种角色：
+与 Gemini 进行项目级自动化协作。支持四种角色：
 - **product** — 产品方向、架构推演、需求拷问（FlameTree 生态）
 - **design** — UI/UX 决策、视觉规范、像素级解构（FlameTree 生态）
 - **game-product** — 游戏设计方向、核心循环、养成系统（Game 项目）
 - **game-design** — 游戏视觉、打击感、动效、音效方向（Game 项目）
-- **think** — 方法论、工程哲学、AI 协作范式、架构策略（通用）
+
+> **方法论 / 工程哲学 / 跨项目策略** → 独立的 `think` skill（本 skill 不再承接，避免与 `think` 重复）。
 
 Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后处理（落库或直接展示）。
 
@@ -35,9 +37,8 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 当以下信号出现时启动：
 1. 用户想讨论新功能的产品方向或架构 → `product`
 2. 用户想咨询 UI/UX 设计建议 → `design`
-3. 用户想讨论方法论、工程哲学、AI 协作范式、开发策略 → `think`
-4. 用户明确提到"Gemini"、"产品讨论"、"设计讨论"、"跟 Gemini 聊聊"
-5. **Claude Code 自主判断**（硬性触发红线 → `product` 或 `design`）：
+3. 用户明确提到"Gemini"、"产品讨论"、"设计讨论"、"跟 Gemini 聊聊"
+4. **Claude Code 自主判断**（硬性触发红线 → `product` 或 `design`）：
    - **架构级依赖**：引入涉及核心架构的依赖（路由、状态管理、网络层、本地存储、UI 组件库）→ 必须咨询
    - **数据层变更**：涉及 Drift/SQLite 表结构变更、Schema 迁移、核心 Entity 修改 → 必须咨询
    - **状态复杂度升级**：Provider 间深层依赖、跨组件通信、状态共享逻辑复杂化 → 必须咨询
@@ -50,6 +51,7 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 - 纯代码实现问题（Claude Code 自己能解决）
 - 轻量级工具依赖（如 `path_provider`、`url_launcher`、`share_plus`）
 - 用户说"提交到 Gemini Web"（→ 用 `/web-think`，已建 Gem 用 `/web-gem-project`）
+- **方法论 / 工程哲学 / 跨项目策略讨论**（→ 用独立的 `think` skill，不落库 Feature Brief）
 
 ## 执行流程
 
@@ -86,9 +88,8 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 - `design` — UI/UX 决策、视觉规范、像素级解构（FlameTree 生态：右脑）
 - `game-product` — 游戏设计方向、核心循环、养成系统（Game 项目：左脑）
 - `game-design` — 游戏视觉、打击感、动效、音效方向（Game 项目：右脑）
-- `think` — 方法论、工程哲学、AI 协作范式、架构策略（通用：全脑）
 
-**自动路由**：Game 项目中讨论产品/设计问题时，自动使用 `game-product` / `game-design` 而非 `product` / `design`。
+**自动路由**：Game 项目中讨论产品/设计问题时，自动使用 `game-product` / `game-design` 而非 `product` / `design`。方法论/工程哲学话题出现时，退出本 skill，改走独立的 `think` skill。
 
 **上下文收集 — 动态组装策略**：
 
@@ -100,13 +101,6 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 | `design` | `PRODUCT_SOUL.md` TL;DR | `UI_SHOWCASE.md`（大纲）/ `specs/*.md`（相关页面） | `ARCHITECTURE`（设计不需要技术细节） |
 | `game-product` | `GAME_DESIGN.md` 核心玩法段 | `ROADMAP.md` / `ARCHITECTURE.md` | `PRODUCT_SOUL`（非 FlameTree 项目） |
 | `game-design` | `GAME_DESIGN.md` 情感目标段 | `ROADMAP.md`（视觉相关段）/ 当前美术资源状态 | `ARCHITECTURE`（游戏设计不需要代码细节） |
-| `think` | **无强制**（不一定在具体项目中） | 按话题灵活选择：Claude Code 的分析结论、相关文档片段、代码统计数据 | `PRODUCT_SOUL`（除非话题涉及产品哲学） |
-
-**`think` 角色的上下文特殊规则**：
-- 不要求在项目目录中——可以在根目录讨论跨项目问题
-- 上下文以 **Claude Code 的分析和思考** 为主，而非项目文档
-- 携带具体数据和事实（"7 个项目，152 个测试"），而非体系名称（"冰山测试策略"）
-- 如果讨论涉及特定项目，按需读取该项目的相关文档
 
 **通用规则**：
 - `product`/`design` 场景下：`docs/PRODUCT_SOUL.md` 优先读取 `## TL;DR` 摘要段（如有）
@@ -119,8 +113,7 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 
 **硬性约束**：
 1. 所有文档内容必须通过 Read tool 实际读取，禁止凭记忆编造
-2. `product`/`design` 角色不在项目目录中时（无法读取 `docs/`），必须告知用户缺少上下文
-3. `think` 角色可在任意目录工作，上下文由 Claude Code 在 Prompt 中直接提供
+2. 所有角色都必须在项目目录中工作（无法读取 `docs/` 时，必须告知用户缺少上下文）——项目语境是本 skill 的核心价值，离开项目 → 退回 `think` skill
 
 ### Step 2: 组装 Prompt 并调用 Gemini
 
@@ -129,13 +122,13 @@ Claude Code 自动收集上下文、调用 Gemini API、接收回复、校验后
 # NVM 懒加载环境下需要先 source nvm.sh
 export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-# FlameTree 生态（product/design）+ 通用（think）
+# FlameTree 生态（product/design）
 node ~/LittleTree_Projects/other/nodejs_test/projects/ai/{role}.mjs "<prompt>"
 
 # Game 项目（game-product/game-design）
 node ~/LittleTree_Projects/other/nodejs_test/projects/ai/game-{role}.mjs "<prompt>"
 ```
-Game 角色脚本有独立的底座 prompt（不使用 FlameTree 的 baseSystemPrompt），避免哲学交叉污染。
+Game 角色脚本有独立的底座 prompt（不使用 FlameTree 的 baseSystemPrompt），避免哲学交叉污染。方法论话题请走 `think` skill 的 `think.mjs`，不在本 skill 范围内。
 
 #### 首轮 Prompt 格式
 
@@ -224,17 +217,9 @@ Game 角色脚本有独立的底座 prompt（不使用 FlameTree 的 baseSystemP
    - **机会成本估算**：当 Gemini 基于机制型理由否决方案时，要求它估算如果否决错误的机会成本（「如果这个方案其实减少了用户总决策次数，损失是什么？」）
    - **输入多样性**：当用户提出与 AI 推理不同的方案时，prompt 中必须**平等呈现双方方案**，而不是让 Gemini 在 AI 预设的框架内评审。避免"同一个输入的三次回声"伪共识。
 
-### Step 3: 处理 Gemini 回复 — 按角色分流
+### Step 3: 处理 Gemini 回复 — Engineering Handshake
 
-收到 Gemini 回复后，根据角色采取不同处理方式：
-
-#### `think` 角色 — 委托给 think skill
-
-`think` 角色的完整执行逻辑已独立为 `think` skill。当角色判断为 think 时，直接委托给 think skill 执行，本 skill 不重复定义 think 的流程。
-
-#### `product` / `design` 角色 — Engineering Handshake
-
-对于功能/设计讨论，执行标准的落地校验。根据冲突程度分流：
+收到 Gemini 回复后，执行标准的落地校验（适用于 `product` / `design` / `game-product` / `game-design` 四个角色）。根据冲突程度分流：
 
 #### Fast Track（无冲突，直接落库）
 
