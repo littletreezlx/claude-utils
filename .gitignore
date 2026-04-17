@@ -18,6 +18,10 @@ projects/**
 projects/*/**
 !projects/*/memory/
 !projects/*/memory/**
+
+# 完全忽略该项目（连 memory/ 也不同步）
+projects/-home-littletreezlx-local-images/
+projects/-home-littletreezlx-local-images/**
 statsig/
 telemetry/
 
@@ -102,3 +106,6 @@ settings.local.json
 
 # 其他配置足够了
 setting.json
+
+# direnv：全局 gitignore 排除了 .envrc，但本仓库需要同步该文件到另一台设备
+!.envrc
