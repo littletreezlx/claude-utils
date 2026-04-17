@@ -1,21 +1,31 @@
 #!/usr/bin/env bash
-# SessionStart notifier: 若经白名单域名的出口 IP 不是 ALLOWED_IP，则在启动时
-# 向用户弹一条提示。不阻塞会话、不阻塞消息。
+# SessionStart notifier: 启动时一行提示 IP + OTEL 隔离状态
+# 不阻塞会话、不阻塞消息
 set -u
 
 ALLOWED_IP="198.3.124.235"
 
-# 链式代理：必须用白名单域名 (ping0.cc) 探测经代理的真实出口 IP
+# === IP 守卫 ===
 IP="$(curl -fsS --max-time 5 https://ping0.cc/ip 2>/dev/null | tr -d '[:space:]')"
 [[ "$IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || IP=""
 
 if [[ "$IP" == "$ALLOWED_IP" ]]; then
-  msg="✅ IP 守卫：出口 IP = ${ALLOWED_IP}，链式代理正常。"
+  ip_msg="✅ IP ${ALLOWED_IP}"
 elif [[ -z "$IP" ]]; then
-  msg="⚠️ IP 守卫：无法通过 ping0.cc 获取公网出口 IP。链式代理可能异常，请检查。"
+  ip_msg="⚠️ IP 不可达"
 else
-  msg="⚠️ IP 守卫：经白名单域名的出口 IP 是 ${IP}，不是预期的 ${ALLOWED_IP}。链式代理可能没走对，请检查路由。"
+  ip_msg="⚠️ IP ${IP}（应为 ${ALLOWED_IP}）"
 fi
+
+# === OTEL 隔离状态 ===
+if [[ "${CLAUDE_CODE_ENABLE_TELEMETRY:-0}" == "1" ]]; then
+  device_id="$(printf '%s' "${OTEL_RESOURCE_ATTRIBUTES:-}" | sed -n 's/.*device\.id=\([^,]*\).*/\1/p')"
+  otel_msg="⚠️ OTEL 开 ${device_id:-无ID}"
+else
+  otel_msg="✅ OTEL 关"
+fi
+
+msg="${ip_msg} · ${otel_msg}"
 
 # systemMessage 会在 UI 里显示给用户；additionalContext 注入给模型
 jq -nc --arg m "$msg" '{
