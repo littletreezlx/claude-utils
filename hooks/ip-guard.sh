@@ -3,7 +3,7 @@
 # 向用户弹一条提示。不阻塞会话、不阻塞消息。
 set -u
 
-ALLOWED_IP="50.114.173.48"
+ALLOWED_IP="198.3.124.235"
 
 # 链式代理：必须用白名单域名 (ping0.cc) 探测经代理的真实出口 IP
 IP="$(curl -fsS --max-time 5 https://ping0.cc/ip 2>/dev/null | tr -d '[:space:]')"

@@ -3,7 +3,7 @@ name: work-ref
 description: >
   Competitive analysis workflow for Android POS project. Launches 4 parallel subagents:
   1 for our own Shiheng (real source, as baseline) + 3 for decompiled competitors
-  (Qmai/Keruyun/Meituan). Writes per-project analysis docs, then consolidates a
+  (qm/kry/mt). Writes per-project analysis docs, then consolidates a
   cross-project comparison document with Shiheng as the first column baseline.
   Trigger when: user says "分析 [功能] 四家怎么实现的", "对比 [功能]", "竞品分析 [功能]",
   "work-ref [功能]", or similar requests to compare how we and competitors implement a feature.
@@ -14,7 +14,13 @@ version: 0.2.0
 
 ## 目的
 
-以**食亨自研基线**为参照，对比三家 Android POS 竞品（企迈 Qmai、客如云 Keruyun、美团 Meituan）对某功能的实现方式，产出结构化四方对比文档。
+以**食亨自研基线**为参照，对比三家 Android POS 竞品（qm、kry、mt）对某功能的实现方式，产出结构化四方对比文档。
+
+**品牌名称代换（铁律）**：
+- 文档中禁止出现具体品牌名
+- 代号规则：qm = Qmai/企迈、kry = Keruyun/客如云、mt = Meituan/美团
+- 食亨用 sh 或 Shiheng
+- 对比文档列顺序固定：**Shiheng（基线）| qm | kry | mt**
 
 ## 适用项目
 
@@ -39,14 +45,14 @@ version: 0.2.0
 ```
 1. 检查 docs/ 下是否已有相关对比文档
 2. 检查各项目 docs/ 是否有相关分析
-3. 如果 Qmai 有 FEATURE_CODE_MAP，查找相关条目作为线索
+3. 如果 qm 有 FEATURE_CODE_MAP，查找相关条目作为线索
 ```
 
 ### Step 2: 启动 4 个并行 Explore Subagent
 
 使用 Agent 工具，**在同一条消息中**发出 4 个并行调用：
 - **1 个食亨 subagent**（真实源码，用「模板 A」）
-- **3 个竞品 subagent**（Qmai/Keruyun/Meituan，用「模板 B」共享反编译搜索协议）
+- **3 个竞品 subagent**（qm/kry/mt，用「模板 B」共享反编译搜索协议）
 
 ---
 
@@ -190,9 +196,9 @@ version: 0.2.0
 | 项目 | 源码类型 | 根目录 | 业务包名前缀 | 备注 |
 |------|---------|--------|------------|------|
 | Shiheng | 真实源码 | `~/AndroidStudioProjects/Work_Projects/android-pos/packages/pos/android` | `com/shiheng/` | 自研基线，未混淆 |
-| Qmai | 反编译 | `{pos项目}/Qmai` | `com/qmai/android/` | 模块化：pos_module/, pos_export/ |
-| Keruyun | 反编译 | `{pos项目}/Keruyun` | `com/keruyun/` | 阿里系：含 alipay/iot |
-| Meituan | 反编译 | `{pos项目}/Meituan` | `com/sankuai/sjst/rms/` | 最大（8万文件），混淆严重 |
+| qm | 反编译 | `{pos项目}/Qmai` | `com/qmai/android/` | 模块化：pos_module/, pos_export/ |
+| kry | 反编译 | `{pos项目}/Keruyun` | `com/keruyun/` | 阿里系：含 alipay/iot |
+| mt | 反编译 | `{pos项目}/Meituan` | `com/sankuai/sjst/rms/` | 最大（8万文件），混淆严重 |
 
 ### Step 3: 整合结果，写入两层文档
 
@@ -201,9 +207,9 @@ version: 0.2.0
 为每个**有实质发现**的项目写入分析文档：
 
 - `Shiheng/docs/{功能中文}.md`（食亨基线 —— 写入本竞品项目镜像目录，**不**写入食亨外部仓库）
-- `Qmai/docs/{功能中文}.md`
-- `Keruyun/docs/{功能中文}.md`
-- `Meituan/docs/{功能中文}.md`
+- `qm/docs/{功能中文}.md`
+- `kry/docs/{功能中文}.md`
+- `mt/docs/{功能中文}.md`
 
 **命名统一**：四家使用相同的文件名。
 
@@ -225,13 +231,13 @@ version: 0.2.0
 # {功能中文名}对比分析
 
 > 分析时间：{YYYY-MM-DD}
-> 详细代码分析：[Shiheng（我方）](../Shiheng/docs/{功能中文}.md) | [Qmai](../Qmai/docs/{功能中文}.md) | [Keruyun](../Keruyun/docs/{功能中文}.md) | [Meituan](../Meituan/docs/{功能中文}.md)
+> 详细代码分析：[Shiheng（我方）](../Shiheng/docs/{功能中文}.md) | [qm](../Qmai/docs/{功能中文}.md) | [kry](../Keruyun/docs/{功能中文}.md) | [mt](../Meituan/docs/{功能中文}.md)
 
 ---
 
 ## 一、方案对比总览
 
-| 维度 | **Shiheng（我方基线）** | Qmai (企迈) | Keruyun (客如云) | Meituan (美团) |
+| 维度 | **Shiheng（我方基线）** | qm | kry | mt |
 |------|-------------------------|-------------|-----------------|----------------|
 | **方案类型** | | | | |
 | **核心技术** | | | | |
@@ -249,21 +255,21 @@ version: 0.2.0
 **技术要点**：
 - ...
 
-### 2.2 Qmai — {方案概括}
+### 2.2 qm — {方案概括}
 
 （mermaid 架构图）
 
 **技术要点**：
 - ...
 
-### 2.3 Keruyun — {方案概括}
+### 2.3 kry — {方案概括}
 
 （mermaid 架构图）
 
 **技术要点**：
 - ...
 
-### 2.4 Meituan — {方案概括}
+### 2.4 mt — {方案概括}
 
 （mermaid 架构图）
 
@@ -274,7 +280,7 @@ version: 0.2.0
 
 ## 三、能力矩阵
 
-| 能力 | Shiheng | Qmai | Keruyun | Meituan |
+| 能力 | Shiheng | qm | kry | mt |
 |------|:-------:|:----:|:-------:|:-------:|
 | ... | ✅/❌/⚠️ | | | |
 

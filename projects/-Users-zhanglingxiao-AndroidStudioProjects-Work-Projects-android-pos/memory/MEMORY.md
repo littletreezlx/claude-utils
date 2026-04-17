@@ -1,4 +1,6 @@
 - [飞书项目空间信息](reference_feishu_project.md) — shipd 空间的模板/角色/字段/user_key/业务线速查（POS+TV+KDS 共用）
 - [飞书 user_key 踩坑](feedback_feishu_user_key.md) — open_id != user_key，需从已有工作项节点提取
+- [飞书 workitem 字段格式经验](feedback_feishu_mcp_workitem.md) — multi-text 颜色报错处理、priority 字符串格式、role_operate 正确用法
 - [竞品项目路径与文档策略](reference_competitor_projects.md) — 客如云/美团/趣买路径、文档完善度、补全策略
 - [竞品调研默认用 subagent](feedback_competitor_subagent.md) — 避免污染主上下文，token 消耗隔离
+- [公司项目禁用 "AI-Only" 字样](feedback_no_ai_only_wording.md) — 公司仓库的代码/注释/docs/commit 不得出现协作模式术语
