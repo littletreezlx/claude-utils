@@ -1,0 +1,1 @@
+- [feasibility-study.md 结构约束](feasibility_study_structure.md) — 项目特定：飞书 URL 映射、§3 同事稿不动、友商对比稿源在 youshang、mt 是软硬一体厂商不能引为"不做远程桌面"反例；通用撰写卫生见 `~/.claude/guides/tech-report-hygiene.md`
