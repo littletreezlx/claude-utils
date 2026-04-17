@@ -1,1 +1,2 @@
 - [feasibility-study.md 结构约束](feasibility_study_structure.md) — 项目特定：飞书 URL 映射、§3 同事稿不动、友商对比稿源在 youshang、mt 是软硬一体厂商不能引为"不做远程桌面"反例；通用撰写卫生见 `~/.claude/guides/tech-report-hygiene.md`
+- [LiveKit 国内云 VM 部署踩坑点](livekit_cn_vm_deploy.md) — 用二进制不用 Docker、GitHub 走 ghfast.top 镜像、URL 带版本号、不 scp 大文件、LiveKit 无"禁用 UDP"开关、gen-token.mjs 自动回写三处；主 playbook 在 `docs/远程协助/livekit-server-deploy.md`
