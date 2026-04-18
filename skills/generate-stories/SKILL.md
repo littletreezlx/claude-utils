@@ -5,311 +5,392 @@ description: >
   from existing documentation (PRODUCT_SOUL, PRODUCT_BEHAVIOR, features/).
   Use when the user says "generate stories", "生成用户故事", "create user
   stories", "写故事", or when a project needs docs/user-stories/ rewritten.
-  v2.1 runs as a 5-Phase DAG; Gate 1 auto-passes when coverage/endpoints/
-  ambiguity thresholds met (AI autonomous), Gate 2 always requires Founder
-  review. Always full-rewrite (no incremental mode). Outputs dual files:
+  v3.0 is a TRUE DAG: main session produces .task-generate-stories/dag.md,
+  user runs batchcc for parallel isolated sub-session story generation, then
+  main session re-entry auto-switches to Review Mode for line-by-line Founder
+  full-text review. Always full-rewrite (no incremental). Outputs dual files:
   story.md + qa.md.
-version: 2.1.0
+version: 3.0.0
 ---
 
-# Generate Stories — DAG 全覆盖模式
+# Generate Stories v3.0 — 真 DAG + 双模式
 
-## 目的
+## 为什么 v3.0 是"真 DAG"
 
-从项目现有文档（SOUL + BEHAVIOR + features/ + ROADMAP）生成双文件用户故事。**v2.0 改为 DAG 流水线**，每次运行从零重写，用 Git 做版本控制。
+v2.0/v2.1 把 5 个 Phase 塞进同一个会话顺序执行，违反 `~/.claude/commands/CLAUDE.md` 的 **DAG 强制清单 §5**——那只是"看起来像 DAG 的阶段文档"。
 
-| 文件 | 角色 | 读者 | 内容 |
-|------|------|------|------|
-| `docs/user-stories/NN-xxx.md` | **源码** | 人（产品验收）+ AI（理解意图） | 产品叙事：操作→预期→意图 |
-| `docs/user-stories/qa/NN-xxx.qa.md` | **编译产物** | AI（ai-qa-stories 消费） | 结构化验证：Intent→curl→Assert |
+**真 DAG** = 主会话产出 `.task-xxx/dag.md` 入口文件，用户手动 `batchcc` 在独立子会话并行执行。每个子会话独立 context window = **真·不偷懒、不稀释、不互相带偏**。
 
-**核心心智模型**：Story 是源码，QA 是编译产物。Story 变了就重新编译 QA。不手动编辑 QA 文件。
+参考范式：`refactor-project` / `test-plan` / `doc-quality-review`。
 
-## 为什么 v2.0 是 DAG
+---
 
-v1.0 一次性生成 3-5 条 Story + 编译 QA，实操暴露三个 LLM 行为陷阱：
+## 两步走（强制）
 
-| 现象 | 机制 |
+```bash
+/generate-stories                   # 第一步：主会话产 DAG 文件，不执行
+batchcc task-generate-stories       # 第二步：独立子会话批量生成
+/generate-stories                   # 第三步：再次调用，自动切 Review Mode 逐条审核
+```
+
+### 🚫 严禁
+
+**禁止在当前会话内用 Task tool 起 background agent 并发执行 DAG TASK。**
+
+后果（违反 CLAUDE.md DAG 强制清单 §1）：
+- 子 agent 产出通过 system-reminder 回填主会话 → 主 context 爆炸
+- 多 agent 同时冲 API 触发 529 超载
+- 丢失 batchcc 的独立会话隔离和断点续传能力
+
+**允许**（Review Mode 内）：单发一个 subagent 重生**单条**被打回的 Story（不是并发执行 DAG TASK，是后续修订）。
+
+---
+
+## 模式自动切换
+
+主会话检测 `.task-generate-stories/` 状态决定入口模式：
+
+```bash
+# 状态探测（skill 执行时先跑）
+if [ ! -d .task-generate-stories ]; then
+  MODE="generate"
+elif [ -f .task-generate-stories/REVIEW_QUEUE.md ]; then
+  MODE="review"
+elif [ -f .task-generate-stories/dag.md ]; then
+  MODE="await_batchcc"     # 提示用户跑 batchcc
+else
+  MODE="generate"          # 残留目录，按生成处理（会覆盖）
+fi
+```
+
+| 状态 | 行为 |
 |------|------|
-| 读太多文件偷懒 | 上下文稀释 + 注意力漂移——AI 抓最显著片段，跳过不起眼但重要的 |
-| 一次生成不完整 | 均匀压缩——每条 Story 被压成差不多长度；编译 QA 时没"再读"Story，用的是简化记忆 |
-| 跨 Story 风格不一致 | 同一推理窗口里的风格坍缩，后面条目被前面带偏 |
-
-DAG 化解决方案：
-- **Phase 1 一次压缩，后续共享** → 消除重读开销
-- **Phase 2 对账表** → 把覆盖完整性变成可视决策，不靠 AI 拍脑袋
-- **Phase 3/4 每节点独立上下文** → 焦点集中，不偷懒，不被相邻条目带偏
-
-## 运行模式
-
-**只有一种模式：全覆盖 DAG。** 每次运行：
-
-1. 从零生成所有 Story + QA
-2. 覆盖 `docs/user-stories/` 现有文件（git 是唯一回滚机制）
-3. 经 2 个 Founder Gate 后才 commit
-
-**不支持**：`--add` 增量、`--recompile-qa NN` 单条重编。ai-qa-stories 归因 `scenario-outdated` 时，建议 Founder 手动判断是否要重跑本 skill（整集重做）。
-
-## 触发条件
-
-1. 项目首次需要创建 user-stories（目录不存在）
-2. Founder 判断现有故事集质量不够好，决定重做
-3. 重大功能迭代后，故事集需要整体重写
-4. 用户明确要求生成或重新生成
+| 目录不存在 | Generate Mode |
+| 有 `dag.md` 无 `REVIEW_QUEUE.md` | 提示"先跑 `batchcc task-generate-stories` 或 `batchcc task-generate-stories --restart`" |
+| 有 `REVIEW_QUEUE.md` | Review Mode |
 
 ---
 
-## DAG 执行流程
+## Mode A: Generate
 
-```
-Phase 1  Context Digest       （一次，压缩所有文档为「事实摘要」）
-            ↓
-Phase 2  Behavior Audit       （提取行为清单 + 候选 Story）
-            ↓
-         🤖 Gate 1（智能）    覆盖率/端点/分叉自检
-                              达标 → 自动通过（仅打印摘要行）
-                              不达标 → 仅弹出具体分叉问 Founder
-            ↓
-Phase 3  并行 Story 生成       （每条独立上下文）
-            ↓
-Phase 4  并行 QA 编译          （每条独立，对账 /providers）
-            ↓
-Phase 5  Delivery             （README + 对账结果汇总）
-            ↓
-         ⏸ Founder Gate 2    （必经：审核业务准确性，通过后才 commit）
-```
+### Phase 1: Context Digest
 
-### Phase 1：Context Digest
-
-**一次性读取项目文档，压缩为「事实摘要」供后续 Phase 复用。**
+**一次性读取项目文档，压缩为「事实摘要」供 DAG 所有子 TASK 复用。**
 
 按优先级读取：
-1. `docs/PRODUCT_SOUL.md` — 用户画像和核心价值
-2. `docs/PRODUCT_BEHAVIOR.md` — 用户流程、状态机
-3. `docs/features/*.md` — 交互细节、已知限制
-4. `docs/ROADMAP.md` — 完成状态、Known Issues
-5. 项目 CLAUDE.md — Debug Server 端口和可用端点
+1. `docs/PRODUCT_SOUL.md`
+2. `docs/PRODUCT_BEHAVIOR.md`
+3. `docs/features/*.md`
+4. `docs/ROADMAP.md`
+5. 项目 CLAUDE.md（仅读 Debug Server 端口 + 可用端点段）
 
 **降级策略**：
 
-| 缺失文档 | 替代来源 | 故事中标注 |
-|---------|---------|-----------|
-| SOUL | README + CLAUDE.md 推断用户画像 | ⚠️ 用户画像为推断 |
-| BEHAVIOR | 代码结构 + features/ 逆推流程 | ⚠️ 流程为逆向推断 |
-| features/ 为空 | 仅生成骨架故事（步骤留空） | 提示用户先补功能文档 |
-| 全部缺失 | **终止**，建议先运行 `/learn-new-project` | — |
+| 缺失文档 | 替代 | Story 中标注 |
+|---------|------|------------|
+| SOUL | README 推断 | ⚠️ 用户画像为推断 |
+| BEHAVIOR | 代码结构 + features/ 逆推 | ⚠️ 流程为逆向推断 |
+| features/ 为空 | 仅生成骨架 | 提示先补功能文档 |
+| 全部缺失 | **终止**，建议先 `/learn-new-project` | — |
 
-**产出**：写入 `_scratch/generate-stories/digest-YYYY-MM-DD.md`，包含：
-- 项目一句话描述
-- 用户画像（按场景分类）
-- 核心功能列表（feature-level）
-- 关键状态机（从 BEHAVIOR 提取）
-- 可用端点清单（`/providers` 快照）
-- 已知限制 + Known Issues
+**产出**：`.task-generate-stories/digest.md`
 
-**长度硬约束**：≤ 300 行。超过 = Context Digest 没压缩到位，重做。
+**硬约束**：≤ 300 行。超过 = 压缩失败，重做。
 
-### Phase 2：Behavior Audit
+### Phase 2: Behavior Audit
 
-**基于 Phase 1 的事实摘要，建立「行为清单 → 候选 Story」的对账表。**
+**从 digest 提取所有可观测行为 → 候选 Story 对账表。**
 
-这是解决覆盖完整性硬伤的核心步骤。产出的对账表是 Founder Gate 1 的决策材料。
+产出：`.task-generate-stories/behavior-audit.md`
 
-**步骤**：
+结构见 v2 模板（行为清单按类别 / 候选 Story 覆盖映射 / 落选理由 / 覆盖率统计）。
 
-1. 从 Phase 1 的"关键状态机"和"核心功能列表"提取所有**可观测行为**（用户能感知的操作/状态转移/数据变化）
-2. 按行为性质归类：首次使用 / 日常核心操作 / 数据管理 / 设置 / 分享协作 / 边界 & 异常 / 数据同步
-3. 对每类提出候选 Story，并标注：
-   - 该 Story 预计覆盖哪些行为
-   - 剩余未覆盖行为（落选）+ 落选理由
+### Gate 1（智能触发，v2.1 保留）
 
-**产出**：写入 `_scratch/generate-stories/behavior-audit-YYYY-MM-DD.md`：
+Phase 2 结束后 AI 自查：
 
-```markdown
-## 行为清单
+| 自查项 | 达标条件 |
+|--------|---------|
+| 覆盖率 | ≥ 85% |
+| 落选归因 | 100% 有明确理由 |
+| 端点缺失率 | ≤ 30%（Debug Server 未启动时按 100% 算，触发 Gate）|
+| 产品优先级分叉 | 无 |
 
-### 首次使用
-- [ ] B-001 用户首次启动 App，看到引导
-- [ ] B-002 用户首次添加第一条数据
-- [ ] B-003 ...
-
-### 日常核心操作
-- [ ] B-011 ...
-- [ ] B-012 ...
-
-（...按所有类别列全）
-
-## 候选 Story 清单
-
-### Story 01: 首次使用者完成首次添加
-- 预计覆盖: B-001, B-002
-- 未覆盖但同类的: B-003（落选理由：边缘路径，ROADMAP 未规划）
-
-### Story 02: 日常主流程
-- 预计覆盖: B-011, B-012, B-015
-- 未覆盖但同类的: B-013（落选：依赖远程同步，放到 Story 05）, B-014（落选：企业用户专属）
-
-（...每条候选 Story 都要有覆盖映射 + 落选说明）
-
-## 覆盖率
-
-- 总行为数: 23
-- 候选覆盖: 18
-- 落选: 5（理由均已说明）
-- 覆盖率: 78%
+全部达标 → 打印一行：
+```
+✅ Gate 1 自动通过：覆盖率 X%，端点缺失 Y%，无产品优先级分叉。进入 DAG 生成。
 ```
 
-### 🤖 Gate 1（智能触发）
+任一不达标 → **只**弹出相关分叉问 Founder（不展示全表）。
 
-**v2.1 关键变更**：Gate 1 从"必经"改为"条件触发"，AI 先自查，达标自动通过，不打扰 Founder。
+### Phase 3: 生成 DAG 入口文件
 
-#### AI 自查 Checklist（Phase 2 末尾执行）
-
-全部满足 → 自动通过进 Phase 3，只打印一行摘要：
-
-```
-✅ Gate 1 自动通过：覆盖率 {X}% ({已覆盖}/{总数})，端点缺失 {Y}%，无产品优先级分叉。进入 Phase 3。
-```
-
-| 自查项 | 达标条件 | 数据来源 |
-|--------|---------|---------|
-| 覆盖率 | ≥ 85% | Phase 2 对账表 |
-| 落选归因 | 100% 有明确理由（不允许"原因未知"）| Phase 2 每条落选行为 |
-| 端点缺失率 | ≤ 30% | Phase 4 前的 `/providers` 探测 |
-| 产品优先级分叉 | 无 | 见下方定义 |
-
-#### Gate 触发条件（任一命中）
-
-只弹出**相关分叉**给 Founder 决策，**不展示全对账表**：
-
-| 触发 | Founder 看到什么 |
-|-----|----------------|
-| 覆盖率 < 85% 且剩余行为无法归因 | 列出无法归因的行为，问是否补候选 Story |
-| 端点缺失 > 30% | 列出缺失端点清单，问占位 Story 是否有意义（建议先补 Debug Server 端点）|
-| 存在产品优先级分叉 | 只展示该分叉的 A/B 选项，不展示其他已决定的条目 |
-
-#### 产品优先级分叉的定义
-
-AI 读完 SOUL/ROADMAP/features 后，**仍无法靠明确规则决定**的情况：
-
-| 场景 | 是否分叉 | AI 怎么决定 |
-|------|---------|-----------|
-| ROADMAP 明确"X 是 v2 计划" | ❌ 不是 | 明确：不写占位 Story |
-| SOUL 明确"Y 是核心差异化" | ❌ 不是 | 明确：必写独立 Story |
-| 两候选合并会超 8 步 | ❌ 不是 | 按"≤8 步"约束拆分 |
-| 两功能同等重要，拆/合无规则指引 | ✅ 是 | 问 Founder |
-| features/ 未写明优先级 + ROADMAP 未提 | ✅ 是 | 问 Founder |
-
-#### Gate 1 的设计意图
-
-**把"客观对账"留给 AI，把"产品权衡"留给 Founder**。违反 v2.0 的"必经 Gate"是因为实操发现：Founder 看到的大部分条目（覆盖率/结构拆分/端点缺失占位）AI 读完项目文档已经可以自主判断。**Gate 1 应该是少数边界情况的人机接口，不是全量审核表。**
-
-Gate 2 仍然必经（业务准确性兜底）。
-
-### Phase 3：并行 Story 生成
-
-**对 Gate 1 通过的每条候选 Story，独立生成 Story 文件。**
-
-**独立上下文规则**（这是 DAG 的核心收益）：
-- 每条 Story 开始生成前，明确只读：Phase 1 事实摘要 + 该 Story 对应的行为描述 + 相关 features/*.md 的**具体段落**
-- **不读**：其他 Story 文件、整本 features/、整本 BEHAVIOR（事实摘要已提炼好）
-- **不读**：之前已生成的 Story 内容（防止风格坍缩）
-
-**并行化选项**：
-- **默认（串行独立上下文）**：主 agent 逐条生成，每条开始前显式"重置注意力"（重新 Read 该条依赖的段落）
-- **可选（真并行 subagent）**：故事 >8 条时，用 `Agent` tool dispatch subagent 并行执行（参考 `superpowers:dispatching-parallel-agents`）。每个 subagent 接收 (事实摘要 + 单条行为 + Story 模板)，返回单条 Story 内容
-
-**每条 Story 的生成约束**：
-- 严格按下方 Story 模板
-- **禁止**出现：ViewModel/Service 等代码类名、curl 命令、API 端点、平台差异表、排障指南
-- 长度：≤ 8 步，超过则该 Story 应在 Phase 2 拆分（Gate 1 未捕获说明对账不细，回 Phase 2）
-
-### Phase 4：并行 QA 编译
-
-**对每条 Story，独立编译 QA 文件。**
-
-**独立上下文规则**：
-- 每条 QA 开始编译前，明确只读：该 Story 完整内容 + 项目 `/providers` 端点列表
-- **不读**：其他 Story 或其他 QA（防止 QA 互相抄）
-- **不读**：Phase 1 事实摘要（Story 已足够，减少噪音）
-
-**编译规则**：
-- Story 每步骤至少映射一个 curl + Assert（无对应端点 → 标 `# TODO: 缺少端点 <name>`）
-- **Intent 必须是自然语言**（AI 失败时用 Intent 判断是代码 bug 还是测试过期）
-- **端点依赖表**（末尾）——ai-qa-stories 用它做三态对账
-
-**端点对账**（Phase 4 内部完成，不等到 ai-qa-stories）：
+**⚠️ 静默失败拦截器（CLAUDE.md §3）**：
 
 ```bash
-# 对每个引用的端点实际调用
-for ENDPOINT in $(提取 QA 中所有 /action/... /state/... /data/...); do
-  STATUS=$(curl -s -o /dev/null -w '%{http_code}' "localhost:$PORT$ENDPOINT")
-  # 记录 MATCH / MISSING / SERVER_BUG
-done
+STORY_COUNT=$(候选 Story 数量)
+if [ $STORY_COUNT -gt 15 ]; then
+  echo "FATAL: 候选 Story 数 $STORY_COUNT > 15。Phase 2 对账粒度过粗，"
+  echo "请重做 Phase 2 合并相似候选，或分阶段交付（先做 v1 核心 10 条）。"
+  exit 1
+fi
 ```
 
-**对账产出**写入 qa 文件末尾"端点对账状态"小节。MISSING 的端点在 QA 中标 `# TODO`。
+**不允许 `--force` 绕过。** >15 条说明行为清单没提炼，DAG 执行会浪费 API 额度。
 
-### Phase 5：Delivery
+**产出**：`.task-generate-stories/dag.md`。入口模板（必须完整照抄结构，填充项目特定内容）：
 
-**汇总产出 + Founder Gate 2 材料**。
+```markdown
+# {项目名} user stories 生成
 
-1. 生成 `docs/user-stories/README.md`（索引 + 架构说明 + 覆盖率）
-2. 打印交付摘要（见下方模板）
-3. 触发 Founder Gate 2
+> **项目宏观目标**：
+> 基于 `.task-generate-stories/digest.md`（项目事实摘要）+ `behavior-audit.md`
+> （覆盖对账表），为 docs/user-stories/ 生成双文件（Story + QA），每条在独立
+> 子会话中生成避免上下文稀释 / 注意力漂移 / 风格坍缩。全覆盖模式，覆盖旧文件。
 
-### ⏸ Founder Gate 2
+## STAGE ## name="generate" mode="parallel" max_workers="4"
 
-**展示交付摘要 + 抽查 1-2 条 Story 给 Founder**：
+## TASK ##
+Story 01: {Story 标题}
+
+**目标**：生成 `docs/user-stories/01-{slug}.md` 和 `docs/user-stories/qa/01-{slug}.qa.md`，覆盖行为 {B-A1, B-A2}。
+
+**核心文件**：
+- `.task-generate-stories/digest.md` - [参考] 项目事实摘要（仅此不读其他 docs/）
+- `.task-generate-stories/behavior-audit.md` - [参考] 本 Story 覆盖的 B-A1 / B-A2 行为描述
+- `docs/features/{feature-name}.md` - [参考] 仅读与本 Story 相关的段落
+- `docs/user-stories/01-{slug}.md` - [新建] Story（见模板章节）
+- `docs/user-stories/qa/01-{slug}.qa.md` - [新建] QA（见模板章节）
+
+**完成标志**：
+- [ ] Story 严格按模板，≤ 8 步，无 ViewModel/Service/curl/API 端点
+- [ ] QA 每个 Scenario 都有 curl + Assert（无端点则标 `# TODO: 缺少端点 <name>`）
+- [ ] QA 末尾 `端点依赖` 表写入对账状态（对每个引用端点实际 curl 探测）
+- [ ] 断言满足严格性标准（见下方）
+
+**执行提示**：
+- ✅ 独立上下文原则：只读本 TASK 列出的"核心文件"相关段落，禁止"为保险起见再读 BEHAVIOR 全文"
+- ✅ 不读其他 Story 或 QA 文件（防风格坍缩）
+- ❌ 禁用软借口（"文件关联很多"/"不小心读多一点"）；digest.md 300 行已够
+
+文件: docs/user-stories/01-{slug}.md, docs/user-stories/qa/01-{slug}.qa.md
+
+## TASK ##
+Story 02: {Story 标题}
+... (同上结构)
+
+## TASK ##
+Story NN: (最后一条)
+
+## STAGE ## name="review" mode="serial"
+
+## TASK ##
+产出校验 + 写 REVIEW_QUEUE.md
+
+**目标**：纵观 generate stage 所有产出，校验齐全，生成 `.task-generate-stories/REVIEW_QUEUE.md` 供 Founder Review Mode 消费，并生成 `docs/user-stories/README.md`。
+
+**⚠️ 重要**：你没有前序 TASK 的会话历史。通过以下方式了解已完成工作：
+- `git log --oneline -20` 查看本轮 generate stage 新增文件
+- `git diff --stat HEAD~N` 查看具体 Story 文件是否都已提交
+- 读取 `.task-generate-stories/dag.md` 了解计划 Story 列表
+- `ls docs/user-stories/` 和 `ls docs/user-stories/qa/` 扫描产出
+
+**执行步骤**：
+1. 扫描 `docs/user-stories/[0-9]*.md` 和 `docs/user-stories/qa/[0-9]*.qa.md`
+2. 对账 dag.md 中计划的 Story 和实际生成
+3. 对每条产出做快速自检（不展开审内容，只查结构）：
+   - Story 步骤数 ≤ 8
+   - 无代码类名（grep `ViewModel|Service|Repository|curl`）
+   - QA 包含 `端点依赖` 表
+4. 写 `.task-generate-stories/REVIEW_QUEUE.md`：
+   ```markdown
+   # Review Queue for user-stories
+   > 由 batchcc 收尾 TASK 产出。主会话 /generate-stories 再次调用时消费此文件进入 Review Mode。
+
+   ## 待审 Stories
+   - [ ] 01-{slug}.md + qa/01-{slug}.qa.md | 自检: ✅ 结构合规 | 覆盖: B-A1, B-A2
+   - [ ] 02-{slug}.md + qa/02-{slug}.qa.md | 自检: ⚠️ Story 9 步超限 | 覆盖: B-B1
+   - [ ] 03-...
+
+   ## Missing（计划但未生成）
+   - Story 05: {slug} — TASK 失败，见 state.json
+   ```
+5. 生成 `docs/user-stories/README.md`（索引 + 架构说明 + 覆盖率摘要）
+
+**完成标志**：
+- [ ] REVIEW_QUEUE.md 写入
+- [ ] README.md 生成
+- [ ] 所有计划 Story 都有产出（或明确列入 Missing）
+
+文件: .task-generate-stories/REVIEW_QUEUE.md, docs/user-stories/README.md
+验证: test -f .task-generate-stories/REVIEW_QUEUE.md && test -f docs/user-stories/README.md
+```
+
+### 生成后自检（CLAUDE.md §5 强制）
+
+产出 `dag.md` 后**必须**跑以下自检，任一失败立即修正：
+
+```bash
+# 1. 真 DAG 语法（不是伪 DAG）
+STAGE_COUNT=$(grep -c '^## STAGE ##' .task-generate-stories/dag.md)
+TASK_COUNT=$(grep -c '^## TASK ##' .task-generate-stories/dag.md)
+[ $STAGE_COUNT -ge 2 ] || { echo "FATAL: STAGE 数 $STAGE_COUNT < 2"; exit 1; }
+[ $TASK_COUNT -ge $((N+1)) ] || { echo "FATAL: TASK 数不足，期望 >=$((N+1))"; exit 1; }
+
+# 2. 禁止形式检查（CLAUDE.md §5）
+grep -qE '^## Stage [0-9]+:' .task-generate-stories/dag.md && \
+  { echo "FATAL: 出现伪 DAG 标题 '## Stage X:'，必须改为 '## STAGE ## name=...'"; exit 1; }
+grep -qE '^### Batch [0-9]+:' .task-generate-stories/dag.md && \
+  { echo "FATAL: 出现伪 TASK 标题 '### Batch X:'，必须改为 '## TASK ##'"; exit 1; }
+
+# 3. 必备文件
+test -f .task-generate-stories/digest.md || { echo "FATAL: digest.md 缺失"; exit 1; }
+test -f .task-generate-stories/behavior-audit.md || { echo "FATAL: behavior-audit.md 缺失"; exit 1; }
+
+# 4. 收尾 STAGE
+grep -q 'name="review"' .task-generate-stories/dag.md || \
+  { echo "FATAL: 缺少 name=\"review\" 收尾 STAGE"; exit 1; }
+```
+
+### 告知用户
+
+全部自检通过后打印：
 
 ```
-生成了 N 条用户故事（DAG 全覆盖模式）：
+✅ Generate Mode 完成。产出：
+   .task-generate-stories/digest.md (N 行)
+   .task-generate-stories/behavior-audit.md (覆盖率 X%)
+   .task-generate-stories/dag.md (N 条 Story TASK + 1 review TASK)
 
-覆盖率（vs Phase 2 行为清单）: 18/23 = 78%
-端点对账（vs /providers）: 10/12 MATCH, 1 MISSING, 1 SERVER_BUG
+下一步：运行 `batchcc task-generate-stories` 执行并行生成
+（独立子会话，避免主 context 污染。不要在本会话内 dispatch subagent 并发执行 DAG）
 
-Stories（产品叙事）：
-1. docs/user-stories/01-first-time-user.md — 首次使用 → 覆盖 B-001, B-002
-2. docs/user-stories/02-daily-use.md — 日常核心 → 覆盖 B-011, B-012, B-015
-...
-
-QA（验证脚本）：
-1. docs/user-stories/qa/01-first-time-user.qa.md — 5 scenarios, 5 MATCH
-2. docs/user-stories/qa/02-daily-use.qa.md — 7 scenarios, 6 MATCH / 1 TODO
-...
-
-已知问题：
-- Story 04 依赖 /action/remote/sync，该端点目前为 SERVER_BUG
-- Story 05 标 TODO: 缺少 /data/articles 端点
-
-请审核业务准确性后确认 commit。
-QA 文件为编译产物，无需单独审核。
+完成后再次运行 `/generate-stories` 自动进入 Review Mode 逐条审核。
 ```
 
-- ✅ 通过 → commit
-- ✏️ 局部修改 → Founder 指出哪条需要重改，重跑该 Story 对应的 Phase 3 + Phase 4
-- ❌ 整体不过 → 回 Phase 2（行为清单不对）或 Phase 3（生成质量不达标）
+**本 skill 到此结束**。不继续执行 DAG，不等 batchcc 完成。
 
 ---
 
-## 断言严格性标准（替代 v1.0 的"断言弹性"原则）
+## Mode B: Review
 
-v1.0 说"弹性——列表非空而非恰好 5 条"。但过度弹性 = 断言形同虚设。
+### 触发
 
-v2.0 标准：**弹性不等于松散，每条断言至少满足"量级 + 结构"二选一**。
+检测到 `.task-generate-stories/REVIEW_QUEUE.md` 存在 → 自动进入 Review Mode。
+
+### 执行流程
+
+1. **读状态**：
+   - `REVIEW_QUEUE.md`（待审清单）
+   - `.task-generate-stories/reviewed.log`（已审记录，不存在则建）
+
+2. **逐条审核**（Founder 选择的 Q2 B 模式 = 全文审核）：
+
+   对每条未审 Story 执行以下循环：
+   
+   a. 读取 `docs/user-stories/NN-{slug}.md` **全文**
+   b. 读取 `docs/user-stories/qa/NN-{slug}.qa.md` **全文**
+   c. 展示给 Founder：
+      ```
+      ━━━━━━━━━━ Story NN/Total: {标题} ━━━━━━━━━━
+      
+      📖 Story 全文:
+      {docs/user-stories/NN-{slug}.md 内容}
+      
+      🧪 QA 全文:
+      {docs/user-stories/qa/NN-{slug}.qa.md 内容}
+      
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      
+      请回复：
+        ✅ 通过
+        ✏️ [具体修改要求，如"步骤 3 的预期不合理，应该是..."]
+        ❌ 重做（整体不行）
+      ```
+   d. 等待 Founder 回复
+
+3. **Founder 回复处理**：
+   
+   - `✅ 通过` → 追加 `reviewed.log`（`NN-{slug} OK <timestamp>`），下一条
+   - `✏️ {修改要求}` → 主会话 **dispatch subagent** 即时重生该条（见下方）
+   - `❌ 重做` → 同 ✏️ 但不带修改要求
+
+4. **全部审完**：
+   
+   - 全部 ✅ → 清理 `.task-generate-stories/` + 触发 `git-workflow` skill commit
+   - 仍有未审（Ctrl+C 中断）→ 提示"继续运行 /generate-stories 恢复 Review Mode"
+
+### 打回重生（Q3 A，主会话 dispatch subagent）
+
+用 `Task` tool 即时 dispatch 一个 subagent（`subagent_type: general-purpose`）：
+
+**subagent prompt 构造**：
+```
+你是一个独立的 Story+QA 重生子 agent。主 agent 的 Founder 对现有 Story NN 不满意，
+需要你基于以下材料重新生成：
+
+## 项目事实摘要
+{.task-generate-stories/digest.md 全文}
+
+## 本 Story 覆盖的行为
+{从 behavior-audit.md 提取 B-A1, B-A2 对应段落}
+
+## 相关 features 段落
+{仅与本 Story 相关的 features/*.md 片段}
+
+## 当前版本（作为反面参考，超越之）
+{docs/user-stories/NN-{slug}.md 当前内容}
+{docs/user-stories/qa/NN-{slug}.qa.md 当前内容}
+
+## Founder 的具体修改要求
+{Founder 原话}
+
+## 任务
+1. 按 Story + QA 模板重新生成（见下方模板章节）
+2. 覆盖原文件 `docs/user-stories/NN-{slug}.md` 和 `docs/user-stories/qa/NN-{slug}.qa.md`
+3. 返回"已重新生成 NN-{slug}，主要变更：..."
+
+严格遵守：
+- Story ≤ 8 步
+- 无代码类名
+- QA 端点对账
+- 断言严格性（非空 + 结构 or 精确值）
+```
+
+Subagent 完成后（通常 30-60 秒），主会话回到步骤 2.c 重新展示 Story+QA 全文让 Founder 审新版本。
+
+**与 DAG 执行的区别**（避免违反 CLAUDE.md §1）：
+- ✅ **允许**：Review Mode 内**单发**一个 subagent 重生**单条** Story（不是并发，不是 DAG）
+- 🚫 **禁止**：主会话内 dispatch 多个 subagent 同时跑多条 Story（那是"绕开 batchcc 执行 DAG"）
+
+### 全部通过 → 清理 + commit
+
+```bash
+# 清理任务目录（保留 .task-generate-stories 的意义是 batchcc 状态，审核完成即无用）
+rm -rf .task-generate-stories/
+
+# 触发 git-workflow commit
+# (由 skill 调用 git-workflow skill 生成 commit message 并提交)
+```
+
+---
+
+## 断言严格性标准（v2 保留）
+
+弹性不等于松散，每条断言至少满足"量级 + 结构"二选一：
 
 | 弹性级别 | 写法 | 判断 |
 |---------|------|------|
 | ❌ 太松 | `列表非空` | 1 条也非空，漏抓"只剩 1 条不正常" |
 | ✅ 合适 | `列表至少 3 条 且 每条包含 id/title 字段` | 量级 + 结构都约束 |
-| ✅ 合适 | `status == "active"` | 精确值（状态枚举类断言必须精确） |
+| ✅ 合适 | `status == "active"` | 枚举值精确 |
 | ❌ 太严 | `列表恰好 5 条` | 数据量变化会 false alarm |
 
-**断言写作规则**：
-1. **枚举值** → 精确（`status == "active"`）
-2. **数量** → 量级约束（`>= N` 或 `N ± 20%`），不要精确值
-3. **结构** → 必填字段存在 + 类型对（`has field id && id is int`）
-4. **关系** → 跨字段一致性（`created_at < updated_at`）
+**规则**：
+1. 枚举值 → 精确（`status == "active"`）
+2. 数量 → 量级约束（`>= N`），不要精确值
+3. 结构 → 必填字段存在 + 类型对
+4. 关系 → 跨字段一致性（`created_at < updated_at`）
 
 ---
 
@@ -320,15 +401,15 @@ v2.0 标准：**弹性不等于松散，每条断言至少满足"量级 + 结构
 ```markdown
 # 用户故事 {NN}：{故事名称}
 
-> 覆盖行为: B-001, B-002 (参见 `_scratch/generate-stories/behavior-audit-YYYY-MM-DD.md`)
+> 覆盖行为: B-A1, B-A2 (参见 `.task-generate-stories/behavior-audit.md`)
 
 ## 故事概述
 
 | 字段 | 值 |
 |------|-----|
-| **用户类型** | {具体到场景的用户描述，如"通勤路上听歌的用户"} |
+| **用户类型** | {具体到场景的用户描述} |
 | **核心诉求** | {一句话：用户想要什么} |
-| **前置依赖** | {可独立运行 / 依赖 story NN（原因）} |
+| **前置依赖** | {可独立运行 / 依赖 story NN} |
 | **验收标准** | {关键路径摘要：A → B → C → D} |
 
 ---
@@ -337,33 +418,23 @@ v2.0 标准：**弹性不等于松散，每条断言至少满足"量级 + 结构
 
 ### 步骤 1：{步骤标题}
 
-**操作**：
-1. {用户做什么（纯 UI 描述）}
-
-**预期**：
-{用户看到什么结果（可观测的 UI 描述）}
-
+**操作**：{用户做什么，纯 UI 描述}
+**预期**：{用户看到什么结果，可观测}
 **意图**：{这一步解决用户什么问题}
 
 ---
 
 {重复步骤结构，≤ 8 步}
 
----
-
 ## 验收标准
 
 | 检查点 | 预期结果 |
 |--------|---------|
-| {用户视角的验收点} | ✅ {可观测的结果} |
-
----
+| {用户视角} | ✅ {可观测的结果} |
 
 ## 已知限制
 
 - {产品层面的限制，标注来源}
-
-> 无限制则省略此段。
 ```
 
 ---
@@ -379,8 +450,6 @@ v2.0 标准：**弹性不等于松散，每条断言至少满足"量级 + 结构
 > Debug Server Port: $PORT
 > 前置依赖: {可独立运行 / 依赖 QA NN}
 
----
-
 ## Scenario 1: {步骤标题}
 
 **Intent**: {一句话：这步验证什么}
@@ -393,52 +462,46 @@ curl -s localhost:$PORT/state/xxx | jq '.field'
 - `field` 为 `expected_value`
 - 列表至少 N 条 且 每条含 id/title 字段
 
----
-
 {重复 Scenario 结构...}
-
----
 
 ## 端点依赖
 
 | 端点 | 用途 | 类型 | 对账状态 |
 |------|------|------|---------|
 | /state/auth | 验证登录状态 | state | ✅ MATCH |
-| /data/tracks | 读取列表 | data | ✅ MATCH |
-| /action/player/play | 触发播放 | action | 🔥 SERVER_BUG (providers 声明但 handler 未注册) |
 | /action/remote/sync | 远程同步 | action | ⏭️ MISSING |
-
-> Phase 4 编译时已完成对账；ai-qa-stories 运行时会重新对账，状态可能变化。
 ```
 
 ---
 
 ## 约束
 
-- **DAG 流水线不可跳 Phase** — 每个 Phase 都要执行，Phase 1 产物是后续输入
-- **全覆盖模式** — 每次运行覆盖 `docs/user-stories/` 所有文件，git 是唯一回滚
-- **不读未声明依赖** — Phase 3 节点只读自己需要的段落（事实摘要 + 单条行为 + 相关 features 段），禁止"为保险起见再读一下 BEHAVIOR"
-- **Gate 2 不可跳** — 业务准确性兜底，必经人审。**Gate 1 条件触发**（达标自动通过，见对应章节）
-- **事实摘要 ≤ 300 行** — 超过 = Phase 1 压缩失败，回做
-- **每条 Story ≤ 8 步** — 超过 = Phase 2 对账太粗，回 Phase 2 拆分
-- **端点对账在 Phase 4 完成** — 不等 ai-qa-stories 才发现端点缺失
-- **模板权威性** — 本 skill 的内联模板是权威。项目 USER_STORIES_TEMPLATE.md 有则同步更新
+- **两步走不可跳**（CLAUDE.md §1）— /generate-stories 只产 DAG，用户手动 batchcc；不得在主会话内 dispatch background agent 并发执行 DAG TASK
+- **DAG 真语法**（CLAUDE.md §5）— 入口文件必须有 `## STAGE ## name="..." mode="..."` 和 `## TASK ##`；禁用 `## Stage 1:` `### Batch 1:` 等伪语法
+- **生成后 grep 自检**（CLAUDE.md §5）— STAGE ≥ 2、TASK ≥ N+1、无禁止形式；任一失败立即修正
+- **候选 Story > 15 时 Fatal 停**（CLAUDE.md §3）— 不允许 `--force` 绕过
+- **State 位置**（CLAUDE.md §4）— `.task-generate-stories/` 在**项目根**，不在 `~/.claude/`
+- **Review Mode 必须全文**— Q2 B 选项，逐条展示 Story+QA 完整内容；不是摘要
+- **Review 中 subagent 单发限制**— 只允许 Review Mode 单发一个 subagent 重生单条；不得并发多个
+- **全覆盖模式** — 每次运行覆盖现有 `docs/user-stories/`，git 是回滚机制
+- **无增量** — 不支持 `--add` / `--recompile-qa`；想改就重跑
+- **事实摘要 ≤ 300 行** — 超过 = Phase 1 压缩失败，重做
 
 ## Gotchas
 
-1. **Phase 1 事实摘要是 DAG 的命脉** — 太粗后续都是垃圾，太细失去 DAG 意义。300 行是目标长度
-2. **Phase 3 的"独立上下文"靠显式 Read 重置** — 主 agent 串行执行时，每条 Story 开始前显式 Read 需要的段落，别假设上下文干净
-3. **真并行 subagent 慎用** — Subagent 之间风格可能更不一致，只在 >8 条故事时考虑
-4. **Gate 1 是最重要的 Gate** — Founder 在这里审"我们要测什么"；Gate 2 只审"写得准不准"
-5. **断言弹性不等于松散** — "列表非空"不够，至少加"结构或量级"约束
-6. **QA 的 Intent 很重要** — 不是装饰。ai-qa-stories 失败时用 Intent 判断是代码 bug 还是测试过期
-7. **一条 Story 对应一条 QA** — 文件名严格对应（`01-xxx.md` ↔ `qa/01-xxx.qa.md`）
-8. **ai-qa-stories 归因 scenario-outdated 不自动触发本 skill** — Founder 判断是否整体重跑
+1. **Phase 1 事实摘要是 DAG 的命脉** — 所有子 TASK 都只读 digest.md + behavior-audit.md 的自己那段 + 必要的 features 段，不读其他 docs
+2. **每个子 TASK 独立会话**（batchcc 跑） — 不要在 TASK 里写"参考其他 Story 保持风格一致"这种需要跨会话记忆的指令
+3. **收尾 TASK 无前序会话记忆** — 靠 git log / 文件扫描发现 generate stage 产出
+4. **Review Mode 可中断恢复** — reviewed.log 记已审，中途 Ctrl+C 后再跑 /generate-stories 从断点继续
+5. **打回重生的 subagent 是独立会话**— 主会话传给它 digest + 该条 audit 段 + Founder 修改要求；完成后主会话重新读生成的文件展示
+6. **ai-qa-stories 归因 scenario-outdated 不自动触发本 skill**— Founder 判断是否整体重跑（重跑意味着走完 Generate + batchcc + Review 整个流程）
 
 ## 变更历史
 
-- **2.1.0** (2026-04-18)：Gate 1 从"必经"改为"条件触发"。根因：v2.0 落地当日 Founder 在 flametree_pick 试跑时反馈 Gate 1 UX 太重——"AI 能自己处理的也要我审"。v2.1 新增 AI 自查 checklist（覆盖率 ≥85% / 落选归因 100% / 端点缺失 ≤30% / 无产品优先级分叉），达标自动通过只打印一行摘要；不达标仅弹出相关分叉（不展示全表）。Gate 2 保持必经。符合 AI-Only「AI 全权负责」+「Founder <5 分钟预算」原则。详见 `~/.claude/docs/decisions/2026-04-18-08-generate-stories-v2.1-gate1-smart-trigger.md`。
+- **3.0.0** (2026-04-19)：**真 DAG + 双模式**。v2.0/v2.1 的"DAG"在同一会话顺序执行，违反 CLAUDE.md DAG 强制清单 §5（退化为"看起来像 DAG 的阶段文档"）。Founder 在 flametree_pick 试跑 v2.1 后两点纠正：(1) Gate 2 不是一次看 N 条摘要而是逐条看全文；(2) DAG 必须是"分散到不同会话"。v3.0 分两模式：**Generate Mode**（主会话产 `.task-generate-stories/dag.md` 真 DAG 入口）+ **Review Mode**（状态感知自动切换，逐条展示 Story+QA 全文审核）；打回重生用主会话 Task tool 单发 subagent 即时完成；严格满足 CLAUDE.md DAG 强制清单 §1-5。详见 `~/.claude/docs/decisions/2026-04-19-01-generate-stories-v3-true-dag-mode.md`。
 
-- **2.0.0** (2026-04-18)：DAG 全覆盖模式。根因：Founder 实操观察到 v1.0 一次性读太多文件 → 上下文稀释 + 注意力漂移 + 均匀压缩导致生成不完整。改为 5 Phase DAG + 2 Founder Gate：Phase 1 Context Digest 一次压缩、Phase 2 Behavior Audit 对账表（解决覆盖完整性硬伤）、Phase 3/4 并行独立上下文（解决偷懒）、Phase 5 Delivery 对账 /providers。取消 v1.0 "上限 5 条"硬编码（数量由对账表决定）、取消增量模式（--add / --recompile-qa）、新增断言严格性标准（弹性不等于松散）。详见 `~/.claude/docs/decisions/2026-04-18-07-generate-stories-v2-dag-restructure.md`。
+- **2.1.0** (2026-04-18)：Gate 1 条件触发（达标自动通过）。假 DAG 架构下的局部修复。
 
-- **1.0.0** 及更早：双文件架构（Story 源码 + QA 编译产物）、降级策略、Story/QA 模板、Intent 字段、端点依赖表。核心架构保留进 v2.0。
+- **2.0.0** (2026-04-18)：引入"伪 DAG"（所有 Phase 同会话执行）。v3.0 发现这违反 DAG 规范，已废弃架构。断言严格性标准 / Story+QA 模板 / 全覆盖模式 / 取消 5 条上限等内容保留进 v3.0。
+
+- **1.0.0** 及更早：双文件架构（Story 源码 + QA 编译产物）。核心架构保留。
