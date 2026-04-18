@@ -26,7 +26,8 @@
 - **严禁把 AI 的观点伪装成已决策任务塞进 TODO.md**（会污染 `/todo-doit` 的执行流）
 - **严禁跳过 `/think` 直接把观点丢进 `to-discuss.md`**（`/think` 引入独立视角后，Claude Code 能处理绝大部分产品+技术决策）
 - TODO.md 与 to-discuss.md **物理独立，不设指针**（否则互相污染、变成视觉盲点）
-- `to-discuss.md` 不是 backlog 而是 **Last-Resort Queue**：只放 `/think` 明确表示无法决策的事项。每条要么转 TODO，要么被 Reject，不得无限积压
+- `to-discuss.md` 不是 backlog 而是 **Last-Resort Queue**：只放 `/think` 明确表示无法决策的事项。每条要么转 TODO，要么被驳回，不得无限积压
+- **交互模式下绕过 to-discuss.md**：`/think` 在主动对话中触发时，升级决策直接在对话里展示模板让用户当场勾选（见 `skills/think/SKILL.md` § 3.3.2）。只有自主模式（`/loop`、cron、batch）或用户当场无法定夺时才落库到 `to-discuss.md`
 
 ### to-discuss.md 条目模板
 
@@ -37,8 +38,8 @@
 - **事实前提**: [基于什么客观现象，禁止加主观修饰]
 - **/think 结论**: [/think 给出了什么判断，为什么它认为自己无法拍板]
 - **决策选项**:
-  - [ ] Approve → 转 TODO.md
-  - [ ] Reject → 直接删
+  - [ ] 采纳 → 转 TODO.md
+  - [ ] 驳回 → 直接删
 ```
 
 **禁止给 AI 观点加置信度字段** —— AI 在胡说时极度自信，置信度是噪音。
