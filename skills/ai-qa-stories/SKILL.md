@@ -6,7 +6,7 @@ description: >
   beyond unit tests. Verifies user stories against a running Flutter app via
   Debug State Server. Requires Debug State Server running and docs/user-stories/qa/
   to exist.
-version: 2.4.0
+version: 2.5.0
 ---
 
 # AI QA Stories — 用户故事自主验证
@@ -23,9 +23,35 @@ AI 自主闭环：读取 `docs/user-stories/qa/*.qa.md` 中的验证脚本，通
 ## 核心原则
 
 - **只验证，不修复** — 发现问题记录到报告，不改代码、不补端点、不重启 App
-- **QA 过程中不重启** — 启动一次，跑完所有故事
+- **QA 过程中不重启 App**（优先用 `/cyborg/reset` 做 State Teardown；不存在则沿用故事编号顺序依赖）
 - **故事按编号顺序** — 前序故事可能创建后序需要的数据
 - **只读 qa/ 目录** — 不解析 Story 文件中的内容来执行验证
+- **失败必附硬证据** — fail 时自动采集 Crime Scene 三件套（before 红框 / after / oracle diff），Founder 30 秒判真假
+- **Server Bug 非测试缺陷** — 端点对账三态把 Debug Server 自身不一致单独红标，计入工具错误预算而非 qa 失败
+
+---
+
+## Debug Server 契约
+
+与 `ai-explore` v4.0 共用同一份契约（单一来源，契约升级双边继承）。本 skill 期望的端点清单：
+
+### 必需端点
+
+| 端点 | 契约 |
+|------|------|
+| `/providers` | 列出所有 state / action 端点，用于 Step 3 对账 |
+| `/state/*` `/data/*` | 数据面快照（优先 `/data/` 直读 Repository，见注意事项 4） |
+| `/action/*` | 故事脚本执行通道 |
+
+### 可选增强端点（实现则升级能力）
+
+| 端点 | 未实现时的降级 |
+|------|--------------|
+| `/cyborg/reset` | State Teardown。缺失 → 沿用"故事编号顺序依赖" |
+| `/cyborg/dom`（带 `generation` 字段） | stale-node 探测。缺失 → 无视觉证据层，失败详情仅 Oracle |
+| `/cyborg/tap?nodeId=X&generation=Y`（quiet-frame + 2s 硬超时） | 防动画中间态误判。缺失 → curl 执行后多补一次 State 重读 |
+
+**详见** `~/.claude/skills/ai-explore/SKILL.md` § Debug Server 契约。契约变更在 ai-explore v4 决策记录中同步维护。
 
 ---
 
@@ -153,19 +179,47 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 
 ### Step 5: 逐条执行验证
 
+**故事间 State Teardown**（强推荐）：开始每个新故事前，如 `/cyborg/reset` 端点可用，调用一次清路由栈 + state 缓存。不可用时沿用"故事编号顺序依赖"。
+
+```bash
+# 新故事开始前
+curl -s -o /dev/null -w '%{http_code}' localhost:$PORT/cyborg/reset
+# 404 → 端点不存在，沿用顺序依赖；200 → 已清状态，当前故事可无脏状态开始
+```
+
 对每个 QA 文件的每个 Scenario：
 
 1. **读 Intent** — 理解这步在验证什么
 2. **检查端点是否存在** — 如果引用的端点在对账时被标记为缺失，直接跳过
-3. **执行 curl** — 按文件中的 bash 代码块顺序执行
-4. **校验 Assert** — 比对实际返回与断言
-5. 判定结果（三种）：
+3. **（可选）操作前快照** — 若 Cyborg Probe 可用且本 scenario 涉及 UI 变化，截一张 before.png（失败时才保留）
+4. **执行 curl** — 按文件中的 bash 代码块顺序执行
+5. **校验 Assert** — 比对实际返回与断言
+6. 判定结果（三种）：
 
 | 结果 | 处理 |
 |------|------|
-| ✅ 通过 | 继续 |
-| 🐛 失败 | 记录（curl 命令 + 实际返回 + 期望值 + Intent），继续 |
+| ✅ 通过 | 丢弃 before.png，继续 |
+| 🐛 失败 | **触发 Crime Scene 采集**：保留 before.png、截 after.png、快照 oracle.json；记录详情（见 Step 6） |
 | ⏭️ 跳过 | 端点缺失 / 外部依赖 / 缺少数据，记录原因，继续 |
+
+**Crime Scene 三件套采集**（仅 fail 时触发，pass 路径零开销）：
+
+```bash
+SNAP_DIR="screenshots/qa/$(date +%Y-%m-%d)"
+mkdir -p "$SNAP_DIR"
+PREFIX="$SNAP_DIR/${STORY_ID}_scenario_${SCENARIO_ID}"
+
+# before.png 在 step 3 已截，fail 时移到最终位置
+mv /tmp/qa_before_$$.png "${PREFIX}_before.png" 2>/dev/null
+
+# after.png + oracle 快照
+./scripts/screenshot-simulator.sh "${PREFIX}_after.png" 2>/dev/null  # 无 Simulator 时静默跳过
+curl -s localhost:$PORT/state/route > "${PREFIX}_oracle.json"
+# 追加当前 scenario 涉及的核心数据快照
+curl -s localhost:$PORT/data/... >> "${PREFIX}_oracle.json"
+```
+
+无 Cyborg Probe / 无 Simulator 时，Crime Scene 降级为仅 oracle.json（纯文本），在报告中标注"无视觉证据"。
 
 **效率要求**：同一 QA 文件内独立的状态查询可以并行 curl。
 
@@ -191,11 +245,15 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 - **curl**: `curl -s -X POST localhost:$PORT/action/xxx -d '...'`
 - **期望**: `success == true`
 - **实际**: `{"error":"..."}`
+- **Crime Scene**:
+  - `screenshots/qa/2026-04-18/02-daily-use_scenario_3_before.png` (可缺失)
+  - `screenshots/qa/2026-04-18/02-daily-use_scenario_3_after.png` (可缺失)
+  - `screenshots/qa/2026-04-18/02-daily-use_scenario_3_oracle.json` (必备)
 - **归因**: {四选一}
-  - `server-handler-bug` — Debug Server 端 handler 问题（如 action 返回 success 但 state 不同步、providers 声明但 handler 未注册）
+  - `server-handler-bug` — Debug Server 端 handler 问题（如 action 返回 success 但 state 不同步、providers 声明但 handler 未注册）→ 计入工具错误预算
   - `code-business-bug` — 业务代码实际 bug
   - `prereq-missing` — 测试前置数据/配置缺失（非代码问题）
-  - `scenario-outdated` — 故事脚本过时（端点改名、断言字段改动）
+  - `scenario-outdated` — 故事脚本过时（端点改名、断言字段改动）→ 触发 `/generate-stories` 重编 qa.md
 - **Blocked by**（可选）: {如果此 FAIL 是其他 FAIL 的连带效应，填前置 scenario ID，便于报告聚合根因}
 
 ### 跳过项
@@ -205,6 +263,28 @@ curl -s localhost:$PORT/data/feeds    # 或项目对应的核心数据
 ### 端点对账不匹配项
 - /data/settings/sync → 实际为 /data/settings-sync
 - /state/articles → 端点不存在
+```
+
+### Step 6.5: 工具错误预算追踪
+
+本次 run 的 `server-handler-bug` 归因条数要累入月度工具错误预算。目的：把 **Debug Server 自身的 bug** 与 **业务 bug** 分账，防止 Founder 在失败堆中找不到真问题、防止 skill 误报率失控。
+
+**更新 `_scratch/ai-qa-stories/tool-errors/$(date +%Y-%m).md`**：
+
+```markdown
+# Purpose: 本月 ai-qa-stories 工具误报追踪
+# Created: 2026-04-18
+
+## 2026-04-18 第 N 次 run
+- 总 scenario: 42, fail: 5
+- server-handler-bug: 2
+- scenario-outdated: 1
+- code-business-bug: 2
+- 累计本月: scenario 180, server-handler-bug 11 = **6.1%** ✅
+
+## 阈值
+默认 30%（与 ai-explore 对齐）。超阈值 → 报告顶部显著标注：
+"⚠️ 本月 server-handler-bug 占比 X% 超阈值，建议优先修 Debug Server handler 而非继续跑 qa。"
 ```
 
 ---
@@ -280,3 +360,11 @@ Android 路径有几个宿主机不透明的坑，必须单独处理：
 4. **autoDispose State 可能为空** — 断言优先用 `/data/`（直读 Repository）而非 `/state/`（读 ViewModel 内存状态）
 5. **QA 按编号顺序** — 前序 QA 可能创建后序需要的数据
 6. **旧格式兼容** — 如果只有 `docs/user-stories/*.md` 而没有 `qa/` 目录，提示用户迁移
+
+---
+
+## 变更历史
+
+- **2.5.0** (2026-04-18)：与 `ai-explore` v4.0 共享基础设施对齐（DRY）。5 项改动：新增「Debug Server 契约」章节（Generation ID / quiet-frame / `/cyborg/reset` 契约单一来源指向 ai-explore v4）、新增「工具错误预算」追踪（月度累计 `server-handler-bug` 占比，阈值 30%）、Step 5 失败时采集 Crime Scene 三件套（before 红框 / after / oracle.json）、Step 5 加故事间 State Teardown（`/cyborg/reset` 可选）、screenshots 路径对齐 user memory（`screenshots/qa/YYYY-MM-DD/`）。**不做 v3 大重写**——qa 本质 pass/fail 与 ai-explore 的 A/B/C/D 可信度梯度不同，persona×strategy / Behavioral Fuzzing / Ignorance Hash 不适用。详见 `~/.claude/docs/decisions/2026-04-18-06-ai-qa-stories-v2.5-alignment.md`。
+
+- **2.4.0** 及更早：双文件架构（qa/ 编译产物 + stories/ 源码）、端点对账三态判定（MATCH / MISSING / SERVER_BUG）、测试数据三档策略（Seed / Remote Prep / 空库）、归因四选一、Android 专属启动路径。已被 v2.5 完整保留并扩展。
