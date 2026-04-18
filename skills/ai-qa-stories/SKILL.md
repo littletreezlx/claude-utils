@@ -253,7 +253,7 @@ curl -s localhost:$PORT/data/... >> "${PREFIX}_oracle.json"
   - `server-handler-bug` — Debug Server 端 handler 问题（如 action 返回 success 但 state 不同步、providers 声明但 handler 未注册）→ 计入工具错误预算
   - `code-business-bug` — 业务代码实际 bug
   - `prereq-missing` — 测试前置数据/配置缺失（非代码问题）
-  - `scenario-outdated` — 故事脚本过时（端点改名、断言字段改动）→ 触发 `/generate-stories` 重编 qa.md
+  - `scenario-outdated` — 故事脚本过时（端点改名、断言字段改动）→ 建议 Founder 重跑 `/generate-stories`（v2.0 全覆盖模式，无单条重编）
 - **Blocked by**（可选）: {如果此 FAIL 是其他 FAIL 的连带效应，填前置 scenario ID，便于报告聚合根因}
 
 ### 跳过项
