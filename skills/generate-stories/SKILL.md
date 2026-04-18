@@ -10,7 +10,7 @@ description: >
   main session re-entry auto-switches to Review Mode for line-by-line Founder
   full-text review. Always full-rewrite (no incremental). Outputs dual files:
   story.md + qa.md.
-version: 3.0.0
+version: 3.1.0
 ---
 
 # Generate Stories v3.0 — 真 DAG + 双模式
@@ -75,16 +75,17 @@ fi
 
 ### Phase 1: Context Digest
 
-**一次性读取项目文档，压缩为「事实摘要」供 DAG 所有子 TASK 复用。**
+**一次性读取项目文档，按压缩准则压缩为「事实摘要」供 DAG 所有子 TASK 复用。**
 
-按优先级读取：
+#### 读取优先级
+
 1. `docs/PRODUCT_SOUL.md`
 2. `docs/PRODUCT_BEHAVIOR.md`
 3. `docs/features/*.md`
 4. `docs/ROADMAP.md`
 5. 项目 CLAUDE.md（仅读 Debug Server 端口 + 可用端点段）
 
-**降级策略**：
+#### 降级策略
 
 | 缺失文档 | 替代 | Story 中标注 |
 |---------|------|------------|
@@ -93,9 +94,71 @@ fi
 | features/ 为空 | 仅生成骨架 | 提示先补功能文档 |
 | 全部缺失 | **终止**，建议先 `/learn-new-project` | — |
 
-**产出**：`.task-generate-stories/digest.md`
+#### 压缩准则（严格执行，不是可选）
 
-**硬约束**：≤ 300 行。超过 = 压缩失败，重做。
+每条原始内容按下表判断是否进 digest：
+
+| 类别 | ✅ 进 digest | ❌ 不进 digest（下沉到 features/*.md 按需读） |
+|------|------------|----------------------------------------------|
+| 产品定位 | 一段话核心 | 市场分析 / 长篇 slogan |
+| 用户画像 | 1-2 类核心用户 | 次要用户群细分 |
+| 状态机 | 核心骨架（主路径 + 关键分叉） | 全状态枚举 / 边缘错误路径 |
+| features | 功能清单一行描述 | 每个 feature 完整交互流 |
+| 端点 | `/providers` 全量清单（紧凑）| 每个端点返回结构细节 |
+| 技术栈 | 核心技术 + 硬限制 | 开发工具链 / 测试框架 |
+| 差异化点 | 核心差异化（1-3 条） | 竞品对比 / 营销卖点 |
+| Known Issues | 影响 Story 生成的限制 | 历史 issue 流水账 |
+
+**原则**：某类 Story 专属细节（比如 Story 05 的分享详细流程）不进 digest，由该 Story TASK 在执行时按需读 `features/*.md` 相关段落。
+
+#### 末尾自检（必做）
+
+digest 写完后对每个章节/段落自问：
+
+> 这段是 N 个子 TASK 都会用到的吗？还是只有 1-2 个会用？
+
+- 多 TASK 通用 → 保留
+- 1-2 TASK 专用 → **删除**，下沉到"该 Story TASK 核心文件列 features/*.md"
+
+#### 梯度行数约束
+
+| 层级 | 行数 | 处理 |
+|------|------|------|
+| 目标 | ≤ 300 | 推荐，保持压缩锐度 |
+| 软上限 | ≤ 500 | 打印 warning 继续（项目偏复杂，二次审视是否还能砍） |
+| 硬上限 | ≤ 800 | **Fatal 停**，建议启用 digest 分片或进一步压缩 |
+
+```bash
+LINES=$(wc -l < .task-generate-stories/digest.md)
+if [ $LINES -gt 800 ]; then
+  echo "FATAL: digest $LINES 行超 800 硬上限。启用分片模式或继续压缩。"
+  exit 1
+elif [ $LINES -gt 500 ]; then
+  echo "⚠️ WARNING: digest $LINES 行超 500 软上限。二次审视压缩准则是否严格执行。"
+fi
+```
+
+**不允许 `--force` 绕过 800 硬上限**（CLAUDE.md §3 静默失败拦截器原则）。
+
+#### Digest 分片（软上限触发时启用）
+
+当项目复杂到主 digest 超 500 行时，按业务域拆分：
+
+```
+.task-generate-stories/
+├── digest.md              # 通用部分（产品定位/用户/核心状态机/端点清单）
+├── digest-<domain-a>.md   # 某类 Story 专用（被 Story N/M 引用）
+├── digest-<domain-b>.md   # 另一类（被 Story X 引用）
+└── ...                    # 总数 ≤ 5 个
+```
+
+- 主 digest ≤ 500 行
+- 每个分片 ≤ 300 行
+- 分片总数 ≤ 5（超过说明项目应该拆多个 skill 或分阶段交付）
+
+分片后，DAG 入口文件中每个 Story TASK 的"核心文件"显式列出需要的分片（示例见 Phase 3 模板）。
+
+**产出**：`.task-generate-stories/digest.md`（+ 可选分片）
 
 ### Phase 2: Behavior Audit
 
@@ -485,7 +548,7 @@ curl -s localhost:$PORT/state/xxx | jq '.field'
 - **Review 中 subagent 单发限制**— 只允许 Review Mode 单发一个 subagent 重生单条；不得并发多个
 - **全覆盖模式** — 每次运行覆盖现有 `docs/user-stories/`，git 是回滚机制
 - **无增量** — 不支持 `--add` / `--recompile-qa`；想改就重跑
-- **事实摘要 ≤ 300 行** — 超过 = Phase 1 压缩失败，重做
+- **事实摘要梯度**（v3.1）— 目标 ≤ 300 行 / 软上限 500（warning）/ 硬上限 800（Fatal 停）。超 500 行触发 digest 分片（`digest.md` + `digest-<domain>.md`）。压缩准则和末尾自检不可跳（见 Phase 1）
 
 ## Gotchas
 
@@ -497,6 +560,8 @@ curl -s localhost:$PORT/state/xxx | jq '.field'
 6. **ai-qa-stories 归因 scenario-outdated 不自动触发本 skill**— Founder 判断是否整体重跑（重跑意味着走完 Generate + batchcc + Review 整个流程）
 
 ## 变更历史
+
+- **3.1.0** (2026-04-19)：**digest 梯度约束 + 压缩准则**。根因：v3.0 落地同日 Founder 在 flametree_pick 跑 Generate Mode 产出 digest 244 行（简单项目偏长）+ 质疑 300 行硬约束对复杂项目不友好。v3.1 改动：(1) 行数梯度（目标 ≤300 / 软上限 500 warning / 硬上限 800 Fatal），不允许 `--force` 绕过硬上限；(2) Phase 1 引入**压缩准则表**明确"进/不进 digest"判断（features 完整交互流下沉到 features/\*.md 按需读）；(3) 末尾自检"每段是 N TASK 通用还是 1-2 TASK 专用"；(4) 超 500 行启用 **digest 分片**（`digest.md` + `digest-<domain>.md`，每 Story TASK 按需引用分片）。详见 `~/.claude/docs/decisions/2026-04-19-02-generate-stories-v3.1-digest-gradient.md`。
 
 - **3.0.0** (2026-04-19)：**真 DAG + 双模式**。v2.0/v2.1 的"DAG"在同一会话顺序执行，违反 CLAUDE.md DAG 强制清单 §5（退化为"看起来像 DAG 的阶段文档"）。Founder 在 flametree_pick 试跑 v2.1 后两点纠正：(1) Gate 2 不是一次看 N 条摘要而是逐条看全文；(2) DAG 必须是"分散到不同会话"。v3.0 分两模式：**Generate Mode**（主会话产 `.task-generate-stories/dag.md` 真 DAG 入口）+ **Review Mode**（状态感知自动切换，逐条展示 Story+QA 全文审核）；打回重生用主会话 Task tool 单发 subagent 即时完成；严格满足 CLAUDE.md DAG 强制清单 §1-5。详见 `~/.claude/docs/decisions/2026-04-19-01-generate-stories-v3-true-dag-mode.md`。
 
