@@ -19,3 +19,4 @@
 
 ## Project
 - [project_ondemand_hooks_idea.md](project_ondemand_hooks_idea.md) — /careful 和 /freeze 按需钩子模式，未来可实现为安全护栏 Skill
+- [plugin_evaluation_decisions.md](plugin_evaluation_decisions.md) — marketplace 插件 2026-04-18 评估:留 6 个，删 commit-commands/skill-creator/code-simplifier/claude-md-management
