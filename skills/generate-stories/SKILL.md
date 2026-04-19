@@ -10,7 +10,7 @@ description: >
   main session re-entry auto-switches to Review Mode for line-by-line Founder
   full-text review. Always full-rewrite (no incremental). Outputs dual files:
   story.md + qa.md.
-version: 3.1.0
+version: 3.2.0
 ---
 
 # Generate Stories v3.0 — 真 DAG + 双模式
@@ -83,7 +83,57 @@ fi
 2. `docs/PRODUCT_BEHAVIOR.md`
 3. `docs/features/*.md`
 4. `docs/ROADMAP.md`
-5. 项目 CLAUDE.md（仅读 Debug Server 端口 + 可用端点段）
+5. 项目 CLAUDE.md（仅读 Debug Server 端口段）
+6. **Debug Server 源码**（用于端点静态提取，见下方）
+
+#### 端点静态提取（v3.2 新增，不启动 Server）
+
+**不要启动 Debug Server**。从源码静态提取即可——`/providers` 的输出只是源码 route 注册表的序列化，grep 等价。
+
+```bash
+# 1. 定位 Debug Server 源文件（路径灵活）
+DEBUG_SERVER_FILE="lib/dev_tools/debug_server.dart"
+[ -f "$DEBUG_SERVER_FILE" ] || \
+  DEBUG_SERVER_FILE=$(grep -rlE "class DebugServer|static const int port" lib/ 2>/dev/null | head -1)
+
+# 2. 提取所有端点（典型 Dart route 字符串模式）
+if [ -f "$DEBUG_SERVER_FILE" ]; then
+  grep -oE "'/(action|state|data|cyborg|providers)[a-zA-Z0-9/_-]*'" "$DEBUG_SERVER_FILE" | \
+    tr -d "'" | sort -u
+  SOURCE="source"
+elif grep -qE '^##.*端点' CLAUDE.md 2>/dev/null; then
+  # 降级：从 CLAUDE.md 端点段读
+  SOURCE="claude_md"
+else
+  SOURCE="unknown"  # Gate 1 会触发
+fi
+```
+
+提取结果按 `action / state / data / cyborg` 分类写入 digest.md"可用端点清单"章节（紧凑格式）：
+
+```markdown
+## 可用端点清单（来源：source / claude_md / unknown）
+
+### Actions (N)
+- /action/auth/login
+- /action/auth/logout
+- /action/groups/create
+
+### States (M)
+- /state/auth
+- /state/groups
+
+### Data (K)
+...
+```
+
+**信息来源分级**（Gate 1 消费）：
+
+| 来源 | 行为 |
+|------|-----|
+| `source`（源码 grep 成功）| 继续 Phase 2 |
+| `claude_md`（降级）| 打印 warning："端点清单来源 CLAUDE.md，可能过时。建议核对或改从 debug_server.dart 源码" |
+| `unknown`（完全不可得）| **Gate 1 直接触发**，不允许继续生成（QA 会大面积 TODO，意义存疑） |
 
 #### 降级策略
 
@@ -160,31 +210,66 @@ fi
 
 **产出**：`.task-generate-stories/digest.md`（+ 可选分片）
 
-### Phase 2: Behavior Audit
+### Phase 2: Behavior Audit + 端点预对账
 
-**从 digest 提取所有可观测行为 → 候选 Story 对账表。**
+**从 digest 提取所有可观测行为 → 候选 Story 对账表 + 端点预对账表。**
 
-产出：`.task-generate-stories/behavior-audit.md`
+#### 2a. 行为对账（v3.0 原有）
 
-结构见 v2 模板（行为清单按类别 / 候选 Story 覆盖映射 / 落选理由 / 覆盖率统计）。
+产出行为清单 / 候选 Story 覆盖映射 / 落选理由 / 覆盖率统计。结构见 v2 模板。
+
+#### 2b. 端点预对账（v3.2 新增）
+
+对每条候选 Story 基于 Story 意图**估算**需要的端点类型，与 Phase 1 提取的端点清单对照：
+
+```markdown
+## 端点预对账
+
+| Story | 预计端点 | 实际状态 | 缺失数 |
+|-------|---------|---------|-------|
+| 01 首次使用 | /action/auth/login, /state/auth, /data/profile | ✅ ✅ ✅ | 0 |
+| 02 日常操作 | /action/groups/select, /state/groups | ✅ ✅ | 0 |
+| 05 分享 | /action/share/upload | ⏭️ MISSING | 1 |
+| 07 清单模式 | /action/stack/start, /state/stack, /data/items | ⏭️ ✅ ✅ | 1 |
+| ... | | | |
+
+**汇总**
+- 总预计端点数: N
+- 缺失数: M  
+- 缺失率: M/N = **X%**
+```
+
+写入 `behavior-audit.md` 末尾。缺失率是 Gate 1 的真实数据来源。
+
+**预对账规则**：
+- AI 根据 Story 意图推断需要的端点类型（增/删/改/读 哪个数据域）
+- 估算层面允许偏差——Phase 4 子 TASK 编译 QA 时会精确对账
+- 预对账的价值是**Gate 1 前**提前暴露大面积缺失，不是精确计数
 
 ### Gate 1（智能触发，v2.1 保留）
 
 Phase 2 结束后 AI 自查：
 
-| 自查项 | 达标条件 |
-|--------|---------|
-| 覆盖率 | ≥ 85% |
-| 落选归因 | 100% 有明确理由 |
-| 端点缺失率 | ≤ 30%（Debug Server 未启动时按 100% 算，触发 Gate）|
-| 产品优先级分叉 | 无 |
+| 自查项 | 达标条件 | 数据来源 |
+|--------|---------|---------|
+| 覆盖率 | ≥ 85% | Phase 2 行为对账 |
+| 落选归因 | 100% 有明确理由 | Phase 2 行为对账 |
+| **端点信息来源** | `source`（源码 grep 成功）或 `claude_md`（降级允许）| Phase 1 端点静态提取 |
+| **端点缺失率** | ≤ 30% | Phase 2 端点预对账 |
+| 产品优先级分叉 | 无 | Claude Code 综合判断 |
+
+**触发 Gate（任一命中）**：
+- 覆盖率 < 85% 且剩余行为无法归因 → 列出无法归因的行为问 Founder
+- 端点来源 = `unknown` → 源码 + CLAUDE.md 都读不到端点，QA 大面积 TODO 无意义，问 Founder 是否补 Debug Server 文档
+- 端点缺失率 > 30% → 列出缺失端点清单，建议先补 Debug Server 再生成
+- 产品优先级分叉 → 只展示该分叉的 A/B 选项
 
 全部达标 → 打印一行：
 ```
 ✅ Gate 1 自动通过：覆盖率 X%，端点缺失 Y%，无产品优先级分叉。进入 DAG 生成。
 ```
 
-任一不达标 → **只**弹出相关分叉问 Founder（不展示全表）。
+<!-- 触发条件细节已在上方「触发 Gate」表格中说明 -->
 
 ### Phase 3: 生成 DAG 入口文件
 
@@ -548,6 +633,7 @@ curl -s localhost:$PORT/state/xxx | jq '.field'
 - **Review 中 subagent 单发限制**— 只允许 Review Mode 单发一个 subagent 重生单条；不得并发多个
 - **全覆盖模式** — 每次运行覆盖现有 `docs/user-stories/`，git 是回滚机制
 - **无增量** — 不支持 `--add` / `--recompile-qa`；想改就重跑
+- **职责边界：端点静态提取，不做运行时检测**（v3.2）— 本 skill 从 `debug_server.dart` 源码 grep 端点清单（静态）；**不启动 Debug Server**、**不 curl `/providers`**、**不做 SERVER_BUG 检测**（handler 运行时 bug 是 `ai-qa-stories` 三态对账 MATCH/MISSING/SERVER_BUG 的职责，归因 `server-handler-bug` 计工具错误预算）
 - **事实摘要梯度**（v3.1）— 目标 ≤ 300 行 / 软上限 500（warning）/ 硬上限 800（Fatal 停）。超 500 行触发 digest 分片（`digest.md` + `digest-<domain>.md`）。压缩准则和末尾自检不可跳（见 Phase 1）
 
 ## Gotchas
@@ -560,6 +646,8 @@ curl -s localhost:$PORT/state/xxx | jq '.field'
 6. **ai-qa-stories 归因 scenario-outdated 不自动触发本 skill**— Founder 判断是否整体重跑（重跑意味着走完 Generate + batchcc + Review 整个流程）
 
 ## 变更历史
+
+- **3.2.0** (2026-04-19)：**端点静态提取 + 职责边界**。根因：v3.1 对"Debug Server 不完善"场景处理不足（Phase 1 只读 CLAUDE.md，Gate 1 的"端点缺失率"无数据来源）。初次提议方案含"启动 Server curl `/providers`"被 Founder 质疑过度设计——源码即真相，grep 等价于 `/providers`。v3.2 改进：(1) Phase 1 新增端点静态提取（`grep -oE "'/(action|state|data|cyborg)/..."` debug_server.dart）；(2) Phase 2 新增端点预对账表，每条候选 Story 估算需要端点与实际清单对比；(3) Gate 1 新增"端点信息来源"和"端点缺失率"两个自查项（unknown 源头直接触发 Gate）；(4) 约束章节明确"职责边界"——静态提取是本 skill，SERVER_BUG 检测是 ai-qa-stories 职责，避免未来再被带偏启动 Server。详见 `~/.claude/docs/decisions/2026-04-19-03-generate-stories-v3.2-static-endpoint.md`。
 
 - **3.1.0** (2026-04-19)：**digest 梯度约束 + 压缩准则**。根因：v3.0 落地同日 Founder 在 flametree_pick 跑 Generate Mode 产出 digest 244 行（简单项目偏长）+ 质疑 300 行硬约束对复杂项目不友好。v3.1 改动：(1) 行数梯度（目标 ≤300 / 软上限 500 warning / 硬上限 800 Fatal），不允许 `--force` 绕过硬上限；(2) Phase 1 引入**压缩准则表**明确"进/不进 digest"判断（features 完整交互流下沉到 features/\*.md 按需读）；(3) 末尾自检"每段是 N TASK 通用还是 1-2 TASK 专用"；(4) 超 500 行启用 **digest 分片**（`digest.md` + `digest-<domain>.md`，每 Story TASK 按需引用分片）。详见 `~/.claude/docs/decisions/2026-04-19-02-generate-stories-v3.1-digest-gradient.md`。
 
