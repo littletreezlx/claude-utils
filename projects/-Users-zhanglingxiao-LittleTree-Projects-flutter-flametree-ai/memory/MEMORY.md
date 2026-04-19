@@ -5,3 +5,4 @@
 - [feedback_verify_runtime_env_first.md](feedback_verify_runtime_env_first.md) — 技术方案前必须先确认运行环境硬事实（主平台/前后台/设备形态），不要把开发机当生产设备
 - [feedback_phase2_not_in_donotdo_list.md](feedback_phase2_not_in_donotdo_list.md) — Phase 2 已规划的能力不要写进"不做"列表，推迟类建议直接落进计划不需要反复确认
 - [feedback_revive_task_check_premise.md](feedback_revive_task_check_premise.md) — 复活已搁置任务前必须核验设计前提，旧规划的"特殊配置"在当前代码库可能已冗余
+- [feedback_no_founder_gated_regression_in_todo.md](feedback_no_founder_gated_regression_in_todo.md) — flametree_ai 项目的 TODO.md 不要列 Founder-gated 真机回归任务，代码层完成即视为 AI 任务收尾
