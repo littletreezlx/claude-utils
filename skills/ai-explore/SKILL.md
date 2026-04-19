@@ -78,12 +78,14 @@ pgrep -x Simulator >/dev/null 2>&1 && \
 
 ## 前置条件
 
-1. ✅ `prep-cyborg-env` 已执行（环境干净，每次探索前必须）
-2. Debug State Server 运行中（端口从 `lib/dev_tools/debug_server.dart` 动态发现）
-3. 基线数据就绪（可用 group/option 等）
+1. **Debug State Server 可达性** — Step 0 自动检测；不可达则**本 skill 自己调用 `prep-cyborg-env`**，不假设用户已手动执行
+2. 端口从 `lib/dev_tools/debug_server.dart` 动态发现
+3. 基线数据就绪（可用 group/option 等）— prep-cyborg-env 会处理
 4. Cyborg 额外：iOS Simulator + `/cyborg/dom` 返回节点 + macOS 环境（screencapture）
 
 **严禁脏状态下开始探索** — 三角校验会在矛盾状态下给出错误结论，直接污染 D 级工具错误预算。
+
+**Skill 编排原则**：前置 skill（prep-cyborg-env）由本 skill 主动调用，不依赖人类"记得先跑"。决策记录：`~/.claude/docs/decisions/2026-04-19-04-ai-explore-auto-prep.md`。
 
 ---
 
@@ -117,6 +119,32 @@ pgrep -x Simulator >/dev/null 2>&1 && \
 ## Cyborg 模式执行流程
 
 ### Step 0：环境初始化 + 契约健康检查
+
+#### 0a. 自动确保环境就绪（强制）
+
+**不假设 prep-cyborg-env 已手动执行**——先探测，不可达就主动调用。
+
+```bash
+# 动态发现端口
+PORT=$(grep 'static const int port' lib/dev_tools/debug_server.dart | grep -oE '= *[0-9]+' | grep -oE '[0-9]+' | head -1)
+[ -z "$PORT" ] && PORT=8788  # fallback
+
+# 检测 Debug Server 可达性
+if ! curl -s -m 2 "localhost:$PORT/providers" >/dev/null 2>&1; then
+  echo "Debug Server 不可达 → 调用 prep-cyborg-env"
+  # 用 Skill tool 调用 prep-cyborg-env（不是 Bash 手动拼，让前置 skill 自己负责细节）
+  # 调用后再次轮询 /providers，最多 30s，仍失败 → 报错退出，不进入探索
+  exit 1
+fi
+```
+
+**落地规则**：
+- 检测失败 → **立即用 Skill tool 调 `prep-cyborg-env`**（不是让用户去跑）
+- prep-cyborg-env 返回后轮询 `localhost:$PORT/providers`，最多 30s
+- 仍不可达 → 明确报告失败原因（如 "Simulator 未启动 + 项目无 prep-env.sh"），**不进入探索**（脏状态禁行）
+- 检测通过 → 跳过 prep 节省时间，直接进 0b
+
+#### 0b. 契约健康检查
 
 ```bash
 # 1. 验证 DOM 返回节点 + generation 字段
@@ -458,6 +486,8 @@ Simulator 或 Cyborg Probe 不可用时自动降级。
 ---
 
 ## 变更历史
+
+- **4.0.1** (2026-04-19)：修补 P0 缺口——`prep-cyborg-env` 从"前置条件（假设已执行）"改为"Step 0 主动调用"。Founder 在 flametree_pick 首次跑 v4.0 时发现 SKILL 不自动 prep，只会在脏环境下报错让人手动跑。违反 AI-Only 协作模式中"工作流不应包含不会执行的步骤"原则。修复：前置条件 #1 改为"自动检测 + 主动调用"；Step 0 拆成 0a（环境就绪）+ 0b（契约健康）。详见 `~/.claude/docs/decisions/2026-04-19-04-ai-explore-auto-prep.md`。
 
 - **4.0.0** (2026-04-18)：从"会探索"升级为"可证伪的质量基础设施"。引入 GPT-5.4 治理层（A/B/C/D 分级 / 信用摘要 / 最小证伪单元 / 工具错误预算 / persona×strategy / Oracle 非神谕化 / 边界白名单）+ Gemini 机制层（Crime Scene 双快照 / Behavioral Fuzzing / Generation ID / quiet-frame 2s 硬超时 / State Teardown / Ignorance Hash / Probe Contract Test）+ P0 止血（screenshots 路径与 user memory 对齐 / /think 评估附原始 JSON）。事前验尸 P4 被 GPT 证伪为 P1 上游原因，战略顺序改为"可信度治理 → 边界治理 → 探索策略多样化 → 跨版本可持续性"。详见 `~/.claude/docs/decisions/2026-04-18-05-ai-explore-v4-trust-framework.md`。
 
