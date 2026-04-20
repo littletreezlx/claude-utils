@@ -2,8 +2,8 @@
 name: feishu-project-shipd
 description: Feishu project space info for 食亨IPD - project key, user keys, template IDs, role keys, common field values for creating work items (shared across POS/TV/KDS)
 type: reference
+originSessionId: 7a9c4acb-439a-4283-b3b9-23ffc7779279
 ---
-
 ## 飞书项目空间：食亨IPD
 
 - **project_key**: `shipd` (full: `6573e752a04ba3400dbcec89`)
@@ -62,8 +62,9 @@ type: reference
 
 ### 默认角色指派（安卓技术需求）
 
-- PO + Android开发 + 前端开发 → 张凌霄 (`7310303312383852547`)
-- 测试 → 王雷03 (`7310185777596465156`)
+- PO + Android开发 + 前端开发 + 测试 + 技术评审负责人 → 张凌霄 (`7310303312383852547`)
+- **前端开发（ferd）必填**：不填的话开发节点无负责人，流程卡住；即使是纯 Android 需求也要挂自己
+- 王雷03 (`7310185777596465156`) **不再默认**当 QA；需要时再手动指派
 
 ### 创建工作项完整流程
 

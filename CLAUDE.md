@@ -56,6 +56,18 @@
 
 ---
 
+## 遇阻时的提问范式（Harness Engineering）
+
+代码/测试/流程卡住时，默认反应**不是**"再试一次"，而是先问：
+
+> **我缺失了什么可见能力？如何让它变成下次可检查、可强制执行的信号？**
+
+把失败翻译成一条缺失的 observability / 约束 / 脚手架：找不到 bug → 补日志/探针而非继续猜；同一错误重复犯 → 写进 CLAUDE.md / skill / 决策记录而非靠"下次记得"；AI 误判设计意图 → 补文档反例而非 prompt 反复提醒。
+
+灵感来源：Peter Pang《Why Your "AI-First" Strategy Is Probably Wrong》/ Harness Engineering。
+
+---
+
 ## 紧急停止机制
 
 当出现以下情况，**立即停止**并请求用户介入：
