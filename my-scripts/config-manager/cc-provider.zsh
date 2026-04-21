@@ -59,7 +59,6 @@ cc-minimax() {
     export ANTHROPIC_DEFAULT_HAIKU_MODEL="MiniMax-M2.7"
     export API_TIMEOUT_MS="3000000"
     export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
-
     echo "cc-minimax  |  MiniMax-M2.7  |  api.minimaxi.com"
 }
 

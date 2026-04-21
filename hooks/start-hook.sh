@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SessionStart notifier: 启动时一行提示 IP + OTEL 隔离状态
-# 不阻塞会话、不阻塞消息
+# SessionStart hook: 会话启动时注入 IP + OTEL 状态到模型上下文，
+# 并在项目根目录存在 TODO.md 时提醒用户。不阻塞会话、不阻塞消息。
 set -u
 
 ALLOWED_IP="198.3.124.235"
@@ -25,9 +25,18 @@ else
   otel_msg="✅ OTEL 关"
 fi
 
-msg="${ip_msg} · ${otel_msg}"
+# === TODO 提醒 ===
+# SessionStart hook 的 cwd 由 CC 通过 stdin JSON 传入；用 jq 从 stdin 读
+input="$(cat)"
+project_dir="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)"
+[[ -z "$project_dir" ]] && project_dir="$PWD"
 
-# systemMessage 会在 UI 里显示给用户；additionalContext 注入给模型
+msg="${ip_msg} · ${otel_msg}"
+if [[ -f "$project_dir/TODO.md" ]]; then
+  msg="${msg} · 有 TODO"
+fi
+
+# systemMessage 显示在 UI；additionalContext 注入给模型
 jq -nc --arg m "$msg" '{
   systemMessage: $m,
   hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: $m }
