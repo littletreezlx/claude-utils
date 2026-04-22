@@ -52,14 +52,14 @@ cc-minimax() {
 
     export ANTHROPIC_AUTH_TOKEN="sk-cp-74m9QxrVIY3s3cOOrflLcyAgyVv1IeM9ffzARalrFclsECUiHzdwUIjZ_jKGqfPcryqIcV2Rdjh492qSGNWdvzIIOecdMC5L0acnESWAbbMSEh91OABW1mU"
     export ANTHROPIC_BASE_URL="https://api.minimaxi.com/anthropic"
-    export ANTHROPIC_MODEL="MiniMax-M2.7"
-    export ANTHROPIC_SMALL_FAST_MODEL="MiniMax-M2.7"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="MiniMax-M2.7"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="MiniMax-M2.7"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="MiniMax-M2.7"
+    export ANTHROPIC_MODEL="MiniMax-M2.7-highspeed"
+    export ANTHROPIC_SMALL_FAST_MODEL="MiniMax-M2.7-highspeed"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="MiniMax-M2.7-highspeed"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="MiniMax-M2.7-highspeed"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="MiniMax-M2.7-highspeed"
     export API_TIMEOUT_MS="3000000"
     export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
-    echo "cc-minimax  |  MiniMax-M2.7  |  api.minimaxi.com"
+    echo "cc-minimax  |  MiniMax-M2.7-highspeed  |  api.minimaxi.com"
 }
 
 # ============================================
