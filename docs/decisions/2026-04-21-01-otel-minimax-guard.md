@@ -154,6 +154,44 @@ Founder 新开终端 → `cdpos` → 应看到单行 `⛔ MiniMax 挂载中 → 
 - 两周后（~2026-05-05）检查 Founder 是否有"忘了 reload" / "guard 被绕过"的反馈
 - 若 Founder 开始频繁切换 MiniMax 开关位置，升级到方案 A（迁 `.mcp.json`）
 
+## 修订 2026-04-21-01a：guard 判据从 "MCP 配置" 改为 "ANTHROPIC_BASE_URL"
+
+**触发事实**：Founder 在 `cc-official` 状态下 `cdpos` 进工作目录，仍被 guard 拦住不激活 OTEL。原因：原 guard 检查 `~/.claude/settings.json` 里是否含 `"MiniMax"`，而 MCP 配置是静态的、永远命中，与 LLM provider 切换无关。
+
+**重新识别两个泄露源**：
+| 源 | 信号 | 何时泄露 |
+|----|------|---------|
+| LLM = 非官方 provider | `ANTHROPIC_BASE_URL` 非空 | 每次 api_request 事件的 `model` 字段（MiniMax-M2.7 / kimi-k2.5）自动泄露 |
+| MCP tool = MiniMax | settings.json 静态挂载 | 仅在用户**主动调用** `mcp__MiniMax__*` 时 `tool_decision` 指标泄露 |
+
+原 guard 混淆了两者。应该硬屏蔽源 1（自动、无法规避），源 2 靠用户纪律。
+
+**Founder 的明确判断**（原话）：「我觉得主要判断依据是环境变量」，并指出 `ANTHROPIC_BASE_URL="https://api.minimaxi.com/anthropic"` 就是关键字段。
+
+**新 guard**（覆盖原 3.2 小节）：
+
+```bash
+if [[ -n "${ANTHROPIC_BASE_URL:-}" ]]; then
+  echo "⛔ 非官方 LLM: $ANTHROPIC_BASE_URL → OTEL 未激活（先 cc-official 再 direnv reload）"
+  return 0
+fi
+```
+
+- 覆盖所有非官方 provider（MiniMax、Kimi、未来任何 switcher）
+- `cc-official` 会 `unset ANTHROPIC_BASE_URL`，自然放行
+- 不再 check settings.json 的 MCP 配置（MCP 软泄露由用户纪律处理）
+
+**放弃方案**：加软警告 `⚠️ MiniMax MCP 可用`。原因：每次进工作目录都打印反而变噪声，且 MCP 可用 ≠ 必然调用。用户纪律足够。
+
+**更新后预期行为矩阵**：
+
+| 当前状态 | `cdpos` 显示 |
+|---------|--------------|
+| `cc-official`（`ANTHROPIC_BASE_URL` 未设） | `🔴 OTEL ON · device.owner=...` |
+| `cc-minimax` / `cc-kimi`（`ANTHROPIC_BASE_URL` 已设） | `⛔ 非官方 LLM: <url> → OTEL 未激活...` |
+
+**影响范围**：仅改 `~/AndroidStudioProjects/.envrc` guard 段（第 10-20 行），其他部分不变。
+
 ## 附：相关代码位置
 
 - `~/LittleTree_Projects/cs/zsh/otel-isolation.zsh` — direnv hook 加载 + log format 抑制
