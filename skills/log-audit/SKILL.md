@@ -162,40 +162,17 @@ Report structure (in-chat, no file writes unless oversized):
 - Zero findings → output `Project passes log hygiene audit ✅` and stop
 - Scan running > 60s → stop, suggest narrowing with a path argument
 
-### Step 6 — Action menu
+### Step 6 — Auto-apply (default behavior)
 
-End the report with:
+Skip the menu. After the report, immediately apply all findings:
+- 🟡 and 🟢 — fix directly, no confirmation needed
+- 🟢 too — these are quick wins, fix alongside 🟡
 
-```markdown
-## Next
+End with a one-line summary of what was changed.
 
-1. **Apply all 🔴+🟡** (reply `1`) — I will edit the code directly
-2. **Apply 🔴 only** (reply `2`)
-3. **Apply specific items** (reply `3 <ids>`) — e.g. `3 1,4,7`
-4. **Queue to TODO.md** (reply `4`) — hand off to `/todo-doit` later
-5. **Diagnosis only** (reply `5`) — no action
-```
+**Rationale**: in this project's AI-Only workflow, the user always replies `1` or ignores the menu anyway. Eliminating the confirmation step closes the loop faster.
 
-**Default if user does not respond**: diagnosis only. Do not silently
-write files or edit code.
-
-**Exception — auto-fix mode**: if the user invoked with `--fix` / `--apply`
-/ "审日志并修复" / "审日志顺手修了" / similar explicit fix intent,
-skip the menu and proceed directly to **Apply 🔴 only** (option 2).
-🟡 and 🟢 still wait for an explicit follow-up — they are not critical
-enough to auto-apply without confirmation.
-
-### 🔴 Critical 的强语义（防止默认 diagnosis-only 被误读为偷懒）
-
-🔴 的操作定义是 **"debugger 连代码是否跑过都无法判断"**。这类 gap 不是"建议补",
-是"现在盲区"。它的处置方式有两条强约束:
-
-- **不允许降级**:发现 🔴 不得因为"修复有风险"而降为 🟡。修复风险另记,但定级不变
-- **不允许隐藏**:🔴 即使超过 top 10 也必须全部列在 in-chat 报告里,
-  不允许折叠到 `_scratch/` 只展示前 10 条。🟡/🟢 可以折叠,🔴 不可以
-
-默认 diagnosis-only 是为了避免"静默改代码",**不是**为了把 🔴 扔给用户自己决定。
-报告里对 🔴 的推荐动作必须是"建议立刻 reply 2 应用",而非"酌情处理"。
+**Exception**: if the user explicitly says "diagnosis only" or invokes with `--diagnose`, skip all edits and output the report only.
 
 ## Constraints
 
@@ -213,19 +190,17 @@ enough to auto-apply without confirmation.
 - `feat-done` may call this when the delivery touches in-scope code
 - `code-quality` may call this when the PR diff hits candidate patterns
 - `comprehensive-health-check` includes this as a sub-node
-- `todo-write` is the downstream for action menu option 4
-- `todo-doit` consumes what option 4 produces
 
 ## Triggers
 
 | User says | Behavior |
 |-----------|----------|
-| `/log-audit` | Scan CWD, diagnosis-only default |
-| `/log-audit <path>` | Scan that subtree |
-| `/log-audit --fix` / `/log-audit <path> --fix` | Scan + auto-apply 🔴 (skip menu) |
-| "审一下日志" / "查日志覆盖" | Scan CWD |
-| "审日志并修复" / "审日志顺手修了" | Scan + auto-apply 🔴 |
-| "{file} 日志够吗" | Single-file audit, skip Step 1 |
+| `/log-audit` | Scan CWD, auto-apply all findings |
+| `/log-audit <path>` | Scan that subtree, auto-apply |
+| `/log-audit --fix` | Same as default — kept for backward compat |
+| `/log-audit --diagnose` | Scan CWD, diagnosis only (no edits) |
+| "审日志" / "查日志覆盖" | Scan CWD, auto-apply |
+| "审日志并修复" | Same as default |
 
 ## Anti-ritual self-check
 
