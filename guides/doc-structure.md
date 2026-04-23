@@ -56,6 +56,17 @@
 | `docs/ARCHITECTURE.md` | 系统**怎么搭建** | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
 | `docs/ROADMAP.md` | 项目**去向哪** | 高频 | 当前阶段状态、Known Issues、Next Steps |
 | `docs/FEATURE_CODE_MAP.md` | 代码**在哪里** | 中频 | 功能→代码路径索引（GPS 导航） |
+| `docs/design/DESIGN_BRIEF.md` | 设计工具**该怎么发挥** | 低频（派生） | 喂给 AI 设计工具（frontend-design / v0 / Lovable）的视觉意图简报，派生自 PRODUCT_SOUL + UI 文档，通过 `/init-design-brief` 生成 |
+
+### 派生文档约定
+
+`docs/design/DESIGN_BRIEF.md` 是**派生产物**，不是源文档：
+
+- 源：`PRODUCT_SOUL.md` + `docs/ui/UI_SHOWCASE.md`（或等价 UI 文档）
+- 生成：`/init-design-brief` 命令重新编译
+- 文件头必须带 `> 派生自 PRODUCT_SOUL + UI_SHOWCASE，过时请跑 /init-design-brief 重新生成`
+- **清理规则**：`/doc-clean`、`inbox` skill 等**不得**将该文件当作临时产物清理
+- **过时判定**：PRODUCT_SOUL 或 UI_SHOWCASE 修改晚于该文件 mtime → 标记过时、重跑
 
 ## 文档边界（易混淆的三者）
 
