@@ -38,6 +38,7 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 | `prompt-craft` | 编写/审查/优化项目中的 AI-facing prompt（system prompt、API 调用指令） | — (自动触发) |
 | `ai-cli-design` | 编写/优化 CLI 工具或 Python 脚本时，确保对 AI Agent 友好 | — (自动触发) |
 | `update-from-stitch` | 从 Stitch 拉取设计稿到本地，对比差异并更新代码 | `/update-from-stitch` |
+| `work-quarterly-report` | 个人季度/年终述职端到端流程：飞书拉取→三因子大纲→撰写→老板提问预演 | — (自动触发) |
 | `ai-qa-stories` | Flutter/Android App：纯验证不修，按 user-stories 逐步 curl 验证 | `/ai-qa-stories` |
 | `ai-explore` | Flutter/Android App：角色扮演式自主探索，人设驱动发现问题 | `/ai-explore` |
 | `android-qa-stories` | 原生 Android App：纯验证不修，adb + Debug Server 验证 | `/android-qa-stories` |
