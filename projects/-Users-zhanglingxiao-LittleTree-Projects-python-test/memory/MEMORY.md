@@ -8,4 +8,4 @@
 - [staff.csv 只增不删](feedback_staff_csv.md) - 某月无记录不代表离职，不要建议移除人员
 
 ## Reference
-- [知识库路径](reference_knowledge_base.md) - 个人知识库 MyForest 位于 ~/LittleTree_Projects/MyForest
+- [知识库路径](reference_knowledge_base.md) - 个人知识库 my-forest 位于 ~/LittleTree_Projects/my-forest

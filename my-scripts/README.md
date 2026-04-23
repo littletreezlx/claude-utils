@@ -106,7 +106,7 @@ fi
 
 这些工具原本分散在不同位置：
 
-- 批量工具：`~/LittleTree_Projects/python_test/projects/claude-code/`
+- 批量工具：`~/LittleTree_Projects/python-test/projects/claude-code/`
 - GAC 配置：`~/LittleTree_Projects/cs/zsh/claude-code.zsh`
 
 现在统一整合到 `~/.claude/my-scripts/` 目录下，便于管理和维护。
