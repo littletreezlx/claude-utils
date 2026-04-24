@@ -65,7 +65,7 @@ version: 0.2.0
 分析食亨中「{功能名称}」的实现方式。
 
 ## 项目信息
-- 项目根：~/AndroidStudioProjects/Work_Projects/android-pos/packages/pos/android
+- 项目根：~/AndroidStudioProjects/android-pos/packages/pos/android
 - 业务包名：com/shiheng/
 - 主模块：app/src/main/java/com/shiheng/
 - 多模块目录：packages/（可能有拆分子模块）
@@ -195,7 +195,7 @@ version: 0.2.0
 
 | 项目 | 源码类型 | 根目录 | 业务包名前缀 | 备注 |
 |------|---------|--------|------------|------|
-| Shiheng | 真实源码 | `~/AndroidStudioProjects/Work_Projects/android-pos/packages/pos/android` | `com/shiheng/` | 自研基线，未混淆 |
+| Shiheng | 真实源码 | `~/AndroidStudioProjects/android-pos/packages/pos/android` | `com/shiheng/` | 自研基线，未混淆 |
 | qm | 反编译 | `{pos项目}/Qmai` | `com/qmai/android/` | 模块化：pos_module/, pos_export/ |
 | kry | 反编译 | `{pos项目}/Keruyun` | `com/keruyun/` | 阿里系：含 alipay/iot |
 | mt | 反编译 | `{pos项目}/Meituan` | `com/sankuai/sjst/rms/` | 最大（8万文件），混淆严重 |

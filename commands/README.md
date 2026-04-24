@@ -30,7 +30,7 @@
 │
 ├─ 测试工程
 │  ├─ 测试审查与补齐（DAG）── /test-plan
-│  ├─ 运行与修复 ─────────── /test-run
+│  ├─ 运行与修复 ──────────── test-workflow skill（自动触发,代码改完/用户说"run tests"时介入）
 │  ├─ 基础设施审计 ────────── /test-audit
 │  └─ 创建 E2E 测试 ──────── /create-e2e-test
 │
@@ -79,9 +79,10 @@
 | 命令 | 类型 | 说明 |
 |------|------|------|
 | `/test-plan` | DAG | 测试规划与批量编写 |
-| `/test-run` | 即时 | 测试运行与修复（thin wrapper → test-workflow skill） |
 | `/test-audit` | 即时 | 测试基础设施审计 |
 | `/create-e2e-test` | 即时 | 创建 E2E 测试 |
+
+> 测试运行与修复由 `test-workflow` skill 自动触发(代码改完/用户说"run tests"/"verify the fix"时介入),不再需要 `/test-run` 命令。
 
 ### 文档生成
 | 命令 | 类型 | 说明 |
@@ -248,7 +249,7 @@ batchcc task-xxx
 
 ---
 
-**命令总数**：27 个（`feat-done` 和 `ui-design-router` 已迁移为 skill，由 Claude 自动触发）| **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：26 个（`feat-done`、`ui-design-router`、`test-run` 已迁移为 skill,由 Claude 自动触发）| **设计原则**：目标导向、自主执行、单一真相源
 
 ---
 
@@ -257,7 +258,7 @@ batchcc task-xxx
 项目状态不佳？按以下顺序操作：
 
 1. `consistency-check` skill — 快速对齐四要素（代码/测试/文档/CLAUDE.md）
-2. `/test-run` — 修复失败的测试（建立安全网）
+2. `test-workflow` skill — 修复失败的测试,建立安全网（说"run tests"/"verify the fix"自动触发）
 3. `/claudemd` — 生成或更新项目级 CLAUDE.md
 4. `/comprehensive-health-check` — 需要全面诊断时，运行 DAG 体检
 5. 按诊断报告的行动路线执行专项命令

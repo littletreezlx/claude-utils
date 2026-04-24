@@ -75,6 +75,5 @@
       }
     }
   },
-  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000,
-  "model": "opus"
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": 400000
 }
