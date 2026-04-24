@@ -20,7 +20,8 @@
 ├─ 功能开发
 │  ├─ 方案讨论（手动）────── /web-think → 复制到 Gemini Web
 │  ├─ PRD 转需求 ─────────── /prd-to-doc
-│  └─ 学习新项目 ─────────── /learn-new-project
+│  ├─ 学习新项目 ─────────── /learn-new-project
+│  └─ 功能收尾 ────────────── feat-done skill（自动触发,不再用命令）
 │
 ├─ 代码重构
 │  ├─ 单文件 ──────────────── /refactor
@@ -38,11 +39,13 @@
 │  ├─ 技术文档 ────────────── /techdoc
 │  └─ 文档清理 ────────────── /doc-clean
 │
-├─ UI 工程
-│  ├─ 逆向生成 Spec ────────── /ui-spec
-│  ├─ 全局 UI 审计 ────────── /ui-audit
-│  ├─ 截图转 Gemini ────────── /ui-to-gemini
-│  └─ UI 文档初始化 ────────── /init-ui-showcase
+├─ UI 工程（以 Claude Design 为中心的设计闭环）
+│  ├─ UI 文档初始化（新项目）── /init-ui-showcase
+│  ├─ Claude Design 接入 ──── /ui-bootstrap（老项目一次性用,建绑定+首版同步+漂移检测）
+│  ├─ 改 UI 前路由 ──────────── ui-design-router skill（自动触发,分类小改/大改,大改生成 Δ Brief）
+│  ├─ 评审 export bundle ──── /ui-vs（读源码,不靠截图;含不变量/覆盖度/审美/交互/Gemini 二眼）
+│  ├─ 采纳反哺源文档 ──────── /ui-adopt（下一步主动作,闭合闭环+触发 re-onboard）
+│  └─ 逆向生成代码 Spec ──── ui-spec skill
 │
 ├─ 任务管理
 │  ├─ 保存待办 ────────────── /todo-write → /todo-doit
@@ -69,7 +72,6 @@
 |------|------|------|
 | `/web-think` | 即时 | 生成 Prompt 供手动转发 Gemini Web（通用话题 + 功能设计） |
 | `/web-gem-project` | 即时 | 生成增量 Prompt 给已建 Gem 的 Gemini Web |
-| `/feat-done` | 即时 | 文档同步 + 静态分析 + 提交 |
 | `/prd-to-doc` | 即时 | PRD 转客户端需求文档 |
 | `/learn-new-project` | 即时 | 快速学习陌生项目 |
 
@@ -93,13 +95,71 @@
 |------|------|------|
 | `/comprehensive-health-check` | DAG | 全面体检（工具驱动诊断 + 行动路线） |
 
-### UI 工程
+### UI 工程（以 Claude Design 为中心的设计闭环）
+
+**首要设计工具是 Claude Design**（Anthropic 2026-04 发布,Opus 4.7 驱动）。它在 onboarding 时读 codebase + 设计文件自动建立内部 design system。本地文档是**增量约束 + 归档快照 + 反哺源**，不是从零描述。
+
+```text
+SOURCES (权威源)
+ ├─ PRODUCT_SOUL / UI_SHOWCASE(OKLCH Invariants) / EXTERNAL_REFS(Claude Design 绑定)
+       │
+       │  首次接入: /ui-bootstrap（从 Claude Design export 逆向抽取+漂移检测）
+       │  每轮迭代: ui-design-router skill（用户说"改 UI" 自动触发,分类后大改派生 Δ Brief）
+       ▼
+Δ BRIEF (派生,仅增量) → 复制到 Claude Design 对话框
+       ▼
+CLAUDE DESIGN（唯一编辑入口）
+       │  ├──▶ Share URL → /ui-vs 评审（读源码,不靠截图）
+       │  ├──▶ Export bundle → docs/design/generated/{ts}/project/*
+       │  └──▶ Handoff to Code → 本地 pixel-perfect recreate
+       ▼
+DECISION → /ui-adopt 反哺 SOURCES + 归档 + 触发 re-onboard → 回 SOURCES
+```
+
 | 命令 | 类型 | 说明 |
 |------|------|------|
-| `/ui-spec` | 即时 | 逆向生成功能规范文档 |
-| `/ui-audit` | 即时 | 全局 UI 设计审计 |
-| `/ui-to-gemini` | 即时 | UI 截图转 Gemini 素材 |
-| `/init-ui-showcase` | 即时 | Flutter UI 文档系统初始化 |
+| `/init-ui-showcase` | 即时 | Flutter UI 文档系统初始化（新项目,建 UI_SHOWCASE.md 骨架） |
+| `/ui-bootstrap` | 即时 | **老项目首次接入 Claude Design 闭环** — 建绑定 / 抽设计系统 / 归档首版 / 代码漂移诊断 |
+| `ui-design-router` skill | 自动触发 | 用户表达改 UI 意图时自动介入,分类小改/大改,大改派生 Δ Brief 到 `docs/design/DESIGN_BRIEF.md` |
+| `/ui-vs` | 即时 | 评审 Claude Design export bundle（读 HTML/CSS/JSX 源码,Phase 0 机械校验 + Phase 0.5 覆盖度 + Phase 1 审美 + Phase 1.5 交互 + Phase 1.9 Gemini 二眼） |
+| `/ui-adopt` | 即时 | **设计闭环主动作** — 反哺 SOURCES + 归档 bundle + 触发 Claude Design re-onboard 提示 |
+
+**Design-First Gate**：UI 改动量大时（≥3 页面 / 触及不变量 / 新视觉模式），**先走 Claude Design 再改本地代码**。详见 `~/.claude/guides/doc-structure.md § 设计优先原则`。
+
+**唯一编辑入口铁律**：Claude Design 是设计的唯一编辑入口。本地 `docs/design/generated/{ts}/project/*` 是**只读快照**，严禁手改 export 文件。要改设计回 Claude Design 改。
+
+**老项目(5 个 Flutter 项目)首次接入**：
+
+```bash
+# 每个项目独立跑一次
+/ui-bootstrap
+# 答绑定信息 → 指定 Claude Design export 本地路径
+# 自动生成 EXTERNAL_REFS / UI_SHOWCASE / 首版归档 / Δ Brief / DRIFT_REPORT
+# 人工读 DRIFT_REPORT.md 逐条决策
+```
+
+**接入后典型一轮迭代**：
+
+```text
+# 1. 跟 Claude Code 说"想改 X 页 / 换个感觉 / 补 Y 态"
+#    → ui-design-router skill 自动介入,分类:
+#      - 小改:直接实施,无需走闭环
+#      - 大改:自动派生 Δ Brief 到 docs/design/DESIGN_BRIEF.md + 输出到终端
+
+# 2. (大改路径)把 Δ Brief 贴到 Claude Design 对话,在 Claude Design 里迭代
+#    Claude Design 里做完,export bundle 到本地临时目录
+
+# 3. 评审 export（读源码,不看截图）
+/ui-vs
+
+# 4. 按 /ui-vs 的"下一步"指引:
+#    - 继续迭代 → 贴指令回 Claude Design,重来第 2 步
+#    - 采纳 → /ui-adopt（闭合闭环+触发 re-onboard 提示）
+/ui-adopt
+
+# 5. 本地代码 pixel-perfect recreate(基于归档的 bundle)
+#    完成后 feat-done skill 自动触发收尾(Gate 查 bundle + 文档同步 + 提交)
+```
 
 ### 学习 & 知识管理
 | 命令 | 类型 | 说明 |
@@ -188,7 +248,7 @@ batchcc task-xxx
 
 ---
 
-**命令总数**：25 个 | **Skills**：7 个 | **设计原则**：目标导向、自主执行、单一真相源
+**命令总数**：27 个（`feat-done` 和 `ui-design-router` 已迁移为 skill，由 Claude 自动触发）| **设计原则**：目标导向、自主执行、单一真相源
 
 ---
 

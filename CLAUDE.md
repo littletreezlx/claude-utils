@@ -22,7 +22,8 @@
 | 修改代码后 | 运行测试 → 通过 → 交付检查（静态分析+文档同步）→ 提交 |
 | 修复 Bug | 查文档定位代码 → 读相关测试 → 修复 → `/test-run` 验证 |
 | 重构代码 | 先读测试理解预期行为 → 重构 → 运行测试验证 → 更新文档 |
-| 功能完成 | 自动调用 `/feat-done`（文档同步+提交+验收报告） |
+| 功能完成 | 自动触发 `feat-done` skill（Design-First Gate 查 bundle + 文档同步 + 静态分析 + 提交） |
+| 要改 UI | 自动触发 `ui-design-router` skill（分类小改/大改,大改生成 Δ Brief 走 Claude Design 闭环） |
 | 连续失败3次 | **立即停止** → 汇报现状 → 建议 `git reset --hard HEAD` |
 | 不确定时 | 询问用户，不要猜测 |
 | AI 产出判断/建议但拿不准 | 先调 `/think` 做决策（含产品判断）→ 能拍板则转 TODO 或丢弃 → `/think` 也拿不准才写 `to-discuss.md` |
@@ -100,7 +101,8 @@
 
 | 触发条件 | 调用 | 说明 |
 |---------|------|------|
-| 一个完整功能开发完毕 | `/feat-done` | 文档同步 + 提交 + 验收报告 |
+| 一个完整功能开发完毕 | `feat-done` skill | Design-First Gate 查 bundle + 文档同步 + 静态分析 + 触发 git-workflow |
+| 用户表达改 UI 意图 | `ui-design-router` skill | 分类(小改直做/大改生成 Δ Brief 走 Claude Design 闭环) |
 | 测试失败需要修复 | `test-workflow` skill | 自动诊断修复 |
 | 用户说"项目状态不好"或开始陌生项目 | `consistency-check` skill | 快速诊断对齐 |
 | 遇到产品/架构/UI 决策需要外部意见 | `think-gem-project` skill | 调用 Gemini API 咨询（项目级） |

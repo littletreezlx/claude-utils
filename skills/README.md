@@ -23,6 +23,8 @@ Skill 是 Claude Code 的**自动触发知识包**。与 Command（用户手动 
 
 | Skill | 自动触发场景 | 对应 Command |
 |-------|-------------|--------------|
+| `feat-done` | 功能完整单元结束、测试通过、用户说"完成/交付/done" | — (从 /feat-done 迁移) |
+| `ui-design-router` | 用户表达改 UI 意图（"改 X 页 / 换感觉 / 补 empty 态"） | — (新增,吸收原 /init-design-brief) |
 | `git-workflow` | 代码改完、测试通过、表达"完成"意图 | feat-done Step 3 调用 |
 | `test-workflow` | 代码修改后需验证、测试失败时 | `/test-run`（thin wrapper） |
 | `consistency-check` | 开始新功能、首次进入项目 | — (自动触发) |

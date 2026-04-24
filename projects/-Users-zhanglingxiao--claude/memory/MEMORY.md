@@ -13,6 +13,7 @@
 ## Reference
 - [reference_skills_taxonomy.md](reference_skills_taxonomy.md) — Anthropic 内部 Skills 9 类分类体系，规划新 Skill 时用作自检清单
 - [reference_agents_source.md](reference_agents_source.md) — ~/.claude/agents/ 来源于 wshobson/agents，提取+去重方式维护
+- [reference_claude_design_loop_design.md](reference_claude_design_loop_design.md) — Claude Design(2026-04-17 发布)为中心的 UI 闭环:bootstrap/init-brief/ui-vs/ui-adopt 分工、OKLCH+4 槽位铁律、Δ Brief 定位
 
 ## User
 - [user_project_screenshots.md](user_project_screenshots.md) — 所有项目截图统一放在项目根目录 screenshots/ 下，UI 工作流直接读取无需询问
@@ -20,3 +21,4 @@
 ## Project
 - [project_ondemand_hooks_idea.md](project_ondemand_hooks_idea.md) — /careful 和 /freeze 按需钩子模式，未来可实现为安全护栏 Skill
 - [plugin_evaluation_decisions.md](plugin_evaluation_decisions.md) — marketplace 插件 2026-04-18 评估:留 6 个，删 commit-commands/skill-creator/code-simplifier/claude-md-management
+- [project_flutter_claude_design_bootstrap_pending.md](project_flutter_claude_design_bootstrap_pending.md) — 5 个 Flutter 项目有 Claude Design 绑定但本地闭环未接入,需各自跑 /ui-bootstrap(短期状态,全完成后删)

@@ -56,17 +56,115 @@
 | `docs/ARCHITECTURE.md` | 系统**怎么搭建** | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
 | `docs/ROADMAP.md` | 项目**去向哪** | 高频 | 当前阶段状态、Known Issues、Next Steps |
 | `docs/FEATURE_CODE_MAP.md` | 代码**在哪里** | 中频 | 功能→代码路径索引（GPS 导航） |
-| `docs/design/DESIGN_BRIEF.md` | 设计工具**该怎么发挥** | 低频（派生） | 喂给 AI 设计工具（frontend-design / v0 / Lovable）的视觉意图简报，派生自 PRODUCT_SOUL + UI 文档，通过 `/init-design-brief` 生成 |
+| `docs/design/DESIGN_BRIEF.md` | 设计工具**本轮的增量指令** | 低频（派生） | 给 Claude Design 的 **Δ Brief**（只写本轮要做/不做什么），派生自 PRODUCT_SOUL + UI_SHOWCASE + EXTERNAL_REFS，由 `ui-design-router` skill 在检测到大改动意图时自动派生 |
+| `docs/design/EXTERNAL_REFS.md` | **Claude Design 怎么绑定** | 低频 | Claude Design project URL / org scope / 上次 onboarding 的 codebase commit / re-onboard 触发条件。若项目未接入 Claude Design，跑 `/ui-bootstrap` 建立 |
+| `docs/design/generated/{YYYY-MM-DD-slug}/project/` | 某轮 **Claude Design export 归档** | 每轮一次（或首次 bootstrap） | 原封沿用 Claude Design export 结构（`{Name}.html` + `styles.css` + `*.jsx` + `uploads/`），进 git 便于迭代溯源。**体积控制**：uploads/ 单独控制在 5MB 内或 git-lfs |
 
 ### 派生文档约定
 
-`docs/design/DESIGN_BRIEF.md` 是**派生产物**，不是源文档：
+`docs/design/DESIGN_BRIEF.md` 是**派生增量指令**，不是完整设计描述：
 
-- 源：`PRODUCT_SOUL.md` + `docs/ui/UI_SHOWCASE.md`（或等价 UI 文档）
-- 生成：`/init-design-brief` 命令重新编译
-- 文件头必须带 `> 派生自 PRODUCT_SOUL + UI_SHOWCASE，过时请跑 /init-design-brief 重新生成`
+- **定位**：给 Claude Design 看的"小纸条"。Claude Design 在 onboarding 时已经读过 codebase + 设计文件建立了内部 design system，BRIEF 不重述设计系统，只描述**本轮特别的 delta**（要做什么、不要做什么、参考哪些灵感）
+- 源：`PRODUCT_SOUL.md` + `docs/ui/UI_SHOWCASE.md` + `docs/design/EXTERNAL_REFS.md`
+- 生成：`ui-design-router` skill 在检测到大改动意图时自动派生
+- 文件头必须带 `> 派生自 PRODUCT_SOUL + UI_SHOWCASE + EXTERNAL_REFS，由 ui-design-router skill 派生,过时会自动重跑`
 - **清理规则**：`/doc-clean`、`inbox` skill 等**不得**将该文件当作临时产物清理
-- **过时判定**：PRODUCT_SOUL 或 UI_SHOWCASE 修改晚于该文件 mtime → 标记过时、重跑
+- **过时判定**：任一上游源文件 mtime 晚于本文件 → 标记过时、重跑
+
+### UI 设计闭环体系（以 Claude Design 为中心）
+
+**首要消费者：Claude Design**（Anthropic 2026-04 发布的 prototyping 工具，由 Opus 4.7 驱动）。Claude Design onboarding 时读 codebase + 设计文件自动建立内部 design system，后续项目复用。因此 **本地文档的定位从"完整描述"变为"增量约束 + 归档快照 + 反哺更新源"**。
+
+```text
+SOURCES (权威源，唯一 truth)
+ ├─ docs/PRODUCT_SOUL.md           — 产品情绪底色（极少变）
+ ├─ docs/ui/UI_SHOWCASE.md         — 视觉体系（Vibe + Invariants[OKLCH] + Interaction）
+ └─ docs/design/EXTERNAL_REFS.md   — Claude Design 绑定（URL + org + onboarded commit）
+       │
+       │  首次接入: /ui-bootstrap（从 Claude Design export 逆向抽取 + 建立绑定 + 漂移检测）
+       │  每轮迭代: ui-design-router skill（自动触发:用户说"改 X" → 分类小改/大改,大改派生 Δ Brief）
+       ▼
+Δ BRIEF (派生，仅增量)
+ └─ docs/design/DESIGN_BRIEF.md
+       │  复制粘贴到 Claude Design 对话 或 在 Claude Design 里直接描述
+       ▼
+CLAUDE DESIGN（唯一编辑入口 — 外部)
+       │  Claude Design 生成 prototype
+       │  用户在 Claude Design 里迭代（对话/inline 评论/滑块）
+       │
+       ├──▶ Share URL          → /ui-vs 评审（读 URL 或本地 export 源码）
+       ├──▶ Export bundle      → docs/design/generated/{ts}/project/*（归档进 git）
+       └──▶ Handoff to Code    → Claude Code 读 export 重新实现（pixel-perfect, 目标技术栈）
+       ▼
+DECISION
+       │  /ui-adopt （反哺 SOURCES + 触发 Claude Design re-onboard 提示）
+       ▼
+回到 SOURCES，进入下一轮
+```
+
+**唯一编辑入口铁律**：Claude Design 是设计的**唯一编辑入口**。本地 `docs/design/generated/{ts}/project/*` 是**只读快照**，**严禁在 export 文件里手动改代码**。要改设计,回 Claude Design 改,重新 export,再归档新的 `{ts}/`。违反后果：下次 Claude Design re-export 会覆盖你的手改，整轮工作白做。
+
+### 设计优先原则（Design-First Gate）
+
+**UI 改动量大时，严禁直接写本地代码 —— 必须先走 Claude Design 闭环**。
+
+**触发阈值**（任一满足即为"改动量大"）：
+
+- 本次改动涉及 **≥ 3 个页面** 的视觉
+- 触及 **设计不变量**（OKLCH 色板 / 字阶档位 / 间距档位 / 圆角档位 / 阴影）
+- 新增**新的视觉模式**（原体系没有的卡片样式 / 导航形态 / 状态呈现）
+- 用户明说"想整体换个感觉"、"重新设计"、"改一下风格"
+
+**触发后的强制流程**：
+
+1. 在 **Claude Design** 里对当前设计做迭代（对话/评论/滑块）
+2. Export bundle 到本地
+3. `/ui-vs` 评审 export 源码（读 HTML/CSS/JSX，不是截图）
+4. 满意则 `/ui-adopt` 反哺 SOURCES + 归档 export + 触发 re-onboard 提示
+5. **然后才**进入本地代码实现（pixel-perfect recreate in Flutter/React/etc）
+
+**可以绕过的例外**（只允许这些情况直接改代码）：
+
+- 单文件 bug 修复（不涉及视觉语言）
+- 已在 UI_SHOWCASE 里登记的既有组件的**用法**调整（不改定义）
+- 字符串 / 文案修改（不涉及排版）
+- 响应已采纳设计的落地实现（本次就是步骤 5，基于 `docs/design/generated/{ts}/project/` 做 pixel-perfect recreate）
+
+**`feat-done` 的 Step 0 自检**要问两个问题：
+- 本次改动是否触发 Design-First Gate？
+- 若触发，本次实现**基于哪个 bundle**（`docs/design/generated/{ts}/project/` 路径必须明确）？
+
+触发但没有对应 bundle → 停流程，回去走闭环。
+
+### UI_SHOWCASE.md 强制段落
+
+`docs/ui/UI_SHOWCASE.md` 必须包含三个段落（缺失则 `ui-design-router` skill 拒绝派生 Brief，`/ui-bootstrap` 会生成初版）：
+
+#### 1. Vibe（软引导，可扩展）
+
+情绪隐喻、材质类比、氛围描述（如"静谧书房"、"暖陶"、"施釉陶"）。Claude Design 在 Vibe 层允许创造性演进。
+
+#### 2. Invariants（硬约束，不可自造）
+
+设计不变量。**色板采用 OKLCH + 4 槽位**（和 Claude Design 内部模型对齐），其他维度用档位枚举：
+
+- **色板（OKLCH + 4 槽位）**：每个命名 accent 定义 4 个槽位
+  - `a` = accent（主色）
+  - `d` = deep（深强调）
+  - `s` = soft（柔和背景）
+  - `w` = wash（最浅，几乎白）
+  - 格式：`terracotta: { hue: 45, light: { a: 'oklch(0.66 0.138 45)', d: '...', s: '...', w: '...' } }`
+  - **禁止 Hex / RGB / HSL**，禁止 AI 工具自造新 accent 或新槽位
+- **字阶档位**：XS / S / M / L / XL / XXL 六档，禁止自造新档
+- **间距档位**：4 / 8 / 12 / 16 / 24 / 32 / 48 / 64
+- **圆角档位**：0 / 4 / 8 / 16 / 999（pill）
+- **阴影体系**：必须枚举全部层级
+
+**为何 OKLCH**：Claude Design export 的 `styles.css` 里色值全部用 OKLCH（感知均匀色彩空间），我们的 SOURCE 用同一心智模型才不会在每轮 bootstrap / adopt 时翻译。
+
+#### 3. Interaction Intent（交互意图）
+
+关键交互节奏（响应延迟预期）、反馈语气（脆 vs 绵）、动效曲线倾向（standard easing / no bounce）、状态转移的视觉强度（克制 vs 戏剧）。
 
 ## 文档边界（易混淆的三者）
 
