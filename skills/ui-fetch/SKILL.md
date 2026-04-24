@@ -57,7 +57,13 @@ URL 格式不符(缺 `api.anthropic.com/v1/design/h/` 段) → 停,提示 Founde
 
 ### Phase 2: 下载 + 解压
 
-**铁律**:**单条 Bash 调用里一次性完成**(绝对路径),避免踩 shell cwd 持久性陷阱(见 Gotcha)。**不要**用 `cd X && ...` 开头的多次独立 Bash 调用。
+> ⚠️ **铁律(必读,2026-04-24 实战踩过)**
+>
+> **单条 Bash 调用里一次性完成**,用**绝对路径** `"$(pwd)/.claude-design-inbox"`,不是相对路径。
+>
+> **不要** `cd X && ...` 开头的**多次独立** Bash 调用 —— cwd 在 Bash 调用之间**持久保留**,第二次 `cd X` 就 "no such file or directory"。
+>
+> 踩过这坑的信号:第一次解压成功,第二次救错时 `cd` 报 "no such file" —— 不是文件系统问题,是你已经在 X 里了。
 
 ```bash
 # 单条调用模板 — 用项目根的绝对路径,一步到位
@@ -109,12 +115,13 @@ find "$INBOX" -maxdepth 3 -type f | head -30
 3. **`<slug>/README.md` 的前 20 行**(通常含本轮 bundle 的上下文说明)
 4. 按 `<open_file>` 给建议(路径给**完整绝对路径**,Founder 复制即可用):
 
-| open_file | 建议下一步 |
-|---|---|
-| `HANDOFF.md` | "入库 HANDOFF:`.claude-design-inbox/<slug>/project/HANDOFF.md` → `docs/design/HANDOFF.md`(整文件覆写)。若 Pending 段空则只入库,Appendix 段不占 TASK 编号。" |
-| `{Name}.html`(primary design file) | 视项目状态:<br>• 无 `docs/design/EXTERNAL_REFS.md` → `/ui-bootstrap`<br>• 有 → 问 Founder:本轮要评审 `/ui-vs` / 采纳 `/ui-adopt` / 已评审完只要落代码(pixel-perfect recreate) |
-| `styles.css` / `*.jsx` | 同 HTML 路径,但通常入口是 HTML |
-| 无 `open_file` 参数 | 列清单,让 Founder 手动选入口 |
+| open_file | 场景细分 | 建议下一步 |
+|---|---|---|
+| `HANDOFF.md` | Pending 段**有 TASK** | "① 入库:`.claude-design-inbox/<slug>/project/HANDOFF.md` → `docs/design/HANDOFF.md`(整文件覆写);② 按协议处理 `ready-for-code` 的 TASK(见 `guides/doc-structure.md § Code 侧执行约定`);③ `## Appendix` 段一律跳过,不占 TASK 编号。" |
+| `HANDOFF.md` | Pending 段**空** | "**只入库,不触发代码实施**。Pending 空是合法状态(协议首次落地 / 上轮 TASK 已全部 done / 本轮 Claude Design 只报告它侧修正)。整文件覆写后结束,不追问 Founder 下一步。" |
+| `{Name}.html`(primary design file) | — | 视项目状态:<br>• 无 `docs/design/EXTERNAL_REFS.md` → `/ui-bootstrap`<br>• 有 → 问 Founder:本轮要评审 `/ui-vs` / 采纳 `/ui-adopt` / 已评审完只要落代码(pixel-perfect recreate) |
+| `styles.css` / `*.jsx` | — | 同 HTML 路径,但通常入口是 HTML |
+| 无 `open_file` 参数 | — | 列清单,让 Founder 手动选入口 |
 
 5. Inbox 若含 `.gitignore` / `README.md`(inbox 模板污染,同 `/ui-bootstrap` Gotcha) → 提醒 Founder,归档时需删除
 

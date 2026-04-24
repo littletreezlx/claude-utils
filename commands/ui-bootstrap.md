@@ -312,6 +312,7 @@ HANDOFF.md 是 **Design → Code 的回函**(镜像传话层,详见 `~/.claude/g
 ```markdown
 > Design → Code 的回函。由 Claude Design 每轮整文件覆写,Claude Code 消费。
 > 定位: 镜像传话层,非权威,与 `docs/design/DESIGN_BRIEF.md` 对称。
+> truth = `docs/PRODUCT_SOUL.md` + `docs/ui/UI_SHOWCASE.md` + `docs/design/EXTERNAL_REFS.md`
 > 合规约束在 Skill 层(`/ui-vs` / `/ui-adopt` / `ui-design-router`),不在本文件。
 > 详见 `~/.claude/guides/doc-structure.md § 镜像传话层`。
 
