@@ -14,8 +14,7 @@
       "Bash(mv:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
-      "Bash(git log:*)",
-      "mcp__pencil"
+      "Bash(git log:*)"
     ],
     "deny": [],
     "defaultMode": "dontAsk"
@@ -62,13 +61,6 @@
       "command": "npx",
       "args": [
         "@playwright/mcp@latest"
-      ]
-    },
-    "pencil": {
-      "command": "/Users/zhanglingxiao/.pencil/mcp/visual_studio_code/out/mcp-server-darwin-arm64",
-      "args": [
-        "--app",
-        "visual_studio_code"
       ]
     },
     "MiniMax": {

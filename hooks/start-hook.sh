@@ -6,7 +6,7 @@ set -u
 ALLOWED_IP="198.3.124.235"
 
 # === IP 守卫 ===
-IP="$(curl -fsS --max-time 5 https://ping0.cc/ip 2>/dev/null | tr -d '[:space:]')"
+IP="$(curl -fsS --max-time 15 https://ping0.cc/ip 2>/dev/null | tr -d '[:space:]')"
 [[ "$IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || IP=""
 
 if [[ "$IP" == "$ALLOWED_IP" ]]; then
