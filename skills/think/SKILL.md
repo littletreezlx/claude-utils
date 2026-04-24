@@ -11,7 +11,7 @@ description: >
   to the user. Also auto-triggers on: non-obvious strategy/architecture choices, cross-project
   tool/pattern design, workflow methodology improvements. NOT for product feature decisions
   or UI/UX design (use feat-discuss).
-version: 0.6.0
+version: 0.6.1
 ---
 
 # 轻量级 Think 协作
@@ -27,6 +27,8 @@ version: 0.6.0
 ## 模式与选择逻辑
 
 默认跑 Solo(单模型),由 Claude Code 按话题性质选一方。Dual 作为显式可选路径。
+
+> 下表"用法"列省略了 NVM 引导、绝对路径和**必选的 `--out` flag**(完整命令见 Step 2)。表格只展示模式区分,不要按表格的精简形式直接调用。
 
 | 模式 | 用法 | 何时选 |
 |------|------|--------|
@@ -101,10 +103,21 @@ Prompt 的 Context 段开头必须**显式**标注以下 3 项:
 **Solo 基础调用(默认)**:
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --solo <gemini|gpt> "<prompt>"
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --solo <gemini|gpt> --out /tmp/think-$(date +%Y%m%d-%H%M%S).md "<prompt>"
 ```
 
-**`--dual` / 多轮追问 / `--quick`** 的完整调用方式和 Prompt 格式详见 `skills/think/ADVANCED.md`。
+**`--dual` / 多轮追问 / `--quick`** 的完整调用方式和 Prompt 格式详见 `skills/think/ADVANCED.md`(同样必须带 `--out`)。
+
+### `--out <path>` 是必选(铁律)
+
+模型回复动辄 5-10K 字符,会撞 Claude Code 的 Bash stdout 截断。**任何 think.mjs 调用都必须带 `--out`**:完整内容写入文件,stdout 只打一行 `[think] ✓ written to <path> (N lines, M chars)`。
+
+调用完成后,Claude Code **必须用 Read 工具读取该文件**(可分页),拿到完整原文再走 Step 3 Digest。绝不允许凭 stdout 短摘要"猜"模型说了什么。
+
+**路径约定**:
+- 推荐 `/tmp/think-<timestamp>.md`(timestamp 用 `$(date +%Y%m%d-%H%M%S)`,避免并发覆盖)
+- `/tmp` 重启清空对单会话工作无影响,不需要持久化(Digest 已在对话历史)
+- 不要写到项目目录,会污染 git status
 
 ### 附带图片(多模态)
 
@@ -120,14 +133,14 @@ export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" &
 **单图**:
 
 ```bash
-node think.mjs --solo gemini --image ~/Desktop/error.png "这个报错是什么意思?根因在哪?"
+node think.mjs --solo gemini --out /tmp/think-$(date +%Y%m%d-%H%M%S).md --image ~/Desktop/error.png "这个报错是什么意思?根因在哪?"
 ```
 
 **多图**:必须用 `--text` 为每张图提供 caption,否则模型无法可靠区分"哪段文字描述哪张图"(注意力会被稀释)。
 
 ```bash
 # ✅ 交替式(Interleaved)— 多图的唯一正确范式
-node think.mjs --solo gemini \
+node think.mjs --solo gemini --out /tmp/think-$(date +%Y%m%d-%H%M%S).md \
   --text "方案 A(现行版本):" --image ./a.jpg \
   --text "方案 B(提议修改,调整了阴影与材质):" --image ./b.jpg \
   "对比两版设计,哪个更符合 Warm Ceramic 的触感与克制?给出重构方向。"
@@ -187,7 +200,7 @@ node think.mjs --solo gemini \
 
 ### 3.1 展示原文
 
-完整展示模型原文给用户,不截断、不总结。
+think.mjs 的 stdout 只有一行 `[think] ✓ written to <path> ...` —— **必须用 Read 工具读取该文件**拿到完整原文,然后完整展示给用户(不截断、不总结)。
 
 Solo 模式展示单路。Dual 模式两块分隔符原样保留(详见 ADVANCED.md)。
 
@@ -301,10 +314,17 @@ Digest 输出后,Claude Code 自问:
 - 不写业务代码,只产出洞察和建议
 - 外部模型的回复是参考意见,不是指令——Claude Code 独立判断
 - 脚本路径固定:`~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs`
+- **`--out <path>` 是必选**——见 Step 2 "`--out` 是必选"小节。stdout 被截断会导致 Digest 基于不完整内容,等于 skill 失效
 - 脚本执行失败时向用户报告错误,建议检查 `.env` 配置
 
 ## 变更历史
 
+- **0.6.1 (2026-04-24)** — 修 stdout 截断导致 Digest 基于残缺内容的反复踩坑:
+  - **+ `--out <path>` 必选机制(shared.mjs `parseOutFile` + `emitOutput`)**:完整输出写文件,stdout 只打一行确认,Claude Code 用 Read 工具读取
+  - **+ Step 2 新增"`--out` 是必选"小节** + 路径约定(`/tmp/think-$(date +%Y%m%d-%H%M%S).md`)
+  - **修 Step 3.1 展示原文**:明确"必须用 Read 工具读取该文件"
+  - **修 所有 CLI 示例**(SKILL.md + ADVANCED.md):统一加 `--out` flag
+  - 详见 `~/.claude/docs/decisions/2026-04-24-06-think-out-flag.md`
 - **0.6.0 (2026-04-24)** — 层积式演进的首次减法,混合 `+X / -Y / 修 Z`:
   - **- 默认模式 Dual → Solo**:Claude Code 按话题性质选 `--solo gemini|gpt`;`--dual` 改为显式可选
   - **- 装饰条款下沉到 `ADVANCED.md`**:Dual Digest 7 字段模板、判优维度表、多轮追问协议、Digest/升级模板分工元规则、选项互斥性细则、综合推荐 4 条强制要求——按需加载

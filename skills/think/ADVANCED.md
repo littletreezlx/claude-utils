@@ -28,8 +28,10 @@ Dual 默认 2x token 成本,只在以下场景有正回报:
 ### 1.2 调用命令
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --dual "<prompt>"
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && node ~/LittleTree_Projects/other/nodejs_test/projects/ai/think.mjs --dual --out /tmp/think-$(date +%Y%m%d-%H%M%S).md "<prompt>"
 ```
+
+`--out` 是必选(详见主 SKILL.md Step 2)。stdout 只打一行 `[think] ✓ written to <path>`,Claude Code 用 Read 读取文件拿到完整双块原文。
 
 输出两个分隔块:
 
@@ -219,10 +221,10 @@ Claude Code 不得自主选 quick——Claude 没有校准过 DeepSeek 在方法
 ### 4.3 调用
 
 ```bash
-node think.mjs --quick "<prompt>"
+node think.mjs --quick --out /tmp/think-$(date +%Y%m%d-%H%M%S).md "<prompt>"
 ```
 
-Prompt 格式与 Solo 一致(主 SKILL.md "首轮 Prompt 格式")。
+`--out` 同样必选(详见主 SKILL.md Step 2)。Prompt 格式与 Solo 一致(主 SKILL.md "首轮 Prompt 格式")。
 
 ---
 
