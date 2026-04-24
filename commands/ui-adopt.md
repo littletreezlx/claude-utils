@@ -113,11 +113,17 @@ docs/design/generated/{YYYY-MM-DD}-{slug}/
 
 **uploads/ 处理**:
 
-- **默认不归档**(是输入参考,不是产出,已有源在用户 Claude Design project 里)
-- 若必须归档(竞品截图会下架消失)→ 单独走 git-lfs 或写路径占位
-- 默认规则:若 uploads/ 总体积 > 5MB,自动排除归档
+- **本地归档目录可留 uploads/**(如果从 inbox mv 过来是自带的,不强删)
+- **不论体积,一律 gitignore**(通过根 `.gitignore` 的 `docs/design/generated/**/uploads/` 规则 —— 由 `/ui-bootstrap` Phase 0.1a 建立。若本项目尚未跑过 bootstrap,此处补一次规则)
+- 原因:uploads 是 Founder 上传给 Claude Design 的 reference 截图(私人输入),不是 Claude Design 的设计输出;HTML+CSS+JSX 足够做 pixel-perfect recreate 和 design-system 溯源,uploads 丢了也能从 Claude Design project 的 inputs 历史重新下载
+- 竞品截图等易下架资源的备份职责**不在本归档**(可放 Founder 自己的云盘 / 单独仓库)
 
 **Bundle 体积检查**:复制前 `du -sh` 检查,如 `project/` 去掉 uploads/ 后 > 5MB 警告用户(纯 HTML+CSS+JSX 应该几十 KB)。
+
+**Inbox 污染清理**(若 bundle 从 `.claude-design-inbox/` move 而来,同 `/ui-bootstrap` Phase 4.3):
+- 删除归档 `project/.gitignore`(inbox 自带的 `* + !README.md` 模板,留着会**反向** ignore 掉 HTML/CSS/JSX,归档形似进 git 实际啥也没跟踪)
+- 删除归档 `project/README.md`(inbox 使用说明模板,与归档无关)
+- 验证:`git check-ignore project/styles.css` 无输出(会入 git);`git check-ignore project/uploads/x.png` 匹配根 gitignore 的 uploads 规则(不入 git)
 
 #### 4.4 归档 README.md(固化官方三原则)
 
@@ -222,6 +228,7 @@ docs/design/generated/{YYYY-MM-DD}-{slug}/
 
 ## Gotchas
 
+- **inbox 自带的 `.gitignore` 和 `README.md` 会污染归档**(与 `/ui-bootstrap` 同一陷阱):`.claude-design-inbox/.gitignore` 规则是 `* + !README.md`,一旦跟 `mv` 进了 `project/` 目录就会反向 ignore HTML/CSS/JSX。Phase 4.3 必须 `rm project/.gitignore project/README.md`。
 - 最容易犯的错:把"值得保留的"清单**全部默认采纳**。必须让用户逐项勾选,有些"值得保留"只是"可以保留但没必要更新源文档"
 - 另一个常见错误:把 Vibe 新隐喻**替换**掉旧的。Vibe 是层累性的,一般是深化或补充(如"暖陶" → "施釉陶"),不是取代
 - Invariants 扩展比收紧更常见。收紧档位意味着有代码在用被删档位 → 必须同时提示跑 `ui-vision-check` 检查漂移
