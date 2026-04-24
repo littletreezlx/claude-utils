@@ -300,6 +300,40 @@ Bootstrap 用 `{最新版 HTML}` 做了 primary,但 Claude Design project 里还
 {从 uploads/ 里列的内容,如:macOS 原生音乐 app / Muji catalog 等}
 ```
 
+#### 4.5 写 `docs/design/HANDOFF.md` 占位骨架
+
+HANDOFF.md 是 **Design → Code 的回函**(镜像传话层,详见 `~/.claude/guides/doc-structure.md § 镜像传话层`)。bootstrap 时 Claude Design 侧还没和 Code 来过一轮对话,HANDOFF 本来就是空的,但建一个**极简占位骨架**让:
+
+- 镜像传话层视觉明示:`docs/design/` 下 BRIEF 和 HANDOFF 同层对称
+- 用户首次收到 Claude Design 的回函输出时,有明确的覆写目标
+
+写入 `docs/design/HANDOFF.md`:
+
+```markdown
+> Design → Code 的回函。由 Claude Design 每轮整文件覆写,Claude Code 消费。
+> 定位: 镜像传话层,非权威,与 `docs/design/DESIGN_BRIEF.md` 对称。
+> 合规约束在 Skill 层(`/ui-vs` / `/ui-adopt` / `ui-design-router`),不在本文件。
+> 详见 `~/.claude/guides/doc-structure.md § 镜像传话层`。
+
+# Handoff from Claude Design — {项目名}
+
+Last updated: (bootstrap 占位,尚无内容)
+Repo ref: N/A
+
+---
+
+## Pending
+(Claude Design 尚未写入任何任务。下次在 Claude Design 对话中产生建议时,让它输出完整的 HANDOFF.md 原文,整文件覆写此处。)
+
+## In Review
+(Claude Code 的异议会以 `[FEEDBACK for TASK-XXX]` 格式出现在这里)
+
+## Done
+(真正 push 后由 `/ui-adopt` 或 `feat-done` 追加带 commit sha 的行)
+```
+
+**处理已存在的 HANDOFF.md**:如果已有内容(罕见,但可能用户之前手动建过),备份为 `HANDOFF.md.pre-bootstrap-{date}.bak`,然后写占位骨架。由 Phase 4.2.1 的 .bak 自动审阅流程消化。
+
 ### Phase 5: 代码漂移检测 + 自动分类
 
 既然用户说"已经照着 Claude Design 改了代码",代码和 export 可能已分叉。诊断 + **自动把可执行修正项写进 TODO.md**。
@@ -391,7 +425,8 @@ grep 色值:
 - docs/design/EXTERNAL_REFS.md — Claude Design 绑定
 - docs/ui/UI_SHOWCASE.md — 三段式(旧版已备份为 .bak)
 - docs/design/generated/2026-04-24-{slug}-bootstrap/project/ — 首版 bundle 归档
-- docs/design/DESIGN_BRIEF.md — 初始 Δ Brief
+- docs/design/DESIGN_BRIEF.md — 初始 Δ Brief (Code → Design 委托函)
+- docs/design/HANDOFF.md — 占位骨架 (Design → Code 回函,Claude Design 下轮整文件覆写)
 - docs/design/DRIFT_REPORT.md — 代码漂移诊断({N} 项漂移,{M} 项缺失)
 
 ### 自动产生的下一步
@@ -410,6 +445,7 @@ grep 色值:
 ## 约束
 
 - **只读 Claude Design export + 本地代码,不改代码**;但 **TODO.md / to-discuss.md / DRIFT_REPORT.md 必须写**(Phase 5.4 是硬动作)
+- **HANDOFF.md 仅建极简占位骨架**(Phase 4.5),bootstrap 不预生成任务内容 —— HANDOFF 是 Claude Design 侧主动输出的文件,我们这里只提供路径和格式规范
 - **UI_SHOWCASE 覆盖前必备份**:`.pre-bootstrap-{date}.bak`
 - **归档必进 git**,**但 `uploads/` 一律 gitignore(不论体积)**,通过 Phase 0.1a 的根 `.gitignore` 规则 `docs/design/generated/**/uploads/` 持久排除。原因:uploads 是 Founder 上传给 Claude Design 的 reference 截图(私人输入),不是 Claude Design 的设计输出
 - **归档用 move 不用 copy**,完成后**必须删除 `project/.gitignore` 和 `project/README.md`**(inbox 污染文件,前者会反向 ignore 掉 HTML/CSS/JSX,后者是 inbox 使用说明与归档无关),再清空 inbox 本体(目录保留,重建时重写 inbox 模板的 README + gitignore)

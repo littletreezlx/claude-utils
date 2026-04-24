@@ -56,7 +56,8 @@
 | `docs/ARCHITECTURE.md` | 系统**怎么搭建** | 中频 | 技术架构、数据流、关键技术决策、目录结构 |
 | `docs/ROADMAP.md` | 项目**去向哪** | 高频 | 当前阶段状态、Known Issues、Next Steps |
 | `docs/FEATURE_CODE_MAP.md` | 代码**在哪里** | 中频 | 功能→代码路径索引（GPS 导航） |
-| `docs/design/DESIGN_BRIEF.md` | 设计工具**本轮的增量指令** | 低频（派生） | 给 Claude Design 的 **Δ Brief**（只写本轮要做/不做什么），派生自 PRODUCT_SOUL + UI_SHOWCASE + EXTERNAL_REFS，由 `ui-design-router` skill 在检测到大改动意图时自动派生 |
+| `docs/design/DESIGN_BRIEF.md` | 设计工具**本轮的增量指令** | 低频（派生） | 给 Claude Design 的 **Δ Brief**（Code→Design 的委托函，只写本轮要做/不做什么），派生自 PRODUCT_SOUL + UI_SHOWCASE + EXTERNAL_REFS，由 `ui-design-router` skill 在检测到大改动意图时自动派生 |
+| `docs/design/HANDOFF.md` | 设计工具**本轮的回函** | 每轮覆写 | Claude Design 写给 Claude Code 的**建议函 + 它侧已做的镜像修正说明**（Design→Code 方向，省去 diff 反推成本）。与 DESIGN_BRIEF.md 对称。**不具合规约束力** —— 由 `/ui-vs` / `/ui-adopt` / `ui-design-router` 等 Skill 消费判断，Claude Code 保留否决权 |
 | `docs/design/EXTERNAL_REFS.md` | **Claude Design 怎么绑定** | 低频 | Claude Design project URL / org scope / 上次 onboarding 的 codebase commit / re-onboard 触发条件。若项目未接入 Claude Design，跑 `/ui-bootstrap` 建立 |
 | `docs/design/generated/{YYYY-MM-DD-slug}/project/` | 某轮 **Claude Design export 归档** | 每轮一次（或首次 bootstrap） | 原封沿用 Claude Design export 结构（`{Name}.html` + `styles.css` + `*.jsx` + `uploads/`），进 git 便于迭代溯源。**体积控制**：uploads/ 单独控制在 5MB 内或 git-lfs |
 
@@ -71,6 +72,52 @@
 - **清理规则**：`/doc-clean`、`inbox` skill 等**不得**将该文件当作临时产物清理
 - **过时判定**：任一上游源文件 mtime 晚于本文件 → 标记过时、重跑
 
+### 镜像传话层（BRIEF ⇄ HANDOFF，双向传话，非权威）
+
+`DESIGN_BRIEF.md` 和 `HANDOFF.md` 是**一对镜像传话文件**，每轮迭代时承载 Claude Code 与 Claude Design 之间的双向沟通，**但都不是 truth**。
+
+| 文件 | 方向 | 作用 |
+|---|---|---|
+| `docs/design/DESIGN_BRIEF.md` | Code → Design | 我方本轮的**委托函**：要做什么、不做什么、参考哪些灵感（增量） |
+| `docs/design/HANDOFF.md` | Design → Code | 对方本轮的**回函**：建议代码侧改哪些地方、它已在自己侧做了哪些镜像修正 |
+
+**核心定位**：
+
+- 两者都是**传话载体**，不是合规物件。权威仍在 SOURCES（PRODUCT_SOUL / UI_SHOWCASE / EXTERNAL_REFS）
+- **合规约束在 Skill 层**（`/ui-vs` / `/ui-adopt` / `ui-design-router` / `feat-done`），**不在文件结构本身**
+- Claude Code 读 HANDOFF 后**仍走自己的判断流程**：`/ui-vs` 的 Phase 0 Invariants 机械校验、Phase 1 四柱审视、Phase 1.9 Gemini 第二视角 —— HANDOFF 的建议**不绕过**这些质量门
+- 真正落地由 Skill 决定：小改且 Invariants 不破 → `ui-design-router` 直接执行；触及 Invariants / ≥3 页面 / 新视觉模式 → 仍走 `/ui-vs` + `/ui-adopt` + 归档 bundle 的完整闭环
+
+**HANDOFF.md 的价值**：省掉 Claude Code 做 diff 反推"这轮 Claude Design 改了什么、想让我改什么"的体力活。对方说清楚，我方看清楚。仅此而已，不承担更多。
+
+**HANDOFF.md 规范约定**：
+
+- 位置：`docs/design/HANDOFF.md`（与 DESIGN_BRIEF 同层对称）
+- 写入方式：Claude Design 每轮输出**完整文件原文**供 Claude Code 整文件覆写，不发增量片段（拼接易错位）
+- `Repo ref: @ <commit-sha>`：**阅读上下文标记**（非校验字段）。标明该回函基于哪个代码快照写成 —— Claude Code 据此判断 `Files to touch` 是否可能已飘走
+- `Files to touch` 字段是**建议性指向**，非命令式。Claude Code 执行前校验文件是否仍存在、是否在 ref 之后被动过，保留否决权
+- 反馈回流格式：Claude Code 对 HANDOFF 条目的异议用 `[FEEDBACK for TASK-XXX]` 结构化块，用户粘贴给 Claude Design
+- 清理规则：同 DESIGN_BRIEF，不得被 `/doc-clean`、`inbox` skill 当临时产物清理
+
+**Status 状态机（谁来标，铁律）**：
+
+| Status | 维护者 | 含义 |
+|---|---|---|
+| `ready-for-code` | Claude Design | 我这边建议这样改,Code 可执行 |
+| `needs-design-revision` | Claude Design | Code 提了异议,我要先改设计再回来 |
+| `in-progress` | Claude Code | 正在执行该条目 |
+| `done` | **仅 Claude Code**（`/ui-adopt` / `feat-done` 在 push 后追加带 commit sha 的行）| 代码侧已真正落地 |
+
+**Claude Design 永远不标 `done`** —— "我这边建议做完了"不等于"代码侧已落地",两者的 truth source 不同。
+
+**可选 Appendix 段（Claude Design 侧的自我修正日志）**：
+
+HANDOFF.md 末尾可能出现 `## Appendix` 段，记录 Claude Design 在**它自己侧**（如内部 styles.css 镜像）做了哪些修正。这类条目：
+
+- **不进入 TASK 流、不占 TASK 编号**
+- **Claude Code 无需响应** —— 仓库代码本就是 truth,drift 只存在于 Claude Design 的镜像侧
+- 仅作审计痕迹,让 Code 知情但不触发动作
+
 ### UI 设计闭环体系（以 Claude Design 为中心）
 
 **首要消费者：Claude Design**（Anthropic 2026-04 发布的 prototyping 工具，由 Opus 4.7 驱动）。Claude Design onboarding 时读 codebase + 设计文件自动建立内部 design system，后续项目复用。因此 **本地文档的定位从"完整描述"变为"增量约束 + 归档快照 + 反哺更新源"**。
@@ -84,20 +131,21 @@ SOURCES (权威源，唯一 truth)
        │  首次接入: /ui-bootstrap（从 Claude Design export 逆向抽取 + 建立绑定 + 漂移检测）
        │  每轮迭代: ui-design-router skill（自动触发:用户说"改 X" → 分类小改/大改,大改派生 Δ Brief）
        ▼
-Δ BRIEF (派生，仅增量)
- └─ docs/design/DESIGN_BRIEF.md
-       │  复制粘贴到 Claude Design 对话 或 在 Claude Design 里直接描述
+镜像传话层 (每轮对话,非权威)
+ ├─ docs/design/DESIGN_BRIEF.md   — Code → Design 委托函（派生自 SOURCES，本轮增量）
+ └─ docs/design/HANDOFF.md        — Design → Code 回函（Claude Design 每轮整文件覆写）
+       │  用户粘贴 / 整文件覆写 双向传递
        ▼
 CLAUDE DESIGN（唯一编辑入口 — 外部)
-       │  Claude Design 生成 prototype
+       │  读 BRIEF + 仓库源码 → 写 HANDOFF + 生成 prototype
        │  用户在 Claude Design 里迭代（对话/inline 评论/滑块）
        │
-       ├──▶ Share URL          → /ui-vs 评审（读 URL 或本地 export 源码）
+       ├──▶ Share URL          → /ui-vs 评审（读 URL 或本地 export 源码 + HANDOFF 作为上下文）
        ├──▶ Export bundle      → docs/design/generated/{ts}/project/*（归档进 git）
        └──▶ Handoff to Code    → Claude Code 读 export 重新实现（pixel-perfect, 目标技术栈）
        ▼
-DECISION
-       │  /ui-adopt （反哺 SOURCES + 触发 Claude Design re-onboard 提示）
+DECISION (Skill 层,不盲从 HANDOFF 建议)
+       │  /ui-adopt （反哺 SOURCES + 触发 re-onboard 提示 + 在 HANDOFF 标 Done 带 commit sha）
        ▼
 回到 SOURCES，进入下一轮
 ```
