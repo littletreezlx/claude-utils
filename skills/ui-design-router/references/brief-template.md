@@ -39,7 +39,7 @@
 {本轮必须严守的不变量,从 Invariants 里抽出与本轮相关的}
 
 例:
-- 色板只用已登记 accent(terracotta/amber/peach/rust/sand/clay),不自造。
+- 色板只用**本项目** UI_SHOWCASE §Invariants 中已登记的 accent,不自造。**禁止**直接套用 FlameTree 默认母语 accent 列表(terracotta/amber/peach/rust/sand/clay)——除非该项目 §Vibe 明确继承默认母语
 - 间距严格用档位(4/8/12/16/24/32/48/64),不出现 10、20、30。
 - 字阶不用 XXL,视觉语气要克制。
 

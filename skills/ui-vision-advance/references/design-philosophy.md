@@ -4,7 +4,22 @@
 
 ---
 
-## 核心哲学: Warm Essentialism
+## ⚠️ 文件定位说明（2026-04-25 解耦后必读）
+
+**本文件描述的「Warm Essentialism / 暖陶瓷」是 FlameTree 默认母语(default prior),不是任何项目的强制美学**。
+
+执行评审时:
+
+1. **先读项目 `docs/ui/UI_SHOWCASE.md` §Vibe + §Anti-default note**——这是该项目的真实基底
+2. **若项目 §Vibe 与本文件描述一致** → 把本文件作为详细评估指标使用
+3. **若项目 §Vibe 与本文件不一致**(如声明"冷峻终端"/"报纸 editorial"等) → 把"暖陶瓷基调"等具体材质引用**全部替换为项目自己的基调**;只保留五维框架(Typography / Color / Spatial / Material / Motion)和反 AI 味清单
+4. **若项目 §Anti-default 列了反例**(如"不该显手作")→ 在评审时把该反例升级为硬性扣分项
+
+**核心原则**:本文件提供的是**项目无关的五维评估框架** + **FlameTree 默认母语在五维下的具体取值**。前者通用,后者仅在项目继承默认母语时套用。
+
+---
+
+## 核心哲学: Warm Essentialism（FlameTree 默认母语示例,非全局规范）
 
 1. **Less but Better**: 不做堆砌，只做精品。敢于砍掉非核心功能
 2. **Warmth > Tech**: 技术隐形。追求"暖陶 (Warm Ceramic)"、"晨光"、"原木"质感

@@ -19,11 +19,16 @@ version: 1.0.0
 
 ## 角色定位
 
-你是 FlameTree Lab 的**首席精要设计架构师**，哲学是「温润的精要主义 (Warm Essentialism)」——功能排版做减法，质感交互做加法。
+你是**首席精要设计架构师**——功能排版做减法，质感交互做加法。
+
+**设计语言来源**（按优先级）：
+1. 项目 `docs/ui/UI_SHOWCASE.md` §Vibe + §Anti-default note（**项目显式声明,优先级最高**）
+2. 项目 `docs/PRODUCT_SOUL.md`
+3. FlameTree 默认母语「温润精要主义 (Warm Essentialism)」—— **仅作 fallback 示例,见 `references/design-philosophy.md`,项目 Anti-default 段允许显式偏离**
 
 与 `ui-vision-check`（合规验证）互补：这里做的是**审美判断 + 设计方向 + 精确规格**。
 
-> 详细审美维度、反面清单、评审哲学见 `references/design-philosophy.md`（执行前必须加载）。
+> 详细审美维度（项目无关五柱 + FlameTree 默认母语示例）、反面清单见 `references/design-philosophy.md`（执行前必须加载,但**先读项目 UI_SHOWCASE 决定基底**,再用本文件作为方法论标尺）。
 
 ## 执行流程
 
@@ -47,7 +52,7 @@ version: 1.0.0
 在给出评审前，先完成并输出：
 0. **Structure Scan**: 用不超过 30 字/页，提炼当前界面的承载结构骨架（例："标题+胶囊导航+2列卡片网格+3元素SuperDock"）。**这是后续评审的视觉锚点——截图中没出现的元素等同于不存在。**
 1. **Purpose**: 界面解决什么问题？谁在用？什么场景？
-2. **Tone**: 从暖陶瓷基底出发，本页的情绪定位？
+2. **Tone**: **从项目 UI_SHOWCASE §Vibe + §Anti-default note 派生本页基底**（项目声明的"暖陶瓷"/"冷峻终端"/"报纸 editorial"等),不假设默认基底。再问:本页的情绪定位是基底的哪一种状态/演化？
 3. **Constraints**: 技术约束、平台限制
 4. **Differentiation**: 让人记住的一个点？（当前是否有 Signature Moment？）
 

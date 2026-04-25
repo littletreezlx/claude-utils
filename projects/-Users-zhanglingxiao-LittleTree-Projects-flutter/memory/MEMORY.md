@@ -20,6 +20,7 @@
 ## 架构决策
 
 - **CI/CD 决策 (2026-03)**：暂不引入 CI/CD。原因：Claude Code 本地闭环成熟，云端 CI 增量价值接近零。触发条件：多设备开发、有协作者、或 flutter_common 跨项目回归成为痛点。
+- [decision_warm_ceramic_unbind.md](decision_warm_ceramic_unbind.md) — Warm Ceramic 全局解耦(2026-04-25):降级为 FlameTree 默认母语,UI_SHOWCASE 加 Anti-default note 第 4 段强制反例驱动
 
 ## 方法论
 

@@ -220,11 +220,11 @@ DECISION (Skill 层,不盲从 HANDOFF 建议)
 
 ### UI_SHOWCASE.md 强制段落
 
-`docs/ui/UI_SHOWCASE.md` 必须包含三个段落（缺失则 `ui-design-router` skill 拒绝派生 Brief，`/ui-bootstrap` 会生成初版）：
+`docs/ui/UI_SHOWCASE.md` 必须包含四个段落（缺失任一则 `ui-design-router` skill 拒绝派生 Brief，`/ui-bootstrap` 会生成初版）：
 
 #### 1. Vibe（软引导，可扩展）
 
-情绪隐喻、材质类比、氛围描述（如"静谧书房"、"暖陶"、"施釉陶"）。Claude Design 在 Vibe 层允许创造性演进。
+情绪隐喻、材质类比、氛围描述。FlameTree 默认母语示例（仅供参考）："静谧书房"、"暖陶"、"施釉陶"。**项目可继承默认母语，也可声明完全不同的基底**（如"冷峻终端"、"报纸 editorial"、"磨砂工具感"）—— 关键在于段内措辞要具体到 LLM 能识别（避免"现代简约"这种空泛词）。Claude Design 在 Vibe 层允许创造性演进。
 
 #### 2. Invariants（硬约束，不可自造）
 
@@ -247,6 +247,32 @@ DECISION (Skill 层,不盲从 HANDOFF 建议)
 #### 3. Interaction Intent（交互意图）
 
 关键交互节奏（响应延迟预期）、反馈语气（脆 vs 绵）、动效曲线倾向（standard easing / no bounce）、状态转移的视觉强度（克制 vs 戏剧）。
+
+#### 4. Anti-default note（反照抄锚,强制）
+
+**一句话声明：本项目最不该像 FlameTree 默认母语（Warm Ceramic / 暖陶 / 施釉陶）的地方。**
+
+为什么强制：LLM 在生成 UI 时最爱抄默认（Material Design / 大厂常态 / 项目集已有的成功样本）。给它一个明确反例，比给它十个正向字段更能改变它的采样重心——**反例驱动 > schema 驱动**。
+
+**两类合法写法**：
+
+**A. 项目调性明显不同于默认母语** —— 直接列反例：
+
+> 例 1（冷峻工具型）："本项目不该有手作温润感、不该出现陶土/釉面隐喻、不该用焦糖色阴影。应该 sharp / tool-like / 冷光精准。"
+>
+> 例 2（编辑感）："本项目不该被框架化（规整网格、统一卡片）、不该过度装饰。应该像报纸 editorial：留白即层级，typography 撑骨架。"
+
+**B. 项目就是默认母语的合理继承者** —— 必须写"为什么这次继承是项目本质而不是偷懒默认"：
+
+> 例（音乐播放）："本项目继承 Warm Ceramic，因为音乐应用要营造私人聆听场域，温润材质与情绪克制契合。但应**特别避免**滑向"咖啡馆装饰风"——这是 Warm Ceramic 最常见的失败方向。"
+
+**禁止的写法**：
+
+- ❌ 空白（"暂无"/"待定"）—— 触发 ui-design-router 阻塞
+- ❌ "本项目采用 Warm Ceramic" 类纯声明（无反例 = 等于没写）
+- ❌ "现代简约" / "克制优雅" 类空泛词（LLM 无法识别为约束）
+
+**ui-design-router / ui-vs / ui-vision-check 在执行前必须读本段**，把段内列的反例升级为本轮硬性扣分项。
 
 ## 文档边界（易混淆的三者）
 

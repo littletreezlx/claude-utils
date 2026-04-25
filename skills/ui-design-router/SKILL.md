@@ -40,7 +40,13 @@ version: 0.1.0
   > "检测到项目未接入 Claude Design 闭环。改 UI 前先跑 `/ui-bootstrap` 建立绑定。"
 - **存在** → 继续
 
-读 `docs/ui/UI_SHOWCASE.md`,确认三段式(Vibe / Invariants / Interaction)齐全 → 否则提示先跑 `/ui-bootstrap` 或 `/init-ui-showcase`。
+读 `docs/ui/UI_SHOWCASE.md`,确认**四段式**(Vibe / Invariants / Interaction / **Anti-default note**)齐全 → 否则提示先跑 `/ui-bootstrap` 或 `/init-ui-showcase`。
+
+**Anti-default note 段缺失或为空 → 阻塞**:
+
+> "本项目 UI_SHOWCASE.md 缺 §Anti-default note 段(2026-04-25 解耦后强制段)。请补一句:本项目最不该像 FlameTree 默认母语(Warm Ceramic / 暖陶)的地方是什么?(若就是 Warm Ceramic 继承,要写'为什么继承是项目本质而非偷懒默认')。详见 `~/.claude/guides/doc-structure.md` § UI_SHOWCASE.md 强制段落 / 4. Anti-default note。"
+
+**Anti-default note 段空泛(只写"现代简约"/"克制优雅"等无反例的词) → 阻塞**:LLM 无法识别这种声明为约束,不能改变采样重心。要求用户重写为具体反例(参考 doc-structure 例子)。
 
 ### Step 2: 分类(小改 vs 大改)
 
@@ -78,12 +84,16 @@ version: 0.1.0
 
 1. **读入上下文**:
    - `docs/PRODUCT_SOUL.md`
-   - `docs/ui/UI_SHOWCASE.md`(Vibe + Invariants + Interaction)
+   - `docs/ui/UI_SHOWCASE.md`(Vibe + Invariants + Interaction + **Anti-default note**)
    - `docs/design/EXTERNAL_REFS.md`(Claude Design 绑定)
    - 最近一份 `docs/design/generated/{ts}/README.md`(上轮采纳什么)
 2. **提取用户本轮意图**(改什么 / 补什么 / 突破什么)— 不清楚就问一句
-3. **写 Δ Brief 到 `docs/design/DESIGN_BRIEF.md`**(覆写,历史在 git log)
-4. **同步到终端输出**,方便用户复制到 Claude Design 对话
+3. **派生前自检 3 题**(写 Brief 之前必须在脑内回答,任一答 yes 则需特别处理):
+   - **Q1**: 本轮 Brief 里有没有出现 "Warm Ceramic / 暖陶 / 施釉陶 / 暖米 / 焦糖" 等 FlameTree 默认母语词汇? 如果有,**项目 §Vibe 是否显式继承默认母语**? 不继承就是污染,删掉。
+   - **Q2**: 本轮 Brief 是否**违反项目 §Anti-default note** 列的反例? 例:Anti-default 说"不该有陶土感",Brief 不能写"希望卡片呈现施釉陶感"。冲突就停,要么改 Brief,要么提醒用户"本轮意图与 Anti-default 冲突,需先决定哪个是真的"。
+   - **Q3**: 本轮 Brief 的"硬约束"段是不是直接套了 FlameTree 默认 accent 列表(terracotta/amber/peach/rust/sand/clay)? 应该只列**本项目 §Invariants** 已登记的 accent。
+4. **写 Δ Brief 到 `docs/design/DESIGN_BRIEF.md`**(覆写,历史在 git log)
+5. **同步到终端输出**,方便用户复制到 Claude Design 对话
 
 ### Δ Brief 模板(强制)
 
