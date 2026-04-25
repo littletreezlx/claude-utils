@@ -1,0 +1,4 @@
+- [不预先 re-onboard Claude Design](feedback_claude_design_reonboard.md) — Founder 每次用 Claude Design 时即时让它读最新代码,跳过 ui-bootstrap/ui-adopt 默认产出的 re-onboard 提示
+- [默认测试设备 = 小米手机](project_default_test_device.md) — `adb connect 192.168.0.51:5555`，不要找 emulator/AVD
+- [adb 探索前必须先唤醒+上滑解锁](feedback_wake_unlock_before_explore.md) — 连上就是 Asleep，直接 screencap 全黑
+- [TCL TV (192.168.0.105) 必须走 OTA](feedback_tcl_tv_ota_only.md) — 固件 OverseasAppConfig 拦 adb install，改完跑 publish-to-nas.sh + Founder 冷启动确认
