@@ -1,14 +1,14 @@
 ---
-description: 把 Claude Design export 采纳点反哺回 UI_SHOWCASE / PRODUCT_SOUL,归档 bundle,触发 re-onboard 提示,闭合设计闭环
+description: 把 Claude Design export 采纳点反哺回 UI_SHOWCASE / PRODUCT_SOUL,归档 bundle,闭合设计闭环
 ---
 
 # UI Adopt — 采纳决策反哺
 
 ## 目标
 
-闭合 Claude Design 设计闭环的**最后一环**:把某一轮 `/ui-vs` 评审通过的设计点反写进源文档(UI_SHOWCASE / PRODUCT_SOUL),把 Claude Design export 归档到 git,并提醒用户 re-onboard Claude Design(内部 design system 需要同步)。
+闭合 Claude Design 设计闭环的**最后一环**:把某一轮 `/ui-vs` 评审通过的设计点反写进源文档(UI_SHOWCASE / PRODUCT_SOUL),把 Claude Design export 归档到 git。
 
-不跑 /ui-adopt = 好设计停在 export 里,下一轮 `ui-design-router` skill 派生的 Δ Brief 没有更新的 Invariants 参考,Claude Design 下轮还按旧 onboarding 做。**设计体系在文档层面静止。**
+不跑 /ui-adopt = 好设计停在 export 里,下一轮 `ui-design-router` skill 派生的 Δ Brief 没有更新的 Invariants 参考。**设计体系在文档层面静止。**
 
 ## 前置条件
 
@@ -170,11 +170,15 @@ docs/design/generated/{YYYY-MM-DD}-{slug}/
 **严禁在本归档里手动改代码**。要改设计,回 Claude Design 改,重新 export,再归档新的目录。违反铁律 = 下轮 Claude Design re-export 把你的修改冲掉。
 ```
 
-### Phase 5: Re-onboard Claude Design 提示
+### Phase 5: Re-onboard Claude Design 提示(默认跳过)
 
-检查 `docs/design/EXTERNAL_REFS.md` 里的 `onboarded_commit`:
+**默认行为**: Founder 工作流是每次使用 Claude Design 时即时让它读最新 codebase, **不预先 re-onboard**, 故本 Phase **默认完全跳过**, 不产出任何提示, 不更新 `EXTERNAL_REFS.md` 的 `onboarded_commit` 字段。
 
-- 若本轮改动包含 **Invariant 变更**(扩展/收紧/色板变化)→ Claude Design 的内部 design system 已过期,**必须提示用户 re-onboard**:
+**何时启用本 Phase(opt-in 触发条件,任一满足即启用)**:
+- 本项目 `EXTERNAL_REFS.md` 中 `Onboarded from commit` 字段是真实 commit sha(不是 `n/a` / `unknown`/ 空) → 说明本项目走预先 onboard 的工作流, 需触发提示
+- 用户在调用 `/ui-adopt` 时显式带 `--with-reonboard-prompt` 参数
+
+**启用时的产出**(仅当上述触发条件满足):
 
 ```markdown
 ⚠️ Claude Design Re-onboard 提示
@@ -204,11 +208,11 @@ docs/design/generated/{YYYY-MM-DD}-{slug}/
 ### 已更新
 - docs/ui/UI_SHOWCASE.md (§Invariants §Vibe)
 - docs/design/generated/2026-04-24-warm-ceramic-v2/ (归档)
-- docs/design/EXTERNAL_REFS.md (onboarded_commit 更新,如 Phase 5 完成)
+- docs/design/EXTERNAL_REFS.md (onboarded_commit 更新 — 仅当 Phase 5 启用且完成时;默认工作流不更新)
 
 ### 必做的后续步骤
-1. **Re-onboard Claude Design**(若 Phase 5 提示)
-2. **下次 UI 改动**走完整闭环:跟 Claude Code 说"改 X" → `ui-design-router` skill 自动派生 Brief → Claude Design 迭代 → `/ui-vs` → `/ui-adopt`
+1. **下次 UI 改动**走完整闭环:跟 Claude Code 说"改 X" → `ui-design-router` skill 自动派生 Brief → Claude Design 迭代 → `/ui-vs` → `/ui-adopt`
+2. (可选)若启用 Phase 5 的 pre-onboard 工作流: 按提示去 Claude Design 触发 re-onboard
 
 ### 本地代码落地
 基于 `docs/design/generated/2026-04-24-warm-ceramic-v2/project/` 做 pixel-perfect recreate,
@@ -232,4 +236,4 @@ docs/design/generated/{YYYY-MM-DD}-{slug}/
 - 最容易犯的错:把"值得保留的"清单**全部默认采纳**。必须让用户逐项勾选,有些"值得保留"只是"可以保留但没必要更新源文档"
 - 另一个常见错误:把 Vibe 新隐喻**替换**掉旧的。Vibe 是层累性的,一般是深化或补充(如"暖陶" → "施釉陶"),不是取代
 - Invariants 扩展比收紧更常见。收紧档位意味着有代码在用被删档位 → 必须同时提示跑 `ui-vision-check` 检查漂移
-- 不 re-onboard Claude Design = 闭环没真正闭上,下轮 Δ Brief 还要写同样的"特别约束"
+- (仅当启用 pre-onboard 工作流时)不 re-onboard Claude Design = 闭环没真正闭上,下轮 Δ Brief 还要写同样的"特别约束"。**默认工作流(每次使用 Claude Design 时即时让它读最新 codebase)不存在此问题**
