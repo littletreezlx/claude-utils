@@ -11,7 +11,7 @@ description: >
   to the user. Also auto-triggers on: non-obvious strategy/architecture choices, cross-project
   tool/pattern design, workflow methodology improvements. NOT for product feature decisions
   or UI/UX design (use feat-discuss).
-version: 0.6.1
+version: 0.6.2
 ---
 
 # 轻量级 Think 协作
@@ -319,6 +319,10 @@ Digest 输出后,Claude Code 自问:
 
 ## 变更历史
 
+- **0.6.2 (2026-04-26)** — 修模型输出额度截断（与 0.6.1 修的 stdout 通道截断不同维度）:
+  - **修 `shared.mjs:512,519`**:`maxOutputTokens: 2500` → `8000`。Gemini-3.1-pro-preview / GPT-5.4 等推理模型把 reasoning tokens 计入此预算,重 prompt 下推理吃掉大部分额度,可见输出仅剩 189-431 字符或在 9K 字符末尾被砍。8000 给推理留 2-3K headroom 后,可见输出仍有 5-6K
+  - 添加单行注释指向决策记录,避免下次再被"为什么这里写 8000"困惑
+  - 详见 `~/.claude/docs/decisions/2026-04-26-03-think-max-output-tokens.md`
 - **0.6.1 (2026-04-24)** — 修 stdout 截断导致 Digest 基于残缺内容的反复踩坑:
   - **+ `--out <path>` 必选机制(shared.mjs `parseOutFile` + `emitOutput`)**:完整输出写文件,stdout 只打一行确认,Claude Code 用 Read 工具读取
   - **+ Step 2 新增"`--out` 是必选"小节** + 路径约定(`/tmp/think-$(date +%Y%m%d-%H%M%S).md`)
