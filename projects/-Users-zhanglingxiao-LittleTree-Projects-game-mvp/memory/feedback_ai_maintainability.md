@@ -2,12 +2,12 @@
 name: ai-maintainability-conventions
 description: AI 维护 Godot 项目的关键约定：BattleConfig 参数隔离、Humble Object 模式、signal_map 工具、类型标注
 type: feedback
+originSessionId: 48924f91-54e8-4c55-9aac-d5d871071c8c
 ---
-
 ## 视觉参数隔离约定
-AI 只改 .gd 逻辑代码，不改 `Assets/Data/battle_config.tres` 的数值。所有人类调优的视觉/手感参数（动画时长、击退距离、闪白强度、屏幕震动衰减等）集中在这个 .tres 文件里，代码通过 `const CFG = preload("res://Assets/Data/battle_config.tres")` 读取。
-**Why:** 2026-03-24 与 Gemini 讨论后确定。AI 改逻辑时容易意外改掉人类调优过的魔法数字，物理隔离到 .tres 后彻底消除此风险。
-**How to apply:** 新增视觉/手感参数时，加到 `Core/Data/BattleConfig.gd` Resource 脚本 + 更新 `battle_config.tres`，代码里用 `CFG.xxx` 读取。
+所有视觉/手感参数（动画时长、击退距离、闪白强度、屏幕震动衰减等）集中在 `Assets/Data/battle_config.tres`，代码通过 `const CFG = preload("res://Assets/Data/battle_config.tres")` 读取。**AI 可改 .tres 数值**，但必须通过 Debug Play Server 实战验证手感（`/play/goto_battle` → 跑战斗 → 截图 + 关键数值快照作为凭证）。
+**Why:** 集中化最初由 2026-03-24 与 Gemini 讨论后确定（避免 AI 改逻辑时意外改掉魔法数字，物理隔离到 .tres 消除风险）。原约定 "AI 不改 .tres" 在 2026-04-26 修订为 "AI 可改但必须截图闭环验证"——AI-Only 协作模式下 Founder 不动手，原规则导致数值调优流程停滞。详见 `~/.claude/docs/decisions/2026-04-26-01-ai-full-autonomy-godot-scenes.md`。
+**How to apply:** 新增视觉/手感参数时，加到 `Core/Data/BattleConfig.gd` Resource 脚本 + 更新 `battle_config.tres`，代码里用 `CFG.xxx` 读取。改数值后必须 Debug Play Server 验证手感再交付。
 
 ## Humble Object 模式（Godot 场景测试策略）
 复杂 Node 类（如 Level.gd）应拆为：纯逻辑类（RefCounted，100% 可测）+ 薄壳 Node（不测试）。Level.gd 已拆出 `LevelStateMachine.gd`。
