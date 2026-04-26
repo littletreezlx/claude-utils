@@ -2,8 +2,8 @@
 name: godot_headless_tres_png_bug
 description: Godot 4.6 headless ext_resource PNG loading bug - cannot load .tres files with PNG dependencies in headless mode
 type: reference
+originSessionId: 4a9b583d-1168-4c84-8108-f306c4a4b614
 ---
-
 # Godot 4.6 Headless Screenshot Blockers
 
 ## 核心阻塞：`.tres` ext_resource PNG 加载 bug
@@ -22,11 +22,15 @@ ERROR: res://Assets/Data/Units/soldier.tres:14 - Parse Error: [ext_resource] ref
 
 **workaround**: 必须用有 GUI 的编辑器截图（Mac/Windows 编辑器 Edit → Take Screenshot）
 
-## WSL2 GUI 不可行
+## WSL2 GUI: 原生不可行,Xvfb 可行(2026-04-26 修正)
 
-- WSL2 没有 X11/Wayland 支持（无 WSLg）
-- Linux Godot 在 WSL2 中无法启动 GUI
-- Xvfb 可启动但 GL black screen（无 GPU context）
+- WSL2 原生 X11/Wayland 不可达（无 WSLg）
+- `DISPLAY=:0 godot` / 无显示标志的 godot 都启不来
+- **`Xvfb :99 -screen 0 1152x648x24` 实测可用**(godot-qa-stories 2026-04-26 跑通全 9 个故事,见 game-mvp/TODO.md):
+  - 启动: `Xvfb :99 -screen 0 1152x648x24 & DISPLAY=:99 godot --path .`
+  - 项目用 GL Compatibility 渲染器(见项目级 CLAUDE.md),在 Xvfb 下能渲染(早期"GL black screen"判断已过时)
+  - DebugPlayServer 端点 + `/screenshot` 截图均可用
+- godot-explore v4.0 SKILL 的 Step 0a 已实装 Xvfb 自启 + Step 0b 验证截图非黑
 
 ## Windows Godot 自解压路径
 
