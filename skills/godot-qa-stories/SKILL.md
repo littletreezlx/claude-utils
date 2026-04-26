@@ -5,7 +5,7 @@ description: >
   "qa stories", or after a batch of Godot code changes needs holistic verification
   beyond unit tests. Verifies user stories against a running Godot game via
   DebugPlayServer. Requires DebugPlayServer embedded and docs/user-stories/qa/ to exist.
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Godot QA Stories — 用户故事自主验证
@@ -155,12 +155,22 @@ curl -s localhost:$PORT/state/save   # save data
    done
    echo "Godot binary: $GODOT_BIN"
    ```
-3. **项目路径用 `$PWD`**（禁止在 skill 中写死）：
+3. **平台检测 + 启动游戏**（WSL/Linux 必须用 Xvfb，否则无 X11/Wayland 启不了）：
+
    ```bash
-   # 假设当前在项目根目录运行
+   # DebugPlayServer.gd:17 规定 headless 模式不启动 server,所以必须有 (虚拟) GUI
+   if grep -qi microsoft /proc/version 2>/dev/null || \
+      ([ "$(uname -s)" = "Linux" ] && [ -z "$DISPLAY" ]); then
+     # WSL2 / Linux 无显示器 → Xvfb 路径(2026-04-26 实测可行,见 game-mvp/TODO.md)
+     command -v Xvfb >/dev/null || { echo "需先 apt install xvfb"; exit 1; }
+     pgrep -x Xvfb >/dev/null || Xvfb :99 -screen 0 1152x648x24 &
+     export DISPLAY=:99
+   fi
+   # macOS / 桌面 Linux 走原生显示
    "$GODOT_BIN" --path "$PWD" &
    ```
-   使用 `run_in_background: true` 启动。
+
+   使用 `run_in_background: true` 启动 Godot。Xvfb 也在后台跑（pgrep 防重复启）。
 4. **同时并行加载故事**（Step 1），不傻等
 5. 等后台启动完成通知后 `curl localhost:$PORT/ping` 确认就绪
 
