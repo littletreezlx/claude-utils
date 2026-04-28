@@ -98,7 +98,8 @@ class DAGExecutor:
 
         print(f"{'=' * 80}")
         print("执行方式:")
-        print("  python batchcc.py <file>  # 执行所有任务")
+        print("  python batchcx.py <file>  # Codex 执行入口")
+        print("  python batchcc.py <file>  # Claude 兼容入口")
         print(f"{'=' * 80}\n")
 
     def execute(self, parallel_executor: Callable[[List[TaskNode], int], List[Any]] = None) -> bool:
